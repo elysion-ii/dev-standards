@@ -17,6 +17,9 @@ skills/
   doc-placement/
     SKILL.md        Placement, naming, front matter, and archiving rules for
                     all non-source documents
+  merge-pr/
+    SKILL.md        gh operating procedure for merging PRs (strategy and
+                    message rules live in the standards skill's Git section)
 
 templates/
   AGENTS.md         Generic agent-instruction boilerplate for any repository
