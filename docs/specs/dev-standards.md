@@ -22,8 +22,8 @@ repository is `docs/rules/dev-standards.md`; how to *release* is
 
 ## Consumers
 
-- Scaffolding tooling: generates a new repository from `templates/` and distributes
-  `rules/` and `skills/`
+- Scaffolding tooling: generates a new repository from `dist/templates/` and
+  distributes `dist/rules/` and `dist/skills/`
 - Retrofit tooling: brings an existing repository up to a newer tag
 - Agent harnesses (Claude Code, Codex, Antigravity): read the distributed files inside
   consuming repositories, not this repository directly

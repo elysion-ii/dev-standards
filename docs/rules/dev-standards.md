@@ -11,7 +11,8 @@ wins.
 
 ## Language
 
-- All content in this repository is written in **English** (public repository)
+- Maintenance documents (`docs/`, `AGENTS.md`, `README.md`) and the distributed rules and skills (`dist/rules/`, `dist/skills/`) are written in **English** (public repository)
+- Localized template variants (`dist/templates/dotnet/ja/`, ...) are deliberately in their target language — they are exempt, per the parity invariant in `docs/specs/dev-standards.md`
 
 ## Distributed content (`dist/`)
 

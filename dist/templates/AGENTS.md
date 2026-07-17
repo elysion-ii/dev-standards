@@ -2,7 +2,7 @@
 
 <!-- Generic boilerplate for any repository (language-agnostic). Replace every
      <PLACEHOLDER>, fill in the tables, and delete these comments. For .NET
-     applications, use templates/dotnet/ instead. -->
+     applications, use dist/templates/dotnet/ instead. -->
 
 <ONE-PARAGRAPH PROJECT OVERVIEW: what this repository is and what it produces.>
 
