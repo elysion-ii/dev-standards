@@ -17,7 +17,9 @@
 ## 標準規約とAUDIT
 
 - **実装に着手する前に**、`standards` skill(`SKILL.md` + `dotnet.md`)を読むこと。本リポジトリの `.claude/skills/standards/` および `.agents/skills/standards/` に配布されている
+- **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と `standards` skill を再読込してから実装に着手すること
 - **実装タスクの完了を報告する前に**、同skillの `SKILL.md` 末尾にあるAUDIT手順を実行すること
+- **`gh pr merge` を実行する前に**、`merge-pr` skill(本リポジトリに配布済み)を読むこと
 - 本ファイルの規約とskillが矛盾する場合は本ファイルを優先する
 
 ## コマンド
@@ -54,7 +56,7 @@ xUnit テストプロジェクト。
 ソースコード以外のドキュメント置き場。役割別のサブフォルダ(`adr/`, `specs/`, `guides/`,
 `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`)に配置する。
 全ドキュメントに front matter(最低 `created` と `status`。ADR は `status` のみ)を付ける。
-配置・命名・アーカイブの判断は `doc-placement` skill(本リポジトリに配布済み)に従うこと。
+ドキュメントの新規作成・移動・リネーム・アーカイブの前(配置に迷ったときも)には、必ず `doc-placement` skill(本リポジトリに配布済み)を読むこと。記憶で分類・命名しない。
 
 - `docs/adr/` — ADR (Architecture Decision Record)。退役した ADR は `docs/adr/archive/` へ移動する
 - `docs/plans/` と `docs/archive/plans/` — 計画書の作業領域。git管理外: 計画書は作業中・退避後を問わずリポジトリに入れない

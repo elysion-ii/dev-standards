@@ -20,7 +20,9 @@ single body of repository rules. Edit this file, never `CLAUDE.md`.
 ## Standards and AUDIT
 
 - **Before implementing any change**, read the `standards` skill, distributed in this repository at `.claude/skills/standards/` and `.agents/skills/standards/`: `SKILL.md` plus every language file matching this project's stack
+- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the `standards` skill first, so all rules are loaded before code is written
 - **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of the skill's `SKILL.md`
+- **Before running any `gh pr merge`**, read the `merge-pr` skill (also distributed in this repository)
 - When rules in this file conflict with the skill, this file takes precedence
 
 ## Commands
@@ -41,8 +43,9 @@ single body of repository rules. Edit this file, never `CLAUDE.md`.
 All non-source documents, placed in role-based subfolders (`adr/`, `specs/`, `guides/`,
 `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`). Every
 document carries front matter (at least `created` and `status`; ADRs carry `status`
-only). Follow the `doc-placement` skill (also distributed in this repository) for
-placement, naming, and archiving decisions.
+only). Before creating, moving, renaming, or archiving any document — or when unsure
+where one belongs — read the `doc-placement` skill (also distributed in this repository)
+first. Do not classify or name documents from memory.
 
 ## Repository-Specific Rules
 
