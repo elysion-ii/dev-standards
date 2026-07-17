@@ -1,0 +1,72 @@
+# {{APP_NAME}} — Agent Instructions
+
+{{APP_NAME}} is a {{APP_TYPE_LABEL}} application targeting `{{TFM}}`.
+
+`CLAUDE.md` at the repository root is a one-line import of this file — this file is the
+single body of repository rules. Edit this file, never `CLAUDE.md`.
+
+## Technology Stack
+
+| Item | Detail |
+|------|--------|
+| Language | C# |
+| Runtime | {{TFM}} |
+| UI | {{APP_UI_DESCRIPTION}} |
+| Distribution | Self-contained single EXE + Inno Setup installer |
+
+## Standards and AUDIT
+
+- **Before implementing any change**, read the `standards` skill (`SKILL.md` + `dotnet.md`), distributed in this repository at `.claude/skills/standards/` and `.agents/skills/standards/`
+- **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of the skill's `SKILL.md`
+- When rules in this file conflict with the skill, this file takes precedence
+
+## Commands
+
+| Purpose | Command |
+|---------|---------|
+| Format | `dotnet format {{APP_NAME}}.slnx` |
+| Format check (must pass before completion) | `dotnet format {{APP_NAME}}.slnx --verify-no-changes` |
+| Build | `dotnet build {{APP_NAME}}/{{APP_NAME}}.csproj -c Release` |
+| Test | `dotnet test {{APP_NAME}}.Tests/{{APP_NAME}}.Tests.csproj` |
+| Full build (format gate → tests → publish) | `build/Menu.bat` (interactive) or `powershell -ExecutionPolicy Bypass -File build/Build.ps1` |
+| Installer | `powershell -ExecutionPolicy Bypass -File build/Installer.ps1` |
+
+## Directory Layout
+
+### `{{APP_NAME}}/`
+
+The main project. Contains all application source code.
+
+### `{{APP_NAME}}.Tests/`
+
+xUnit test project.
+
+### `build/`
+
+Build scripts and installer configuration.
+
+- `Build.ps1` runs format verification (`dotnet format --verify-no-changes`) and tests, then publishes {{APP_NAME}} as a self-contained single-file EXE to `build/{{APP_NAME}}/`. Both gates must pass before publish proceeds
+- `Installer.ps1` invokes Inno Setup (ISCC.exe) on `Setup_{{APP_NAME}}.iss`; requires `build/{{APP_NAME}}/{{APP_NAME}}.exe` to exist. Before running ISCC it reads `<Version>` from `Directory.Build.props`, injects it via `/DMyAppVersion`, and — if `CHANGELOG.md` exists — verifies it contains a heading for the current version (fails otherwise)
+- Output directories: `build/{{APP_NAME}}/` (self-contained EXE) and `build/Installer/` (installer package). **DO NOT** manually add files to output directories or commit them to git
+
+### `docs/`
+
+All non-source documents, placed in role-based subfolders (`adr/`, `specs/`, `guides/`,
+`references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`). Every
+document carries front matter (at least `created` and `status`; ADRs carry `status`
+only). Follow the `doc-placement` skill (also distributed in this repository) for
+placement, naming, and archiving decisions.
+
+- `docs/adr/` — Architecture Decision Records; retired ADRs move to `docs/adr/archive/`
+- `docs/plans/` and `docs/archive/plans/` — working area for plans, gitignored: plans never enter the repository, in progress or archived
+
+## Version Management
+
+- The version is defined ONLY in the `<Version>` tag of `Directory.Build.props`. Never add `<Version>` to a csproj or `#define MyAppVersion` to `Setup_{{APP_NAME}}.iss` — duplicate definitions are how versions drift out of sync. The EXE inherits it via MSBuild; the installer gets it injected by `Installer.ps1` (the `.iss` fails with `#error` if it is not injected)
+- Version bump: update `<Version>`, add a `## [x.y.z]` heading and entry to `CHANGELOG.md` if it exists, and include both in the **same commit**. Running `Installer.ps1` without the changelog heading fails at the gate
+- Semantic Versioning (MAJOR.MINOR.PATCH); during development `0.x.x` (release as `1.0.0`); MINOR: new features, PATCH: bug fixes and small changes
+
+## Repository Language
+
+- This file and all agent instruction files in this repository are written in **English only**
+- Keep rule content concise and declarative. Do NOT include concrete code examples unless absolutely necessary — reference the relevant source file/method instead

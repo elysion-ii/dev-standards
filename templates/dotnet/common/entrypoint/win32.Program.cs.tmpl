@@ -1,0 +1,16 @@
+using System.Runtime.InteropServices;
+
+namespace {{APP_NAME}};
+
+internal static partial class Program
+{
+    [LibraryImport("user32.dll", EntryPoint = "MessageBoxW", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
+
+    [STAThread]
+    private static int Main()
+    {
+        MessageBox(IntPtr.Zero, "Hello from {{APP_NAME}}", "{{APP_NAME}}", 0);
+        return 0;
+    }
+}

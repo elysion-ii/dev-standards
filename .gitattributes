@@ -1,0 +1,5 @@
+* text=auto
+
+# Template files are copied byte-for-byte into generated projects; line endings are
+# part of the content (Menu.bat requires CRLF). Never normalize them.
+*.tmpl -text

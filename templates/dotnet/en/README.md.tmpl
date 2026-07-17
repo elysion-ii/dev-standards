@@ -1,0 +1,31 @@
+# {{APP_NAME}}
+
+## Build
+
+Interactive menu:
+
+```
+build\Menu.bat
+```
+
+Or directly:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\Build.ps1
+```
+
+Output: `build/{{APP_NAME}}/{{APP_NAME}}.exe`
+
+## Installer
+
+Inno Setup 6 must be installed at `C:\Program Files (x86)\Inno Setup 6\`.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\Installer.ps1
+```
+
+Output: `build/Installer/{{APP_NAME}}-Setup-<version>.exe` (version comes from `<Version>` in `Directory.Build.props`)
+
+## Project Layout
+
+See `AGENTS.md` for project structure and rules.

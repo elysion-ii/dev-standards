@@ -1,0 +1,31 @@
+# {{APP_NAME}}
+
+## ビルド
+
+対話式メニュー:
+
+```
+build\Menu.bat
+```
+
+または直接:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\Build.ps1
+```
+
+出力: `build/{{APP_NAME}}/{{APP_NAME}}.exe`
+
+## インストーラ作成
+
+Inno Setup 6 を `C:\Program Files (x86)\Inno Setup 6\` にインストールしておく必要があります。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build\Installer.ps1
+```
+
+出力: `build/Installer/{{APP_NAME}}-Setup-<バージョン>.exe`(バージョンは `Directory.Build.props` の `<Version>`)
+
+## プロジェクト構成
+
+`AGENTS.md` を参照してください。

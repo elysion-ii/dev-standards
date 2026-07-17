@@ -1,0 +1,72 @@
+# {{APP_NAME}} — エージェント指示書
+
+{{APP_NAME}} は {{APP_TYPE_LABEL}} アプリケーションです (TargetFramework: `{{TFM}}`)。
+
+リポジトリルートの `CLAUDE.md` は本ファイルを1行でimportするだけのファイルであり、
+リポジトリ規約の本体は本ファイルである。編集は必ず本ファイルに対して行い、`CLAUDE.md` は編集しない。
+
+## 技術スタック
+
+| 項目 | 内容 |
+|------|------|
+| 言語 | C# |
+| ランタイム | {{TFM}} |
+| UI | {{APP_UI_DESCRIPTION}} |
+| 配布形式 | 自己完結型単一EXE + Inno Setup インストーラ |
+
+## 標準規約とAUDIT
+
+- **実装に着手する前に**、`standards` skill(`SKILL.md` + `dotnet.md`)を読むこと。本リポジトリの `.claude/skills/standards/` および `.agents/skills/standards/` に配布されている
+- **実装タスクの完了を報告する前に**、同skillの `SKILL.md` 末尾にあるAUDIT手順を実行すること
+- 本ファイルの規約とskillが矛盾する場合は本ファイルを優先する
+
+## コマンド
+
+| 目的 | コマンド |
+|------|---------|
+| フォーマット | `dotnet format {{APP_NAME}}.slnx` |
+| フォーマット検証(完了報告前に必須) | `dotnet format {{APP_NAME}}.slnx --verify-no-changes` |
+| ビルド | `dotnet build {{APP_NAME}}/{{APP_NAME}}.csproj -c Release` |
+| テスト | `dotnet test {{APP_NAME}}.Tests/{{APP_NAME}}.Tests.csproj` |
+| フルビルド(フォーマットゲート→テスト→publish) | `build/Menu.bat`(対話式)または `powershell -ExecutionPolicy Bypass -File build/Build.ps1` |
+| インストーラ | `powershell -ExecutionPolicy Bypass -File build/Installer.ps1` |
+
+## ディレクトリ構成
+
+### `{{APP_NAME}}/`
+
+メインプロジェクト。アプリケーションのソースコードが置かれる。
+
+### `{{APP_NAME}}.Tests/`
+
+xUnit テストプロジェクト。
+
+### `build/`
+
+ビルドスクリプトとインストーラ設定。
+
+- `Build.ps1` はフォーマット検証(`dotnet format --verify-no-changes`)とテストを実行し、両方通過した場合のみ {{APP_NAME}} を自己完結型単一ファイルEXEとして `build/{{APP_NAME}}/` に publish する
+- `Installer.ps1` は Inno Setup (ISCC.exe) を `Setup_{{APP_NAME}}.iss` に対して実行する。`build/{{APP_NAME}}/{{APP_NAME}}.exe` の存在が前提。実行前に `Directory.Build.props` の `<Version>` を読み取って `/DMyAppVersion` で注入し、`CHANGELOG.md` が存在する場合は現行バージョンの見出しがあることを検証する(なければ失敗)
+- 出力ディレクトリ: `build/{{APP_NAME}}/`(自己完結型EXE)と `build/Installer/`(インストーラパッケージ)。**出力ディレクトリには手動でファイルを追加しないこと。git にもコミットしないこと**
+
+### `docs/`
+
+ソースコード以外のドキュメント置き場。役割別のサブフォルダ(`adr/`, `specs/`, `guides/`,
+`references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`)に配置する。
+全ドキュメントに front matter(最低 `created` と `status`。ADR は `status` のみ)を付ける。
+配置・命名・アーカイブの判断は `doc-placement` skill(本リポジトリに配布済み)に従うこと。
+
+- `docs/adr/` — ADR (Architecture Decision Record)。退役した ADR は `docs/adr/archive/` へ移動する
+- `docs/plans/` と `docs/archive/plans/` — 計画書の作業領域。git管理外: 計画書は作業中・退避後を問わずリポジトリに入れない
+
+## バージョン管理
+
+- バージョンは `Directory.Build.props` の `<Version>` タグでのみ定義する。csproj や `Setup_{{APP_NAME}}.iss` に `<Version>` / `#define MyAppVersion` を書いてはならない(二重定義は同期漏れの原因)。EXE は MSBuild が自動継承し、インストーラは `Installer.ps1` が注入する(`.iss` 側は未注入なら `#error` で失敗する)
+- バージョン更新手順: `<Version>` を更新し、`CHANGELOG.md` が存在する場合は新バージョンの見出し(`## [x.y.z]`)とエントリを追加し、両方を**同一コミット**に含める。見出しがないまま `Installer.ps1` を実行するとゲートで失敗する
+- セマンティックバージョニング (MAJOR.MINOR.PATCH)。開発中は `0.x.x`(正式リリース時に `1.0.0`)。MINOR: 新機能、PATCH: バグ修正・小さな変更
+
+## リポジトリ言語
+
+- 本ファイルおよびエージェント指示ファイルは**日本語**で統一する(Git操作のテキストは standards skill のとおり英語)
+- **コードコメントは日本語で書く**(standards skill の COMMENTS「Language: English」を本リポジトリでは上書きする。ログメッセージは skill のとおり英語)
+- 規約は簡潔かつ宣言的に書く。具体コード例は必要最小限にとどめ、該当するソースファイル/メソッドを参照する形で記述する

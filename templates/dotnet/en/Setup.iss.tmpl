@@ -1,0 +1,39 @@
+; {{APP_NAME}} Installer Script
+; MyAppVersion is injected by Installer.ps1 (/D) from Directory.Build.props <Version>.
+; Never hardcode a version here — Directory.Build.props is the single source of truth.
+#ifndef MyAppVersion
+  #error MyAppVersion is not defined. Build via Installer.ps1, which injects it from Directory.Build.props.
+#endif
+#define MyAppName "{{APP_NAME}}"
+#define MyAppExeName "{{APP_NAME}}.exe"
+
+[Setup]
+AppId={{{{APP_ID_GUID}}}
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+DefaultDirName={autopf}\{#MyAppName}
+DisableProgramGroupPage=yes
+OutputDir=Installer
+OutputBaseFilename={#MyAppName}-Setup-{#MyAppVersion}
+Compression=lzma
+SolidCompression=yes
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
+PrivilegesRequired=lowest
+
+[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+
+[Tasks]
+Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
+Name: "startmenu"; Description: "Create a Start Menu shortcut"
+
+[Files]
+Source: "{{APP_NAME}}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+
+[Icons]
+Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: startmenu
+
+[Run]
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent

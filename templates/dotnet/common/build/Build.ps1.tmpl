@@ -1,0 +1,76 @@
+# {{APP_NAME}} Build Script
+
+param(
+    [string]$Configuration = "Release",
+    [string]$Runtime = "win-x64"
+)
+
+# Build folder is the current location, solution root is parent
+$BuildDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$SolutionDir = Split-Path -Parent $BuildDir
+Set-Location $SolutionDir
+
+$Framework = "{{TFM}}"
+$OutputDir = Join-Path $BuildDir "{{APP_NAME}}"
+$PublishDir = Join-Path $BuildDir "publish_temp"
+$ProjectPath = "{{APP_NAME}}\{{APP_NAME}}.csproj"
+
+Write-Host "`n=== Building {{APP_NAME}} ===" -ForegroundColor Green
+
+if (-not (Test-Path $ProjectPath)) {
+    Write-Host "   [ERROR] {{APP_NAME}} project not found at $ProjectPath" -ForegroundColor Red
+    exit 1
+}
+
+# Cleanup temp folder
+if (Test-Path $PublishDir) { Remove-Item $PublishDir -Recurse -Force }
+# Clean existing output folder
+if (Test-Path $OutputDir) { Remove-Item $OutputDir -Recurse -Force }
+
+# Create output folder
+New-Item -ItemType Directory -Path $OutputDir -Force -ErrorAction SilentlyContinue | Out-Null
+
+Write-Host "Verifying code format..." -ForegroundColor Cyan
+dotnet format {{APP_NAME}}.slnx --verify-no-changes
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "   [ERROR] Unformatted code detected - run 'dotnet format {{APP_NAME}}.slnx' and rebuild" -ForegroundColor Red
+    Write-Host "`n=== Build Failed ===" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Running {{APP_NAME}} tests..." -ForegroundColor Cyan
+dotnet test {{APP_NAME}}.Tests\{{APP_NAME}}.Tests.csproj -c $Configuration
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "   [ERROR] Tests failed - build aborted" -ForegroundColor Red
+    if (Test-Path $PublishDir) { Remove-Item $PublishDir -Recurse -Force }
+    Write-Host "`n=== Build Failed ===" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "Building {{APP_NAME}}..." -ForegroundColor Cyan
+dotnet publish $ProjectPath `
+    -c $Configuration `
+    -f $Framework `
+    -r $Runtime `
+    --self-contained true `
+    -p:PublishSingleFile=true `
+    -p:IncludeNativeLibrariesForSelfExtract=true `
+    -p:DebugType=none `
+    -p:DebugSymbols=false `
+    -p:DebuggerSupport=false `
+    -o "$PublishDir"
+
+if ($LASTEXITCODE -eq 0) {
+    Copy-Item "$PublishDir\*" "$OutputDir\" -Force
+    Remove-Item $PublishDir -Recurse -Force
+
+    Write-Host "   [OK] {{APP_NAME}}.exe deployed" -ForegroundColor Green
+    Write-Host "`n   Output: $OutputDir" -ForegroundColor Cyan
+    Write-Host "`n=== Build Completed Successfully ===" -ForegroundColor Green
+    exit 0
+} else {
+    Write-Host "   [ERROR] {{APP_NAME}} build failed" -ForegroundColor Red
+    if (Test-Path $PublishDir) { Remove-Item $PublishDir -Recurse -Force }
+    Write-Host "`n=== Build Failed ===" -ForegroundColor Red
+    exit 1
+}
