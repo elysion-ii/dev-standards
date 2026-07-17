@@ -1,8 +1,9 @@
 # dev-standards — Agent Instructions
 
 Shared engineering standards and project templates, distributed into consuming
-repositories by scaffolding/retrofit tooling pinned to a tag of this repository (see
-`README.md` for the consumer-facing description).
+repositories by scaffolding/retrofit tooling pinned to a tag of this repository. What
+the repository provides and its consumption contract are specified in
+`docs/specs/dev-standards.md`.
 
 `CLAUDE.md` at the repository root is a one-line import of this file. This file is the
 repository's router — facts and reading instructions; it holds no rule text.
@@ -18,12 +19,17 @@ repository's router — facts and reading instructions; it holds no rule text.
 
 ## Applications
 
-None — this repository ships documents and templates, not an application. The
-rules ↔ specification pairing does not apply here.
+This repository ships documents and templates, not a runnable application — the
+repository content itself takes the application slot:
+
+| Application | Content | Rules | Specification |
+|---|---|---|---|
+| dev-standards | `rules/`, `skills/`, `templates/` | `docs/rules/dev-standards.md` | `docs/specs/dev-standards.md` |
 
 ## Rules and AUDIT
 
-- **Before changing anything**, read `rules/standard.md` (the product doubles as this repository's own shared core) and `docs/rules/dev-standards.md` (repository-specific rules)
+- **Before changing anything**, read `rules/standard.md` (the product doubles as this repository's own shared core), `docs/rules/dev-standards.md` (repository-specific rules), and `docs/specs/dev-standards.md` (the structure and consumption contract)
+- **When a change alters the structure or the distribution/versioning contract**, update the specification before (or with) the change — spec-first
 - **Before reporting a change as complete**, run the AUDIT procedure at the end of `rules/standard.md`. This repository has no build or test gates, so treat every applicable rule as an AUDIT item
 - **Before creating, moving, renaming, or archiving any document**, read `skills/doc-placement/SKILL.md` (the source copy in this repository)
 - **Before running any `gh pr merge`**, read `skills/merge-pr/SKILL.md`
@@ -31,7 +37,7 @@ rules ↔ specification pairing does not apply here.
 ## Commands
 
 There are no build, format, or test commands. Releases are git tags — the procedure is
-`docs/guides/release.md`; the versioning criteria are in `README.md`.
+`docs/guides/release.md`; the versioning criteria are in `docs/specs/dev-standards.md`.
 
 ## `docs/`
 

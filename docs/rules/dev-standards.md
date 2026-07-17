@@ -19,8 +19,16 @@ wins.
 - `rules/` files carry **no front matter and no in-file marker** — they are distributed byte-identical, and consuming repositories detect local edits by matching against this repository's tag history. Do not add either
 - Templates use literal `{{TOKEN}}` placeholders. Token names are part of the consumption interface: renaming or removing one is a MAJOR change
 - `templates/dotnet/en/` and `templates/dotnet/ja/` are variants of the same content and must stay in parity: a change to one is applied to the other in the same commit
-- Never reference private, user-specific tooling (personal skill names, local paths) anywhere in this repository — consumers only know the tag interface described in `README.md`
+- Never reference private, user-specific tooling (personal skill names, local paths) anywhere in this repository — consumers only know the tag interface specified in `docs/specs/dev-standards.md`
+
+## Changing this repository
+
+- **Spec-first applies to this repository too**: a change that alters the structure or the distribution/versioning contract updates `docs/specs/dev-standards.md` before (or with) the change
+- **Grep before renaming**: when renaming, moving, or deleting any file or section heading, search the whole repository for references and update them in the same commit — `rules/`, `skills/`, `templates/`, and `docs/` cross-reference each other, and a stale reference in a distributed file ships to every consumer
+- **New rule → matrix row**: adding a rule to a language file includes its enforcement-matrix row (Enforced with the mechanism named, or AUDIT)
+- **Impact check before editing distributed content**: a change to `rules/`, `skills/`, or `templates/` lands in every consuming repository at its next retrofit — classify it against the versioning contract (MAJOR/MINOR/PATCH per the specification) before committing
+- **Rule text goes to `rules/`, never to templates**: template `AGENTS.md` variants carry facts, commands, and routing only
 
 ## Releases
 
-- Tags are the consumption interface. Any change to distributed content is not consumable until tagged — follow `docs/guides/release.md`
+- Tags are the consumption interface. Any change to distributed content (`rules/`, `skills/`, `templates/`) is not consumable until tagged — follow `docs/guides/release.md`. Changes outside distributed content need no tag
