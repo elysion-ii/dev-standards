@@ -6,8 +6,9 @@
 
 <ONE-PARAGRAPH PROJECT OVERVIEW: what this repository is and what it produces.>
 
-`CLAUDE.md` at the repository root is a one-line import of this file — this file is the
-single body of repository rules. Edit this file, never `CLAUDE.md`.
+`CLAUDE.md` at the repository root is a one-line import of this file. This file is the
+repository's router — facts, commands, and reading instructions; it holds no rule text.
+Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 ## Technology Stack
 
@@ -17,13 +18,20 @@ single body of repository rules. Edit this file, never `CLAUDE.md`.
 | Runtime / framework | <RUNTIME> |
 | Distribution | <HOW IT SHIPS> |
 
-## Standards and AUDIT
+## Applications
 
-- **Before implementing any change**, read the `standards` skill, distributed in this repository at `.claude/skills/standards/` and `.agents/skills/standards/`: `SKILL.md` plus every language file matching this project's stack
-- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the `standards` skill first, so all rules are loaded before code is written
-- **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of the skill's `SKILL.md`
-- **Before running any `gh pr merge`**, read the `merge-pr` skill (also distributed in this repository)
-- When rules in this file conflict with the skill, this file takes precedence
+| Application | Projects | Rules | Specification |
+|---|---|---|---|
+| <APP> | <PROJECT LIST> | `docs/rules/<APP>.md` | `docs/specs/<APP>.md` |
+
+## Rules and AUDIT
+
+- **Before implementing any change**, read in order: `docs/rules/standard.md` (shared core), every language file under `docs/rules/` matching this project's stack, then the application's rules file and specification from the Applications table. On conflict the more specific file wins (application > language > core)
+- When a change requires behavior not in the specification, update the specification **before** implementing (spec-first — see the Specifications section of `docs/rules/standard.md`)
+- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rules files first, so all rules are loaded before code is written
+- **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
+- **Before running any `gh pr merge`**, read the `merge-pr` skill (distributed in this repository at `.claude/skills/` and `.agents/skills/`)
+- `docs/rules/standard.md` and the language files are managed by dev-standards — never edit them; repository- and application-specific rules go in the application's rules file
 
 ## Commands
 
@@ -40,14 +48,13 @@ single body of repository rules. Edit this file, never `CLAUDE.md`.
 
 ### `docs/`
 
-All non-source documents, placed in role-based subfolders (`adr/`, `specs/`, `guides/`,
-`references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`). Every
-document carries front matter (at least `created` and `status`; ADRs carry `status`
-only). Before creating, moving, renaming, or archiving any document — or when unsure
+All non-source documents, placed in role-based subfolders (`rules/`, `adr/`, `specs/`,
+`guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`).
+Every document carries front matter (at least `created` and `status`; ADRs carry
+`status` only; dev-standards-managed files under `docs/rules/` carry a managed header
+instead). Before creating, moving, renaming, or archiving any document — or when unsure
 where one belongs — read the `doc-placement` skill (also distributed in this repository)
 first. Do not classify or name documents from memory.
 
-## Repository-Specific Rules
-
-<RULES THAT APPLY ONLY TO THIS REPOSITORY. Keep them concise and declarative; put
-rationale in an ADR under docs/adr/ and reference it from here.>
+- `docs/rules/` — rule bodies: `standard.md` + language files (managed by dev-standards) and the application rules files
+- `docs/specs/` — application specifications

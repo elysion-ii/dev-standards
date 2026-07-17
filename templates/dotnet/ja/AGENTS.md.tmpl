@@ -2,8 +2,9 @@
 
 {{APP_NAME}} は {{APP_TYPE_LABEL}} アプリケーションです (TargetFramework: `{{TFM}}`)。
 
-リポジトリルートの `CLAUDE.md` は本ファイルを1行でimportするだけのファイルであり、
-リポジトリ規約の本体は本ファイルである。編集は必ず本ファイルに対して行い、`CLAUDE.md` は編集しない。
+リポジトリルートの `CLAUDE.md` は本ファイルを1行でimportするだけのファイルである。
+本ファイルはリポジトリのrouter — 事実・コマンド・読み込み指示のみを持ち、規則本文は置かない。
+規則本文は `docs/rules/` にある。編集は必ず本ファイルに対して行い、`CLAUDE.md` は編集しない。
 
 ## 技術スタック
 
@@ -14,13 +15,20 @@
 | UI | {{APP_UI_DESCRIPTION}} |
 | 配布形式 | 自己完結型単一EXE + Inno Setup インストーラ |
 
-## 標準規約とAUDIT
+## アプリケーション
 
-- **実装に着手する前に**、`standards` skill(`SKILL.md` + `dotnet.md`)を読むこと。本リポジトリの `.claude/skills/standards/` および `.agents/skills/standards/` に配布されている
-- **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と `standards` skill を再読込してから実装に着手すること
-- **実装タスクの完了を報告する前に**、同skillの `SKILL.md` 末尾にあるAUDIT手順を実行すること
-- **`gh pr merge` を実行する前に**、`merge-pr` skill(本リポジトリに配布済み)を読むこと
-- 本ファイルの規約とskillが矛盾する場合は本ファイルを優先する
+| Application | Projects | Rules | Specification |
+|---|---|---|---|
+| {{APP_NAME}} | {{APP_NAME}}, {{APP_NAME}}.Tests | `docs/rules/{{APP_NAME}}.md` | `docs/specs/{{APP_NAME}}.md` |
+
+## 規則とAUDIT
+
+- **実装に着手する前に**、次の順で読むこと: `docs/rules/standard.md`(共有コア)→ `docs/rules/dotnet.md`(.NET規則)→ 上のアプリケーション表にある対象アプリの規則ファイルと仕様書。矛盾する場合はより具体的なファイルが優先される(アプリ > 言語 > コア)
+- 仕様書にない振る舞いが必要な変更は、**実装前に**仕様書を変更すること(spec-first — `docs/rules/standard.md` の Specifications 節を参照)
+- **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と規則ファイルを再読込してから実装に着手すること
+- **実装タスクの完了を報告する前に**、`docs/rules/standard.md` 末尾のAUDIT手順を実行すること
+- **`gh pr merge` を実行する前に**、`merge-pr` skill(本リポジトリの `.claude/skills/`・`.agents/skills/` に配布済み)を読むこと
+- `docs/rules/standard.md` と `docs/rules/dotnet.md` は dev-standards の管理ファイルであり、編集してはならない。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
 
 ## コマンド
 
@@ -53,11 +61,14 @@ xUnit テストプロジェクト。
 
 ### `docs/`
 
-ソースコード以外のドキュメント置き場。役割別のサブフォルダ(`adr/`, `specs/`, `guides/`,
-`references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`)に配置する。
-全ドキュメントに front matter(最低 `created` と `status`。ADR は `status` のみ)を付ける。
+ソースコード以外のドキュメント置き場。役割別のサブフォルダ(`rules/`, `adr/`, `specs/`,
+`guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`)に配置する。
+全ドキュメントに front matter(最低 `created` と `status`。ADR は `status` のみ。`docs/rules/` の
+dev-standards 管理ファイルは front matter の代わりに管理ヘッダを持つ)を付ける。
 ドキュメントの新規作成・移動・リネーム・アーカイブの前(配置に迷ったときも)には、必ず `doc-placement` skill(本リポジトリに配布済み)を読むこと。記憶で分類・命名しない。
 
+- `docs/rules/` — 規則本文: `standard.md` + `dotnet.md`(dev-standards 管理)と `{{APP_NAME}}.md`(アプリ固有規則)
+- `docs/specs/{{APP_NAME}}.md` — {{APP_NAME}} の仕様書: 何をするか
 - `docs/adr/` — ADR (Architecture Decision Record)。退役した ADR は `docs/adr/archive/` へ移動する
 - `docs/plans/` と `docs/archive/plans/` — 計画書の作業領域。git管理外: 計画書は作業中・退避後を問わずリポジトリに入れない
 
@@ -67,8 +78,3 @@ xUnit テストプロジェクト。
 - バージョン更新手順: `<Version>` を更新し、`CHANGELOG.md` が存在する場合は新バージョンの見出し(`## [x.y.z]`)とエントリを追加し、両方を**同一コミット**に含める。見出しがないまま `Installer.ps1` を実行するとゲートで失敗する
 - セマンティックバージョニング (MAJOR.MINOR.PATCH)。開発中は `0.x.x`(正式リリース時に `1.0.0`)。MINOR: 新機能、PATCH: バグ修正・小さな変更
 
-## リポジトリ言語
-
-- 本ファイルおよびエージェント指示ファイルは**日本語**で統一する(Git操作のテキストは standards skill のとおり英語)
-- **コードコメントは日本語で書く**(standards skill の COMMENTS「Language: English」を本リポジトリでは上書きする。ログメッセージは skill のとおり英語)
-- 規約は簡潔かつ宣言的に書く。具体コード例は必要最小限にとどめ、該当するソースファイル/メソッドを参照する形で記述する

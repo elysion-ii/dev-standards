@@ -17,9 +17,12 @@ Classification and placement procedure for every non-source document in a reposi
 ## Directory layout
 
 ```text
-AGENTS.md                   agent rules (always-on instructions; root entry point)
+AGENTS.md                   router: repository facts, commands, Applications table,
+                            reading instructions — no rule text
 
 docs/
+  rules/                    rule bodies: shared core + language files (managed by
+                            dev-standards) + application rules files
   adr/                      active ADRs
     archive/                superseded / rejected / withdrawn ADRs
   specs/                    specifications: what the system must do
@@ -38,14 +41,29 @@ docs/
 The category set is extensible: a project may add role subfolders (e.g., `docs/design/`)
 when a role clearly fits no existing category and several documents will share it. Every
 added category follows the same rules: active documents directly under the folder,
-retirement into `docs/archive/<category>/`, standard front matter. In a multi-solution
-repository, split the first level of `docs/` by solution, then by role within each.
+retirement into `docs/archive/<category>/`, standard front matter.
+
+## Application scope
+
+Every category shares one scope rule: a document directly under `docs/<category>/` is
+repository-wide; a document at `docs/<category>/<App>.md` or under
+`docs/<category>/<App>/` is specific to that application. The single file and the
+directory are equivalent scope markers — pick per category by file count; shapes may
+differ between categories. Use the same application identifier in every category.
+
+- Application rules (`docs/rules/<App>...`) and the specification
+  (`docs/specs/<App>...`) are a mandatory pair, declared with explicit paths in the
+  `AGENTS.md` Applications table. App-splitting any other category is optional
+- ADR numbering is per directory: `docs/adr/` and `docs/adr/<App>/` hold independent
+  sequences (each scope numbers across its active and archived ADRs). Retired
+  app-scoped ADRs go to `docs/adr/archive/<App>/`
 
 ## Placement decision table
 
 | Question | Destination |
 |---|---|
-| Must agents or developers follow it? | Root `AGENTS.md` (or a nested `AGENTS.md` for a subtree) |
+| Is it a development or change rule that cannot be enforced mechanically? | `docs/rules/` — repository/application rules go in the application's rules file; shared core and language files are managed by dev-standards |
+| Is it a repository fact, command, or routing instruction (no rule text)? | Root `AGENTS.md` (or a nested `AGENTS.md` for a subtree) |
 | Does it define correct results (input → output)? | Test code (table-driven) |
 | Does it record why a decision was made? | `docs/adr/` |
 | Does it state what the system must do (a specification)? | `docs/specs/` |
@@ -61,7 +79,8 @@ repository, split the first level of `docs/` by solution, then by role within ea
 
 ## Category notes
 
-- **`AGENTS.md` (rules)**: currently valid rules only — conventions, prohibitions, constraints, work rules. No rationale, history, or investigation memos; rationale goes to an ADR referenced from the rule. When rule text grows long, move the body to `docs/` and keep a pointer. Never duplicate a rule across files.
+- **`AGENTS.md` (router)**: repository and application descriptions, technology stack, the Applications table (rules ↔ specification paths), real commands, and reading/AUDIT instructions. No rule text — rule bodies live in `docs/rules/`. Never duplicate a rule across files.
+- **`docs/rules/`**: rule bodies in three layers — shared core (`standard.md`) and language files are distributed by dev-standards (managed header at the top; never edit, retrofit updates them from a pinned tag); application rules files are repository-authored and hold only deltas and overrides against the shared rules. The more specific file wins on conflict.
 - **`docs/adr/`**: the adopted decision plus reasoning, constraints, rejected alternatives, and revisit conditions. Body sections (Nygard-style): Context, Decision, Consequences (required); Alternatives considered, Revisit when (when they exist). A superseded ADR names its successor in front matter (`superseded-by`); an ADR stays an ADR — retired ones go to `docs/adr/archive/`, never `docs/archive/`.
 - **`docs/references/`**: durable facts that are hard to read from source alone: external API constraints, auth flows, data mappings, legacy caveats, domain vocabulary. Current-state architecture/design descriptions default here; promote to a dedicated category when numerous.
 - **`docs/investigations/`**: state matters — `active/` (ongoing) vs `closed/` (finished, still worth reading; not an archive). When finished, promote durable outcomes: rules → `AGENTS.md`, decisions → `docs/adr/`, procedures → `docs/guides/`, facts → `docs/references/`.
@@ -70,11 +89,13 @@ repository, split the first level of `docs/` by solution, then by role within ea
 
 ## Front matter
 
-Every document carries front matter with at least `created` and `status`. Two exemptions:
-in-progress plans under `docs/plans/` (front matter is added when archived), and ADRs,
-which do **not** carry `created` — the sequence number and git history already encode
-chronology, so ADR front matter is `status` only, plus `supersedes`/`superseded-by` when
-applicable. Never add `created` to an ADR.
+Every document carries front matter with at least `created` and `status`. Three
+exemptions: in-progress plans under `docs/plans/` (front matter is added when archived);
+ADRs, which do **not** carry `created` — the sequence number and git history already
+encode chronology, so ADR front matter is `status` only, plus `supersedes`/`superseded-by`
+when applicable (never add `created` to an ADR); and dev-standards-managed files under
+`docs/rules/`, which carry a managed header instead of front matter
+(repository-authored rules files carry standard front matter).
 
 ```yaml
 ---

@@ -1,8 +1,11 @@
+<!-- managed by elysion-ii/dev-standards v2.0.0 — do not edit; retrofit updates this file from a pinned tag -->
+
 # .NET Standards
 
-Language file for the `standards` skill. Read together with `SKILL.md` (the
-language-agnostic core). This file is token-free by design: concrete commands with real
-project names (`dotnet format <App>.slnx`, ...) live in each repository's `AGENTS.md`.
+Language rules file for .NET. Read together with `standard.md` (the language-agnostic
+core) in the same directory. This file is token-free by design: concrete commands with
+real project names (`dotnet format <App>.slnx`, ...) live in each repository's
+`AGENTS.md`.
 
 ## Enforcement matrix
 
@@ -126,7 +129,7 @@ When I/O targets may be network paths, perform all file reads/writes in local `%
 
 ## COMMENTS: Code Comments (C# specifics)
 
-The comment philosophy (when to write, what never to write) is in the core `SKILL.md`.
+The comment philosophy (when to write, what never to write) is in `standard.md`.
 C# specifics:
 
 - **Language:** English
@@ -136,4 +139,4 @@ C# specifics:
 
 - Test method names use `Method_Scenario_ExpectedResult` (e.g. `Merge_EmptyInput_ReturnsEmpty`)
 - Underscore separation is the official convention; for this reason CA1707 is suppressed via `<NoWarn>` in the test project's csproj
-- Test row ordering and the other testing principles are in the core `SKILL.md` Testing section
+- Test row ordering and the other testing principles are in the `standard.md` Testing section

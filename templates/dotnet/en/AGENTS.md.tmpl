@@ -2,8 +2,9 @@
 
 {{APP_NAME}} is a {{APP_TYPE_LABEL}} application targeting `{{TFM}}`.
 
-`CLAUDE.md` at the repository root is a one-line import of this file — this file is the
-single body of repository rules. Edit this file, never `CLAUDE.md`.
+`CLAUDE.md` at the repository root is a one-line import of this file. This file is the
+repository's router — facts, commands, and reading instructions; it holds no rule text.
+Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 ## Technology Stack
 
@@ -14,13 +15,20 @@ single body of repository rules. Edit this file, never `CLAUDE.md`.
 | UI | {{APP_UI_DESCRIPTION}} |
 | Distribution | Self-contained single EXE + Inno Setup installer |
 
-## Standards and AUDIT
+## Applications
 
-- **Before implementing any change**, read the `standards` skill (`SKILL.md` + `dotnet.md`), distributed in this repository at `.claude/skills/standards/` and `.agents/skills/standards/`
-- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the `standards` skill first, so all rules are loaded before code is written
-- **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of the skill's `SKILL.md`
-- **Before running any `gh pr merge`**, read the `merge-pr` skill (also distributed in this repository)
-- When rules in this file conflict with the skill, this file takes precedence
+| Application | Projects | Rules | Specification |
+|---|---|---|---|
+| {{APP_NAME}} | {{APP_NAME}}, {{APP_NAME}}.Tests | `docs/rules/{{APP_NAME}}.md` | `docs/specs/{{APP_NAME}}.md` |
+
+## Rules and AUDIT
+
+- **Before implementing any change**, read in order: `docs/rules/standard.md` (shared core), `docs/rules/dotnet.md` (.NET rules), then the application's rules file and specification from the Applications table. On conflict the more specific file wins (application > language > core)
+- When a change requires behavior not in the specification, update the specification **before** implementing (spec-first — see the Specifications section of `docs/rules/standard.md`)
+- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rules files first, so all rules are loaded before code is written
+- **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
+- **Before running any `gh pr merge`**, read the `merge-pr` skill (distributed in this repository at `.claude/skills/` and `.agents/skills/`)
+- `docs/rules/standard.md` and `docs/rules/dotnet.md` are managed by dev-standards — never edit them; repository- and application-specific rules go in `docs/rules/{{APP_NAME}}.md`
 
 ## Commands
 
@@ -53,13 +61,16 @@ Build scripts and installer configuration.
 
 ### `docs/`
 
-All non-source documents, placed in role-based subfolders (`adr/`, `specs/`, `guides/`,
-`references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`). Every
-document carries front matter (at least `created` and `status`; ADRs carry `status`
-only). Before creating, moving, renaming, or archiving any document — or when unsure
+All non-source documents, placed in role-based subfolders (`rules/`, `adr/`, `specs/`,
+`guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`).
+Every document carries front matter (at least `created` and `status`; ADRs carry
+`status` only; dev-standards-managed files under `docs/rules/` carry a managed header
+instead). Before creating, moving, renaming, or archiving any document — or when unsure
 where one belongs — read the `doc-placement` skill (also distributed in this repository)
 first. Do not classify or name documents from memory.
 
+- `docs/rules/` — rule bodies: `standard.md` + `dotnet.md` (managed by dev-standards) and `{{APP_NAME}}.md` (application rules)
+- `docs/specs/{{APP_NAME}}.md` — the {{APP_NAME}} specification: what it does
 - `docs/adr/` — Architecture Decision Records; retired ADRs move to `docs/adr/archive/`
 - `docs/plans/` and `docs/archive/plans/` — working area for plans, gitignored: plans never enter the repository, in progress or archived
 
@@ -69,7 +80,3 @@ first. Do not classify or name documents from memory.
 - Version bump: update `<Version>`, add a `## [x.y.z]` heading and entry to `CHANGELOG.md` if it exists, and include both in the **same commit**. Running `Installer.ps1` without the changelog heading fails at the gate
 - Semantic Versioning (MAJOR.MINOR.PATCH); during development `0.x.x` (release as `1.0.0`); MINOR: new features, PATCH: bug fixes and small changes
 
-## Repository Language
-
-- This file and all agent instruction files in this repository are written in **English only**
-- Keep rule content concise and declarative. Do NOT include concrete code examples unless absolutely necessary — reference the relevant source file/method instead

@@ -1,26 +1,27 @@
----
-name: standards
-description: Engineering standards shared across repositories — language-agnostic design principles, comment philosophy, testing principles, and Git conventions, plus per-language standards files (dotnet.md, ...) in this directory. Read BEFORE implementing any change, and run the AUDIT procedure at the end of this file before reporting an implementation task as complete.
----
+<!-- managed by elysion-ii/dev-standards v2.0.0 — do not edit; retrofit updates this file from a pinned tag -->
 
-# standards
+# Shared Engineering Standards (core)
 
-Shared engineering standards. This file is the language-agnostic core. Language-specific
-standards live in sibling files in this directory (`dotnet.md`, ...).
+Shared engineering standards, distributed into each repository at `docs/rules/`. This
+file is the language-agnostic core. Language-specific rules live in sibling files in the
+same directory (`dotnet.md`, ...); application-specific rules live in the application's
+rules file listed in the repository's `AGENTS.md` Applications table.
 
-## How to use this skill
+## How to use these rules
 
 1. Read this file.
-2. List the other `*.md` files in this directory and read every file that matches the
-   project's technology stack (a .NET repository reads `dotnet.md`; a multi-stack
-   repository reads all matching files). The repository's `AGENTS.md` states the stack
-   and the concrete commands (formatter, build, test).
-3. Each language file begins with an **enforcement matrix** stating which rules the
+2. Read every language file in this directory that matches the project's technology
+   stack (a .NET repository reads `dotnet.md`; a multi-stack repository reads all
+   matching files). The repository's `AGENTS.md` states the stack and the concrete
+   commands (formatter, build, test).
+3. Identify the application being changed in the `AGENTS.md` Applications table, then
+   read its rules file and its specification (`docs/specs/...`).
+4. Each language file begins with an **enforcement matrix** stating which rules the
    project scaffold enforces mechanically (analyzers, build gates) and which must be
    checked by AUDIT.
-4. When repository rules (`AGENTS.md`) conflict with this skill, repository rules take
-   precedence.
-5. Before reporting an implementation task as complete, run **AUDIT** (bottom of this
+5. Precedence on conflict: the more specific file wins — application rules > language
+   rules > this file. `AGENTS.md` holds no rule text; it only routes.
+6. Before reporting an implementation task as complete, run **AUDIT** (bottom of this
    file).
 
 ---
@@ -166,6 +167,15 @@ If the current code is clear without a comment, write no comment. If the reason 
 
 ---
 
+## Specifications
+
+- Each application has a specification (`docs/specs/...`, listed in the `AGENTS.md` Applications table) stating what the system must do: purpose, scope, users and external systems, required behavior, inputs and outputs, error behavior, invariants, non-functional requirements, and what is out of scope
+- Specifications describe behavior, not implementation: no class structures, libraries, or internal algorithms
+- **Spec-first**: when a change requires behavior not in the specification, update the specification before implementing. Never retro-fit the spec to the implementation afterwards
+- Requirement IDs are optional; when present, tests reference them so conformance to the specification is verifiable
+
+---
+
 ## Git
 
 ### Operation Language
@@ -208,7 +218,7 @@ complete**. Do not report completion until AUDIT passes.
 ### 1. Reload the rules
 
 - Re-read the root `AGENTS.md`, and any nested `AGENTS.md` covering the directories you touched
-- Re-read this file and every applicable language file in this directory (skim is enough if already read this session and unchanged)
+- Re-read this file, every applicable language file in this directory, and the rules files of the applications you touched (skim is enough if already read this session and unchanged)
 
 ### 2. Identify target files
 
@@ -230,7 +240,8 @@ of when it was introduced. Check each target file against:
 
 - The core principles in this file
 - Every language-file rule whose enforcement matrix row says **AUDIT** (skip rules marked as mechanically enforced — the build gate covers them; but if the repository lacks the enforcing mechanism, treat those rules as AUDIT items too)
-- Repository-specific rules from `AGENTS.md`
+- The application-specific rules from the application's rules file (and any other repository-authored files under `docs/rules/`)
+- The application's specification (`docs/specs/...`): implemented behavior must match it, and any needed spec change must have happened before the implementation, never as an after-the-fact edit
 
 ### 4. Run the mechanical gates
 
