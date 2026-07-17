@@ -30,22 +30,26 @@ repository is `docs/rules/dev-standards.md`; how to *release* is
 
 ## Required structure
 
+Everything distributed lives under `dist/` — the boundary between the product and the
+repository's own maintenance files is that single path prefix.
+
 | Path | Must contain |
 |------|--------------|
-| `rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, specification rules, Git conventions, and the AUDIT procedure |
-| `rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
-| `skills/` | Event-driven procedures only (`doc-placement`, `merge-pr`) — never standing rules, which belong in `rules/` |
-| `templates/AGENTS.md` | Generic router boilerplate for any repository |
-| `templates/dotnet/common/` | Language-independent scaffold files |
-| `templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
+| `dist/` | The entire consumption interface — nothing outside it is distributed |
+| `dist/rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, specification rules, Git conventions, and the AUDIT procedure |
+| `dist/rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
+| `dist/skills/` | Event-driven procedures only (`doc-placement`, `merge-pr`) — never standing rules, which belong in `dist/rules/` |
+| `dist/templates/AGENTS.md` | Generic router boilerplate for any repository |
+| `dist/templates/dotnet/common/` | Language-independent scaffold files |
+| `dist/templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
 | `docs/` | Documents about this repository itself |
 
 ## Distribution contract
 
-- `rules/*.md` are copied **byte-identical** into each consuming repository at
+- `dist/rules/*.md` are copied **byte-identical** into each consuming repository at
   `docs/rules/` — no front matter, no in-file markers, no token replacement. Local
   edits in consumers are detected by matching against this repository's tag history
-- `skills/*` are copied verbatim to both harness trees (`.claude/skills/` and
+- `dist/skills/*` are copied verbatim to both harness trees (`.claude/skills/` and
   `.agents/skills/`) of consuming repositories
 - Templates generate files by literal `{{TOKEN}}` replacement. The token set is part of
   this contract
@@ -73,13 +77,12 @@ repository is `docs/rules/dev-standards.md`; how to *release* is
   changed or removed token names
 - **MINOR**: new content — new rules, new language files, new templates
 - **PATCH**: fixes and wording corrections
-- Changes outside distributed content (`docs/`, `README.md`, `AGENTS.md`) need no tag
-  and ride along with the next release
+- Changes outside `dist/` need no tag and ride along with the next release
 
 ## Invariants
 
-- `templates/dotnet/en/` and `ja/` express the same content
-- `rules/` files are token-free and repository-agnostic
+- `dist/templates/dotnet/en/` and `ja/` express the same content
+- `dist/rules/` files are token-free and repository-agnostic
 - Distributed bytes at a tag never change after the tag is published
 
 ## Out of scope
