@@ -48,10 +48,12 @@ templates/
   `docs/specs/<App>...`, same identifier, declared in the Applications table. The
   scope rule generalizes to every docs category: directly under `docs/<category>/` =
   repository-wide; `<App>.md` or `<App>/` = application-specific.
-- **Managed vs. authored**: distributed files carry a
-  `managed by elysion-ii/dev-standards vX.Y.Z` header (the tag in which the file last
-  changed) and are never edited in consuming repositories — retrofit updates them from
-  a pinned tag. Application rules files and specifications are repository-authored.
+- **Managed vs. authored**: `standard.md` and the language files are distributed
+  **verbatim** (no in-file marker — each repository's `AGENTS.md` and the
+  `doc-placement` skill mark them as dev-standards-managed) and are never edited in
+  consuming repositories. Retrofit updates them from a pinned tag and detects local
+  edits by checking the existing file against the tag history. Application rules files
+  and specifications are repository-authored.
 - Only `skills/doc-placement/` and `skills/merge-pr/` are still distributed as skills
   (event-driven procedures), copied to `.claude/skills/` (Claude Code) and
   `.agents/skills/` (Codex, Antigravity).
@@ -74,9 +76,6 @@ retrofitting means "catch up to tag vX.Y.Z".
 - **MAJOR**: restructuring that breaks consumers (moved/renamed files, changed token names)
 - **MINOR**: new content (new rules, new language files, new templates)
 - **PATCH**: fixes and wording corrections
-
-When a release changes a file under `rules/`, update that file's managed header to the
-new tag in the same commit.
 
 ## License
 

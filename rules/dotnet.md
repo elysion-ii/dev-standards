@@ -1,5 +1,3 @@
-<!-- managed by elysion-ii/dev-standards v2.0.0 — do not edit; retrofit updates this file from a pinned tag -->
-
 # .NET Standards
 
 Language rules file for .NET. Read together with `standard.md` (the language-agnostic
@@ -31,6 +29,8 @@ mechanism is added.
 | CONSTANTS | No magic numbers/strings | — | AUDIT |
 | COMMENTS | C# comment style | — | AUDIT |
 | TESTNAME | xUnit test naming | — | AUDIT |
+| VERSION | Single version definition + CHANGELOG release gate | Installer script `#ifndef MyAppVersion → #error` guard; the installer build injects the version and gates on a CHANGELOG heading | AUDIT — the gates cover only the installer path; "no `<Version>` in a csproj" has no guard |
+| OUTPUT | No manual or committed build outputs | Output directories are gitignored by the scaffold | AUDIT — gitignore blocks commits, not manual additions |
 
 ---
 
@@ -140,3 +140,13 @@ C# specifics:
 - Test method names use `Method_Scenario_ExpectedResult` (e.g. `Merge_EmptyInput_ReturnsEmpty`)
 - Underscore separation is the official convention; for this reason CA1707 is suppressed via `<NoWarn>` in the test project's csproj
 - Test row ordering and the other testing principles are in the `standard.md` Testing section
+
+## VERSION: Version Management
+
+- **The version is defined ONLY in the `<Version>` tag of `Directory.Build.props`.** Never add `<Version>` to a csproj or `#define MyAppVersion` to the installer script — duplicate definitions are how versions drift out of sync. The EXE inherits it via MSBuild; the installer build injects it (the `.iss` fails with `#error` when it is not injected)
+- **Version bump**: update `<Version>`, add a `## [x.y.z]` heading and entry to `CHANGELOG.md` if it exists, and include both in the **same commit**. Building the installer without the changelog heading fails at the gate
+- Semantic Versioning (MAJOR.MINOR.PATCH); during development `0.x.x` (release as `1.0.0`); MINOR: new features, PATCH: bug fixes and small changes
+
+## OUTPUT: Build Outputs
+
+- **Never manually add files to build output directories, and never commit them** — outputs are produced only by the build scripts (the scaffold gitignores the output directories; `AGENTS.md` names them)

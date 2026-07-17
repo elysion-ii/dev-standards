@@ -35,7 +35,7 @@ docs/
   plans/                    in-progress work plans (working area, gitignored)
   inbox/                    unclassified documents awaiting triage
   archive/                  retired non-ADR documents, mirrored by category
-    specs/ guides/ references/ investigations/ notes/ plans/
+    rules/ specs/ guides/ references/ investigations/ notes/ plans/
 ```
 
 The category set is extensible: a project may add role subfolders (e.g., `docs/design/`)
@@ -51,12 +51,18 @@ repository-wide; a document at `docs/<category>/<App>.md` or under
 directory are equivalent scope markers — pick per category by file count; shapes may
 differ between categories. Use the same application identifier in every category.
 
+- The identifier is chosen per repository (matching the solution/project name is
+  recommended, not required) and is used **verbatim** — it is exempt from the
+  kebab-case naming rule
 - Application rules (`docs/rules/<App>...`) and the specification
   (`docs/specs/<App>...`) are a mandatory pair, declared with explicit paths in the
   `AGENTS.md` Applications table. App-splitting any other category is optional
 - ADR numbering is per directory: `docs/adr/` and `docs/adr/<App>/` hold independent
   sequences (each scope numbers across its active and archived ADRs). Retired
   app-scoped ADRs go to `docs/adr/archive/<App>/`
+- When an application is retired, its rules file and specification move to
+  `docs/archive/rules/` and `docs/archive/specs/`; dev-standards-managed files are
+  never archived
 
 ## Placement decision table
 
@@ -80,7 +86,7 @@ differ between categories. Use the same application identifier in every category
 ## Category notes
 
 - **`AGENTS.md` (router)**: repository and application descriptions, technology stack, the Applications table (rules ↔ specification paths), real commands, and reading/AUDIT instructions. No rule text — rule bodies live in `docs/rules/`. Never duplicate a rule across files.
-- **`docs/rules/`**: rule bodies in three layers — shared core (`standard.md`) and language files are distributed by dev-standards (managed header at the top; never edit, retrofit updates them from a pinned tag); application rules files are repository-authored and hold only deltas and overrides against the shared rules. The more specific file wins on conflict.
+- **`docs/rules/`**: rule bodies in three layers — shared core (`standard.md`) and language files are distributed verbatim by dev-standards (never edit them; retrofit updates them from a pinned tag and reports local edits); application rules files are repository-authored and hold only deltas and overrides against the shared rules. The more specific file wins on conflict.
 - **`docs/adr/`**: the adopted decision plus reasoning, constraints, rejected alternatives, and revisit conditions. Body sections (Nygard-style): Context, Decision, Consequences (required); Alternatives considered, Revisit when (when they exist). A superseded ADR names its successor in front matter (`superseded-by`); an ADR stays an ADR — retired ones go to `docs/adr/archive/`, never `docs/archive/`.
 - **`docs/references/`**: durable facts that are hard to read from source alone: external API constraints, auth flows, data mappings, legacy caveats, domain vocabulary. Current-state architecture/design descriptions default here; promote to a dedicated category when numerous.
 - **`docs/investigations/`**: state matters — `active/` (ongoing) vs `closed/` (finished, still worth reading; not an archive). When finished, promote durable outcomes: rules → `docs/rules/` (the application rules file), decisions → `docs/adr/`, procedures → `docs/guides/`, facts → `docs/references/`.
@@ -94,8 +100,9 @@ exemptions: in-progress plans under `docs/plans/` (front matter is added when ar
 ADRs, which do **not** carry `created` — the sequence number and git history already
 encode chronology, so ADR front matter is `status` only, plus `supersedes`/`superseded-by`
 when applicable (never add `created` to an ADR); and dev-standards-managed files under
-`docs/rules/`, which carry a managed header instead of front matter
-(repository-authored rules files carry standard front matter).
+`docs/rules/`, which carry no front matter — they are distributed verbatim and
+version-managed by the pinned dev-standards tag (repository-authored rules files carry
+standard front matter).
 
 ```yaml
 ---
@@ -118,6 +125,7 @@ Do not invent other values. Optional fields: `last-reviewed`, `topics`,
 ## Naming
 
 - Lowercase kebab-case describing the content: `database-migration.md`, `authentication-flow.md`.
+- **Application identifiers are exempt**: `<App>.md` files and `<App>/` directories use the identifier verbatim, exactly as declared in the `AGENTS.md` Applications table (see Application scope).
 - Never content-free names: `memo.md`, `temp.md`, `note1.md`, `misc.md`.
 - No sequential numbering for general documents (`0001-`) — chronology belongs in `git log`.
 - **ADRs are the exception**, following the community convention: `NNNN-description.md` with a 4-digit zero-padded number. Numbers are immutable IDs allocated append-only: next = highest existing number across `docs/adr/` **and** `docs/adr/archive/` + 1. Never renumber and never fill gaps.

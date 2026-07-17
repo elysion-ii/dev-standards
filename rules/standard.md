@@ -1,5 +1,3 @@
-<!-- managed by elysion-ii/dev-standards v2.0.0 — do not edit; retrofit updates this file from a pinned tag -->
-
 # Shared Engineering Standards (core)
 
 Shared engineering standards, distributed into each repository at `docs/rules/`. This
@@ -181,7 +179,7 @@ If the current code is clear without a comment, write no comment. If the reason 
 ### Operation Language
 
 - Write all Git-related text in English by default: commit messages, branch names, PR titles and descriptions, tags, and the like
-- If repository rules specify another language (e.g., Japanese), follow the repository rules instead
+- If the application rules file specifies another language (e.g., Japanese), follow it instead
 - When no language is specified, English is the default
 
 ### Commit Format
@@ -191,7 +189,7 @@ If the current code is clear without a comment, write no comment. If the reason 
 
 ### Merge Strategy
 
-- Merge PRs with `--squash` by default; use `--merge` / `--rebase` only when explicitly instructed or specified by repository rules
+- Merge PRs with `--squash` by default; use `--merge` / `--rebase` only when explicitly instructed or specified by the application rules file
 
 ### Squash Commit Message Composition
 
