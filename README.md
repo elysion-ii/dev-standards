@@ -1,9 +1,9 @@
 # dev-standards
 
-Shared engineering standards and project templates, consumed by scaffolding tools
-(`init-dotnet-app` / `retrofit-dotnet-app` skills). Rule bodies are distributed into
-each repository at `docs/rules/`; event-driven procedures (`doc-placement`, `merge-pr`)
-are distributed as agent skills.
+Shared engineering standards and project templates, consumed by scaffolding and
+retrofit tooling that clones this repository at a pinned tag. Rule bodies are
+distributed into each repository at `docs/rules/`; event-driven procedures
+(`doc-placement`, `merge-pr`) are distributed as agent skills.
 
 ## Structure
 
