@@ -23,7 +23,7 @@ repository is `docs/rules/dev-standards.md`; how to *release* is
 ## Consumers
 
 - Scaffolding tooling: generates a new repository from `dist/templates/` and
-  distributes `dist/rules/` and `dist/skills/`
+  distributes `dist/rules/`
 - Retrofit tooling: brings an existing repository up to a newer tag
 - Agent harnesses (Claude Code, Codex, Antigravity): read the distributed files inside
   consuming repositories, not this repository directly
@@ -36,9 +36,10 @@ repository's own maintenance files is that single path prefix.
 | Path | Must contain |
 |------|--------------|
 | `dist/` | The entire consumption interface — nothing outside it is distributed |
-| `dist/rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, specification rules, Git conventions, and the AUDIT procedure |
+| `dist/rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, the spec-first principle, and the AUDIT procedure |
+| `dist/rules/documentation.md` | Task-specific rule file for documentation work: document responsibility, classification, placement, naming, front matter, specification content and structure, and document lifecycle |
+| `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
 | `dist/rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
-| `dist/skills/` | Event-driven procedures only (`doc-placement`, `merge-pr`) — never standing rules, which belong in `dist/rules/` |
 | `dist/templates/AGENTS.md` | Generic router boilerplate for any repository |
 | `dist/templates/dotnet/common/` | Language-independent scaffold files |
 | `dist/templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
@@ -49,8 +50,6 @@ repository's own maintenance files is that single path prefix.
 - `dist/rules/*.md` are copied **byte-identical** into each consuming repository at
   `docs/rules/` — no front matter, no in-file markers, no token replacement. Local
   edits in consumers are detected by matching against this repository's tag history
-- `dist/skills/*` are copied verbatim to both harness trees (`.claude/skills/` and
-  `.agents/skills/`) of consuming repositories
 - Templates generate files by literal `{{TOKEN}}` replacement. The token set is part of
   this contract
 - Every generated repository receives the pair `docs/rules/<App>.md` ↔
@@ -59,9 +58,12 @@ repository's own maintenance files is that single path prefix.
 
 ## Placement model (what consumers end up with)
 
-- Rule bodies live only in `docs/rules/`, in three layers applied in order:
-  `standard.md` → language files → application rules files; the more specific file wins
-  on conflict
+- Rule bodies live only in `docs/rules/`. Three layers are always read, applied in
+  order: `standard.md` (core) → language files → application rules file; the more
+  specific layer wins on conflict. Two more are task-specific rule files, read in
+  addition only when that kind of work is underway: `documentation.md` for creating,
+  changing, moving, renaming, archiving, or deleting any document; `git.md` for any
+  Git write operation or PR operation
 - `AGENTS.md` is the only router: facts, commands, Applications table, reading and
   AUDIT instructions
 - Scope rule for every docs category: directly under `docs/<category>/` =
