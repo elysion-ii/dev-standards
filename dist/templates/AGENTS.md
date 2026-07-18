@@ -51,10 +51,10 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 All non-source documents, placed in role-based subfolders (`rules/`, `adr/`, `specs/`,
 `guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`).
-Before creating, moving, renaming, or archiving any document — or when unsure where one
-belongs — read `docs/rules/documentation.md` (also distributed in this repository)
-first; it defines placement, naming, and front matter. Do not classify or name
-documents from memory.
+Before creating, changing, moving, renaming, archiving, or deleting any document — or
+when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
+in this repository) first; it defines placement, naming, and front matter. Do not
+classify or name documents from memory.
 
 - `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, and language files (managed by dev-standards) and the application rules files
 - `docs/specs/` — application specifications
