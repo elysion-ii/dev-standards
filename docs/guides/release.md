@@ -5,9 +5,18 @@ created: 2026-07-17
 
 # Release Procedure
 
-A tag is needed only when distributed content (`dist/`)
-changed — `docs/`, `README.md`, and `AGENTS.md` changes ride along with the next
-release.
+This is this repository's own addition on top of the generic `gh pr merge` procedure in
+`dist/rules/git.md`: after merging a PR (or landing any change on `main`), decide
+whether a release is due.
+
+## When a release is due
+
+- The change touched anything under `dist/` → a release is due. Follow the procedure
+  below.
+- The change touched only `docs/`, `README.md`, or `AGENTS.md` → no tag is due; the
+  change rides along with the next release.
+
+## Procedure
 
 1. For template changes, verify `dist/templates/dotnet/en/` ↔ `ja/` parity (same structure
    and meaning; see `docs/rules/dev-standards.md`).
