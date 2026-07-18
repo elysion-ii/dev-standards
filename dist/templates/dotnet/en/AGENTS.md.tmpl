@@ -24,11 +24,12 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 ## Rules and AUDIT
 
 - **Before implementing any change**, read in order: `docs/rules/standard.md` (shared core), `docs/rules/dotnet.md` (.NET rules), then the application's rules file and specification from the Applications table. On conflict the more specific file wins (application > language > core)
+- **Before creating, changing, moving, renaming, archiving, or deleting any document**, also read `docs/rules/documentation.md`
+- **Before any Git write operation or PR operation** (commit, branch, push, PR creation, update, or merge), also read `docs/rules/git.md`
 - When a change requires behavior not in the specification, update the specification **before** implementing (spec-first — see the Specifications section of `docs/rules/standard.md`)
 - **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rules files first, so all rules are loaded before code is written
 - **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
-- **Before running any `gh pr merge`**, read the `merge-pr` skill (distributed in this repository at `.claude/skills/` and `.agents/skills/`)
-- `docs/rules/standard.md` and `docs/rules/dotnet.md` are managed by dev-standards — never edit them; repository- and application-specific rules go in `docs/rules/{{APP_NAME}}.md`
+- `docs/rules/standard.md`, `docs/rules/documentation.md`, `docs/rules/git.md`, and `docs/rules/dotnet.md` are managed by dev-standards — never edit them; repository- and application-specific rules go in `docs/rules/{{APP_NAME}}.md`
 
 ## Commands
 
@@ -64,11 +65,11 @@ Build scripts and installer configuration.
 All non-source documents, placed in role-based subfolders (`rules/`, `adr/`, `specs/`,
 `guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`).
 Before creating, moving, renaming, or archiving any document — or when unsure where one
-belongs — read the `doc-placement` skill (also distributed in this repository) first; it
-defines placement, naming, and front matter. Do not classify or name documents from
-memory.
+belongs — read `docs/rules/documentation.md` (also distributed in this repository)
+first; it defines placement, naming, and front matter. Do not classify or name
+documents from memory.
 
-- `docs/rules/` — rule bodies: `standard.md` + `dotnet.md` (managed by dev-standards) and `{{APP_NAME}}.md` (application rules)
+- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md` + `dotnet.md` (managed by dev-standards) and `{{APP_NAME}}.md` (application rules)
 - `docs/specs/{{APP_NAME}}.md` — the {{APP_NAME}} specification: what it does
 - `docs/adr/` — Architecture Decision Records; retired ADRs move to `docs/adr/archive/`
 - `docs/plans/` and `docs/archive/plans/` — working area for plans, gitignored: plans never enter the repository, in progress or archived

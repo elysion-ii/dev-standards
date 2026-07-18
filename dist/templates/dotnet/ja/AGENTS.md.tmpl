@@ -24,11 +24,12 @@
 ## 規則とAUDIT
 
 - **実装に着手する前に**、次の順で読むこと: `docs/rules/standard.md`(共有コア)→ `docs/rules/dotnet.md`(.NET規則)→ 上のアプリケーション表にある対象アプリの規則ファイルと仕様書。矛盾する場合はより具体的なファイルが優先される(アプリ > 言語 > コア)
+- **ドキュメントの作成・変更・移動・改名・アーカイブまたは削除の前に**、`docs/rules/documentation.md` も読むこと
+- **Gitの書き込み操作またはPR操作(commit・branch・push・PRの作成/更新/merge)の前に**、`docs/rules/git.md` も読むこと
 - 仕様書にない振る舞いが必要な変更は、**実装前に**仕様書を変更すること(spec-first — `docs/rules/standard.md` の Specifications 節を参照)
 - **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と規則ファイルを再読込してから実装に着手すること
 - **実装タスクの完了を報告する前に**、`docs/rules/standard.md` 末尾のAUDIT手順を実行すること
-- **`gh pr merge` を実行する前に**、`merge-pr` skill(本リポジトリの `.claude/skills/`・`.agents/skills/` に配布済み)を読むこと
-- `docs/rules/standard.md` と `docs/rules/dotnet.md` は dev-standards の管理ファイルであり、編集してはならない。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
+- `docs/rules/standard.md`・`docs/rules/documentation.md`・`docs/rules/git.md`・`docs/rules/dotnet.md` は dev-standards の管理ファイルであり、編集してはならない。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
 
 ## コマンド
 
@@ -63,9 +64,9 @@ xUnit テストプロジェクト。
 
 ソースコード以外のドキュメント置き場。役割別のサブフォルダ(`rules/`, `adr/`, `specs/`,
 `guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`)に配置する。
-ドキュメントの新規作成・移動・リネーム・アーカイブの前(配置に迷ったときも)には、必ず `doc-placement` skill(本リポジトリに配布済み)を読むこと。配置・命名・front matter はそこで定義されている。記憶で分類・命名しない。
+ドキュメントの新規作成・移動・リネーム・アーカイブの前(配置に迷ったときも)には、必ず `docs/rules/documentation.md`(本リポジトリに配布済み)を読むこと。配置・命名・front matter はそこで定義されている。記憶で分類・命名しない。
 
-- `docs/rules/` — 規則本文: `standard.md` + `dotnet.md`(dev-standards 管理)と `{{APP_NAME}}.md`(アプリ固有規則)
+- `docs/rules/` — 規則本文: `standard.md`・`documentation.md`・`git.md` + `dotnet.md`(dev-standards 管理)と `{{APP_NAME}}.md`(アプリ固有規則)
 - `docs/specs/{{APP_NAME}}.md` — {{APP_NAME}} の仕様書: 何をするか
 - `docs/adr/` — ADR (Architecture Decision Record)。退役した ADR は `docs/adr/archive/` へ移動する
 - `docs/plans/` と `docs/archive/plans/` — 計画書の作業領域。git管理外: 計画書は作業中・退避後を問わずリポジトリに入れない
