@@ -1,5 +1,6 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0002-retire-distributed-skills
 ---
 
 # Distribute Rule Bodies as Documents in docs/rules, with AGENTS.md as the Only Router
