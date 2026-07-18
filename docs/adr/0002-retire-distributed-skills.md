@@ -16,8 +16,7 @@ decision tables, naming conventions, front-matter schemas, commit and merge conv
 — with only a thin sequence of `gh` commands genuinely event-driven. Distributing them
 as skills required two identical copies per repository (`.claude/skills/`,
 `.agents/skills/`), duplicated the reasoning ADR 0001 rejected for rule bodies, and left
-a growing set of Claude-Code-specific and Codex-specific synchronization skills
-(`sync-skills-to-codex`, `sync-to-chezmoi`, `sync-permissions-to-codex`) responsible for
+a growing set of user-specific, harness-side synchronization tooling responsible for
 keeping them in parity across harnesses and persistence layers.
 
 ## Decision
