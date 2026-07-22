@@ -40,7 +40,7 @@ repository's own maintenance files is that single path prefix.
 | `dist/rules/documentation.md` | Task-specific rule file for documentation work: document responsibility, classification, placement, naming, front matter, specification content and structure, and document lifecycle |
 | `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
 | `dist/rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
-| `dist/templates/shared/` | Stack-agnostic templates: generic router `AGENTS.md` (any repository) and `settings.json.tmpl` (shared Claude Code hooks — session-start rule loading and a pre-commit AUDIT reminder) |
+| `dist/templates/shared/` | Stack-agnostic templates: generic router `AGENTS.md` (any repository), `settings.json.tmpl` (shared Claude Code hooks — session-start rule loading and a pre-commit AUDIT reminder), and `hooks.json.tmpl` (Codex hooks — a session-start hook that lists `docs/rules/` for loading and a pre-commit AUDIT reminder) |
 | `dist/templates/dotnet/common/` | Language-independent scaffold files |
 | `dist/templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
 | `docs/` | Documents about this repository itself |
