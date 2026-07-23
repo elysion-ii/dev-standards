@@ -6,8 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "find docs/rules -type f 2>/dev/null | sort | sed 's/^/Read file: /'",
-            "commandWindows": "if (Test-Path docs/rules) { Get-ChildItem -Recurse -File docs/rules | Sort-Object FullName | ForEach-Object { 'Read file: ' + $_.FullName.Substring($PWD.Path.Length + 1).Replace([char]92,'/') } }",
+            "command": "printf '%s\\n\\n' 'MANDATORY: Before you answer, plan, or run any other tool this session, read EVERY file below IN FULL using your file-reading tool. Do not do anything else until all are read:'; find docs/rules -type f 2>/dev/null | sort",
+            "commandWindows": "Write-Output 'MANDATORY: Before you answer, plan, or run any other tool this session, read EVERY file below IN FULL using your file-reading tool. Do not do anything else until all are read:'; Write-Output ''; if (Test-Path docs/rules) { Get-ChildItem -Recurse -File docs/rules | Sort-Object FullName | ForEach-Object { $_.FullName.Substring($PWD.Path.Length + 1).Replace([char]92,'/') } }",
             "timeout": 10,
             "statusMessage": "Loading project rules"
           }
@@ -20,10 +20,10 @@
         "hooks": [
           {
             "type": "command",
-            "command": "in=$(cat); if printf '%s' \"$in\" | grep -Eq 'git[^A-Za-z]{1,4}commit'; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"Before committing: read the AUDIT procedure in the rule files under docs/rules/ and confirm all steps have been completed.\"}}'; fi",
-            "commandWindows": "$in = [Console]::In.ReadToEnd(); if ($in -match 'git[^A-Za-z]{1,4}commit') { '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"Before committing: read the AUDIT procedure in the rule files under docs/rules/ and confirm all steps have been completed.\"}}' }",
+            "command": "in=$(cat); if printf '%s' \"$in\" | grep -Eq 'git[^A-Za-z]{1,4}commit' && ! printf '%s' \"$in\" | grep -q 'audit\\.ok=true'; then printf '%s' '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"AUDIT not confirmed. Run the AUDIT procedure in docs/rules and fix issues; if already complete, re-run with: git -c audit.ok=true commit\"}}'; fi",
+            "commandWindows": "$in = [Console]::In.ReadToEnd(); if ($in -match 'git[^A-Za-z]{1,4}commit' -and $in -notmatch 'audit\\.ok=true') { '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"AUDIT not confirmed. Run the AUDIT procedure in docs/rules and fix issues; if already complete, re-run with: git -c audit.ok=true commit\"}}' }",
             "timeout": 10,
-            "statusMessage": "Audit reminder"
+            "statusMessage": "Audit gate"
           }
         ]
       }
