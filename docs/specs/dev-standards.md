@@ -36,7 +36,7 @@ repository's own maintenance files is that single path prefix.
 | Path | Must contain |
 |------|--------------|
 | `dist/` | The entire consumption interface — nothing outside it is distributed |
-| `dist/rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, the spec-first principle, and the AUDIT procedure |
+| `dist/rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, the spec-first principle, procedure-design principles, and the AUDIT procedure |
 | `dist/rules/documentation.md` | Task-specific rule file for documentation work: document responsibility, classification, placement, naming, front matter, specification content and structure, and document lifecycle |
 | `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
 | `dist/rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
