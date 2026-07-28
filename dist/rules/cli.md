@@ -31,7 +31,7 @@ checks them.
 | EXITCODES | 0 success / 1 runtime error / 2 usage error | — | AUDIT |
 | ERRORMSG | `app: <message>` on stderr, with a `--help` hint on usage errors | — | AUDIT |
 | CONFIG | Precedence: options > environment variables > config file > built-in defaults | — | AUDIT |
-| COMPAT | Published option names, subcommand names, and exit-code meanings never break | — | AUDIT |
+| COMPAT | Avoid incompatible changes; a warranted rename replaces the old name outright | — | AUDIT |
 
 ## SYNTAX: Command Structure
 
@@ -196,8 +196,8 @@ Precedence, strongest first:
 
 ## COMPAT: Compatibility
 
-- Once published, option names, subcommand names, and exit-code meanings never change incompatibly
-- To rename, keep the old name as deprecated for a transition period and warn when it is used
+- Avoid incompatible changes to published option names, subcommand names, and exit-code meanings
+- When a rename is warranted, replace the old name outright — no deprecation period, no warning phase, no old-name alias
 - To guarantee machine-readable output, provide `--format json` and state that the plain-text output's stability is not guaranteed
 
 ## Checklist
