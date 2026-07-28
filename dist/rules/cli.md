@@ -145,7 +145,7 @@ The `--help` output contains:
 2. Usage (`Usage: app <command> [options]`)
 3. The subcommand list (when subcommands exist)
 4. The option list (short form, long form, description)
-5. One to three representative usage examples
+5. One to three representative usage examples (when an example shows more than the usage line already does — a leaf command with no arguments or options needs none)
 
 ### Behavior without arguments
 
