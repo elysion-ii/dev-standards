@@ -8,7 +8,7 @@ internal static class Program
 
     private static int Main(string[] args)
     {
-        // --help/-h and --version/-V are mandatory (docs/rules/cli.md, RESERVED)
+        // --version/-V is mandatory; --help/-h is seeded alongside it (docs/rules/cli.md, RESERVED)
         if (args.Length > 0 && args[0].StartsWith('-'))
         {
             switch (args[0])

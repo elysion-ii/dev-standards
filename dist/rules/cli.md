@@ -9,8 +9,8 @@ plus subcommands.
 
 This file is **not a list of features to implement**. It is the naming and syntax
 standard to follow when adding an option or a subcommand. Except for the mandatory
-`--help` and `--version`, implement an option only when the application provides the
-corresponding feature.
+`--version`, implement an option only when the application provides the corresponding
+feature.
 
 ## Enforcement matrix
 
@@ -23,7 +23,7 @@ checks them.
 |----|------|-----------|-------|
 | SYNTAX | `app [global-options] <command> [command-options] [arguments]` | — | AUDIT |
 | OPTIONS | Long form for every option; short forms only for frequent options | — | AUDIT |
-| RESERVED | `--help`/`-h` and `--version`/`-V` are mandatory; `-v`/`-q` are reserved | — | AUDIT — scaffolds may seed the implementation; nothing guards its removal |
+| RESERVED | `--version`/`-V` is mandatory; `--help`/`-h`, `-v`, `-q` are reserved names | — | AUDIT — scaffolds may seed the implementation; nothing guards its removal |
 | VERSIONOUT | `--version` prints `appname X.Y.Z` — bare version, no build metadata | The stack's version-management rules keep the source value clean (e.g., `dotnet.md` VERSION) | AUDIT |
 | SUBCOMMANDS | Subcommand structure, naming, and cross-command consistency | — | AUDIT |
 | HELP | Help content and per-level `--help` | — | AUDIT |
@@ -77,12 +77,11 @@ app build -- --strange-filename
 ## RESERVED: Reserved Options
 
 The table below is a name reservation, not an implementation demand: **when the feature
-exists, it uses this name and short form**. Only `--help`/`-h` and `--version`/`-V` are
-mandatory.
+exists, it uses this name and short form**. Only `--version`/`-V` is mandatory.
 
 | Long form | Short | Behavior | Implementation |
 |---|---|---|---|
-| `--help` | `-h` | Print help and exit | Mandatory |
+| `--help` | `-h` | Print help and exit | Only with a help feature (recommended) |
 | `--version` | `-V` | Print the version and exit | Mandatory |
 | `--verbose` | `-v` | Enable detailed output | Only with a verbose-output feature |
 | `--quiet` | `-q` | Suppress all output except warnings | Only with an output-suppression feature |
@@ -127,6 +126,9 @@ one:
 
 ## HELP: Help Output
 
+This section applies when `--help` is implemented (RESERVED: recommended, not
+mandatory).
+
 ### Per-level `--help`
 
 `--help` works at every level:
@@ -150,7 +152,7 @@ The `--help` output contains:
 ### Behavior without arguments
 
 - When running with no arguments has no meaningful behavior, print a brief usage and exit with code 2
-- Not the full help: only the `Usage:` line plus a "see `--help`" pointer
+- Not the full help: only the `Usage:` line plus, when `--help` is implemented, a "see `--help`" pointer
 
 ## STREAMS: Standard Output and Standard Error
 
@@ -171,7 +173,7 @@ The `--help` output contains:
 ## ERRORMSG: Error Messages
 
 - Errors go to standard error in the form `app: <message>`
-- On an invalid option, print the error and a `--help` pointer:
+- On an invalid option, print the error and, when `--help` is implemented, a `--help` pointer:
 
 ```
 app: unknown option '--outpt'
@@ -202,11 +204,11 @@ Precedence, strongest first:
 
 Before publishing a new CLI, confirm:
 
-- [ ] `--help` / `-h` and `--version` / `-V` work
+- [ ] `--version` / `-V` works (and `--help` / `-h`, when implemented)
 - [ ] `--version` prints `appname X.Y.Z` with no build metadata (unless the application rules file overrides the format)
 - [ ] Every option has a long form
 - [ ] Everything after `--` is treated as arguments
-- [ ] `--help` works under each subcommand
+- [ ] `--help`, when implemented, works under each subcommand
 - [ ] Same-named options mean the same thing across all subcommands
 - [ ] Results go to stdout; logs and errors go to stderr
 - [ ] Exit codes follow the 0 / 1 / 2 contract
