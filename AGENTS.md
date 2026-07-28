@@ -13,7 +13,7 @@ repository's router — facts and reading instructions; it holds no rule text.
 | Path | Content |
 |------|---------|
 | `dist/` | **Everything distributed** — nothing outside it ships to consumers |
-| `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
+| `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `cli.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
 | `dist/templates/` | Scaffold templates with literal `{{TOKEN}}` placeholders |
 | `docs/` | Documents about this repository itself (rules for editing it, ADRs, guides) |
 

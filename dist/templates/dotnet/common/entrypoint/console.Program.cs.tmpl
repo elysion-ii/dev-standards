@@ -1,10 +1,49 @@
+using System.Reflection;
+
 namespace {{APP_NAME}};
 
 internal static class Program
 {
+    private const string AppName = "{{APP_NAME}}";
+
     private static int Main(string[] args)
     {
-        Console.WriteLine("Hello from {{APP_NAME}}");
+        // --help/-h and --version/-V are mandatory (docs/rules/cli.md, RESERVED)
+        if (args.Length > 0 && args[0].StartsWith('-'))
+        {
+            switch (args[0])
+            {
+                case "--help" or "-h":
+                    PrintHelp();
+                    return 0;
+                case "--version" or "-V":
+                    Console.WriteLine($"{AppName} {GetVersion()}");
+                    return 0;
+                default:
+                    Console.Error.WriteLine($"{AppName}: unknown option '{args[0]}'");
+                    Console.Error.WriteLine($"Try '{AppName} --help' for more information.");
+                    return 2;
+            }
+        }
+
+        Console.WriteLine($"Hello from {AppName}");
         return 0;
+    }
+
+    private static string GetVersion() =>
+        // Equals <Version> in Directory.Build.props (docs/rules/dotnet.md, VERSION)
+        Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion ?? "0.0.0";
+
+    private static void PrintHelp()
+    {
+        Console.WriteLine($"{AppName} - console application");
+        Console.WriteLine();
+        Console.WriteLine($"Usage: {AppName} [options]");
+        Console.WriteLine();
+        Console.WriteLine("Options:");
+        Console.WriteLine("  -h, --help     Print help and exit");
+        Console.WriteLine("  -V, --version  Print the version and exit");
     }
 }

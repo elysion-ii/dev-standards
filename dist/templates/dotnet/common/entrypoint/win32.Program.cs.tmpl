@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace {{APP_NAME}};
@@ -10,7 +11,11 @@ internal static partial class Program
     [STAThread]
     private static int Main()
     {
-        MessageBox(IntPtr.Zero, "Hello from {{APP_NAME}}", "{{APP_NAME}}", 0);
+        // "AppName X.Y.Z" in the window caption (docs/rules/standard.md, Version Display)
+        var version = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion ?? "0.0.0";
+        MessageBox(IntPtr.Zero, "Hello from {{APP_NAME}}", $"{{APP_NAME}} {version}", 0);
         return 0;
     }
 }

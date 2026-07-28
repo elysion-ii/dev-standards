@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Windows;
 
 namespace {{APP_NAME}};
@@ -7,5 +8,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // "AppName X.Y.Z" in the title bar (docs/rules/standard.md, Version Display)
+        var version = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion ?? "0.0.0";
+        Title = $"{{APP_NAME}} {version}";
     }
 }

@@ -39,6 +39,7 @@ repository's own maintenance files is that single path prefix.
 | `dist/rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, the spec-first principle, procedure-design principles, and the AUDIT procedure |
 | `dist/rules/documentation.md` | Task-specific rule file for documentation work: document responsibility, classification, placement, naming, front matter, specification content and structure, and document lifecycle |
 | `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
+| `dist/rules/cli.md` | Interface-specific rule file for applications that expose a command-line interface: option and subcommand naming and syntax, help, output streams, exit codes, configuration precedence, and version output. Stack-agnostic; starts with an enforcement matrix like the language files |
 | `dist/rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
 | `dist/templates/shared/` | Stack-agnostic templates: generic router `AGENTS.md` (any repository), plus `settings.json.tmpl` (Claude Code hooks) and `hooks.json.tmpl` (Codex hooks) — each carrying a session-start hook that directs the agent to read `docs/rules/` in full before acting, and a pre-commit hook that blocks `git commit` until the AUDIT procedure is confirmed |
 | `dist/templates/dotnet/common/` | Language-independent scaffold files |
@@ -60,7 +61,9 @@ repository's own maintenance files is that single path prefix.
 
 - Rule bodies live only in `docs/rules/`. Three layers are always read, applied in
   order: `standard.md` (core) → language files → application rules file; the more
-  specific layer wins on conflict. Two more are task-specific rule files, read in
+  specific layer wins on conflict. `cli.md` joins the chain at the language-file level
+  whenever the application being changed exposes a command-line interface. Two more are
+  task-specific rule files, read in
   addition only when that kind of work is underway: `documentation.md` for creating,
   changing, moving, renaming, archiving, or deleting any document; `git.md` for any
   Git write operation or PR operation

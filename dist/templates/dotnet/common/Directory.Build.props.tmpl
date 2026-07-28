@@ -7,6 +7,11 @@
          Inno Setup script, and checks CHANGELOG.md (if present) for an entry. -->
     <Version>{{APP_VERSION}}</Version>
 
+    <!-- Keep AssemblyInformationalVersion equal to <Version>: the SDK otherwise
+         appends "+<git sha>", and the displayed version must stay "AppName X.Y.Z"
+         (see docs/rules/standard.md, Version Display). -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
