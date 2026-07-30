@@ -12,7 +12,8 @@ public sealed partial class MainWindow : Window
         // "AppName X.Y.Z" in the title bar (docs/rules/standard.md, Version Display)
         var version = Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion ?? "0.0.0";
+            .InformationalVersion
+            ?? throw new InvalidOperationException("Version attribute missing - the displayed version comes from <Version> in Directory.Build.props");
         Title = $"{{APP_NAME}} {version}";
     }
 }

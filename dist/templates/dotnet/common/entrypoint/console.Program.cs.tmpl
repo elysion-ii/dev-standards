@@ -5,11 +5,13 @@ namespace {{APP_NAME}};
 internal static class Program
 {
     private const string AppName = "{{APP_NAME}}";
+    private const int ExitCodeUsageError = 2;
 
     private static int Main(string[] args)
     {
-        // --version/-V is mandatory; --help/-h is seeded alongside it (docs/rules/cli.md, RESERVED)
-        if (args.Length > 0 && args[0].StartsWith('-'))
+        // --version/-V is mandatory; --help/-h is seeded alongside it (docs/rules/cli.md, RESERVED).
+        // "--" ends option parsing: everything after it is arguments (docs/rules/cli.md, OPTIONS)
+        if (args.Length > 0 && args[0].StartsWith('-') && args[0] != "--")
         {
             switch (args[0])
             {
@@ -22,7 +24,7 @@ internal static class Program
                 default:
                     Console.Error.WriteLine($"{AppName}: unknown option '{args[0]}'");
                     Console.Error.WriteLine($"Try '{AppName} --help' for more information.");
-                    return 2;
+                    return ExitCodeUsageError;
             }
         }
 
@@ -34,7 +36,8 @@ internal static class Program
         // Equals <Version> in Directory.Build.props (docs/rules/dotnet.md, VERSION)
         Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion ?? "0.0.0";
+            .InformationalVersion
+        ?? throw new InvalidOperationException("Version attribute missing - the displayed version comes from <Version> in Directory.Build.props");
 
     private static void PrintHelp()
     {

@@ -5,6 +5,8 @@ namespace {{APP_NAME}};
 
 internal static partial class Program
 {
+    private const uint MB_OK = 0;
+
     [LibraryImport("user32.dll", EntryPoint = "MessageBoxW", StringMarshalling = StringMarshalling.Utf16)]
     private static partial int MessageBox(IntPtr hWnd, string lpText, string lpCaption, uint uType);
 
@@ -14,8 +16,9 @@ internal static partial class Program
         // "AppName X.Y.Z" in the window caption (docs/rules/standard.md, Version Display)
         var version = Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-            .InformationalVersion ?? "0.0.0";
-        MessageBox(IntPtr.Zero, "Hello from {{APP_NAME}}", $"{{APP_NAME}} {version}", 0);
+            .InformationalVersion
+            ?? throw new InvalidOperationException("Version attribute missing - the displayed version comes from <Version> in Directory.Build.props");
+        MessageBox(IntPtr.Zero, "Hello from {{APP_NAME}}", $"{{APP_NAME}} {version}", MB_OK);
         return 0;
     }
 }
