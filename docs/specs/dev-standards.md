@@ -41,7 +41,7 @@ repository's own maintenance files is that single path prefix.
 | `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
 | `dist/rules/cli.md` | Interface-specific rule file for applications that expose a command-line interface: option and subcommand naming and syntax, help, output streams, exit codes, configuration precedence, and version output. Stack-agnostic; starts with an enforcement matrix like the language files |
 | `dist/rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
-| `dist/templates/shared/` | Stack-agnostic templates: generic router `AGENTS.md` (any repository), plus `settings.json.tmpl` (Claude Code hooks) and `hooks.json.tmpl` (Codex hooks) — each carrying a session-start hook that directs the agent to read `docs/rules/` in full before acting, and a pre-commit hook that blocks `git commit` until the AUDIT procedure is confirmed |
+| `dist/templates/shared/` | Stack-agnostic templates: generic router `AGENTS.md` (for repositories without a stack template set — a stack template set ships its own router variants), plus `settings.json.tmpl` (Claude Code hooks) and `hooks.json.tmpl` (Codex hooks) — each carrying a session-start hook that directs the agent to read `docs/rules/` in full before acting, and a pre-commit hook that blocks `git commit` until the AUDIT procedure is confirmed |
 | `dist/templates/dotnet/common/` | Language-independent scaffold files |
 | `dist/templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
 | `docs/` | Documents about this repository itself |
@@ -49,8 +49,10 @@ repository's own maintenance files is that single path prefix.
 ## Distribution contract
 
 - `dist/rules/*.md` are copied **byte-identical** into each consuming repository at
-  `docs/rules/` — no front matter, no in-file markers, no token replacement. Local
-  edits in consumers are detected by matching against this repository's tag history
+  `docs/rules/` — no front matter, no in-file markers, no token replacement. The core,
+  the task-specific files, and `cli.md` go to every repository; each language file goes
+  to repositories of the matching stack. Local edits in consumers are detected by
+  matching against this repository's tag history
 - Templates generate files by literal `{{TOKEN}}` replacement. The token set is part of
   this contract
 - Every generated repository receives the pair `docs/rules/<App>.md` ↔
@@ -86,12 +88,15 @@ repository's own maintenance files is that single path prefix.
 
 ## Invariants
 
-- `dist/templates/dotnet/en/` and `ja/` express the same content
+- Each stack's `dist/templates/<stack>/en/` and `ja/` express the same content
 - `dist/rules/` files are token-free and repository-agnostic
 - Distributed bytes at a tag never change after the tag is published
 
 ## Out of scope
 
-- Consumer-side tooling (how scaffolding/retrofit is invoked is the consumer's concern)
+- Consumer-side tooling: how scaffolding/retrofit is invoked is the consumer's
+  concern. The obligations any scaffolding implementation honors (rule distribution,
+  repository settings, optional files) are stated in
+  `docs/specs/template-requirements.md`
 - Concrete per-repository commands — those live in each consuming repository's
   `AGENTS.md`

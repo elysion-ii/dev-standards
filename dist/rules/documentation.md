@@ -108,8 +108,10 @@ differ between categories. Use the same application identifier in every category
 
 ## Front matter
 
-Every document carries front matter with at least `created` and `status`. Three
-exemptions: in-progress plans under `docs/plans/` (front matter is added when archived);
+Every document carries front matter with at least `created` and `status`. Four
+exemptions: repository-root entry files (`README.md`, `CHANGELOG.md`), which face
+external readers and tooling that expect them to open with their content;
+in-progress plans under `docs/plans/` (front matter is added when archived);
 ADRs, which do **not** carry `created` — the sequence number and git history already
 encode chronology, so ADR front matter is `status` only, plus `supersedes`/`superseded-by`
 when applicable (never add `created` to an ADR); and dev-standards-managed files under

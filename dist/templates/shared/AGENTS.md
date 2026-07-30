@@ -30,7 +30,7 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 - **When the application being changed exposes a command-line interface** (a console application, or a GUI application that accepts command-line options), also read `docs/rules/cli.md`
 - **Before creating, changing, moving, renaming, archiving, or deleting any document**, also read `docs/rules/documentation.md`
 - **Before any Git write operation or PR operation** (commit, branch, push, PR creation, update, or merge), also read `docs/rules/git.md`
-- When a change requires behavior not in the specification, update the specification **before** implementing (spec-first — see the Specifications section of `docs/rules/standard.md`)
+- **When a change requires behavior not in the specification**, spec-first applies — read the Specifications section of `docs/rules/standard.md` before implementing
 - **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rules files first, so all rules are loaded before code is written
 - **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
 - `docs/rules/standard.md`, `docs/rules/documentation.md`, `docs/rules/git.md`, `docs/rules/cli.md`, and the language files are managed by dev-standards — never edit them; repository- and application-specific rules go in the application's rules file
@@ -54,8 +54,7 @@ All non-source documents, placed in role-based subfolders (`rules/`, `adr/`, `sp
 `guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`).
 Before creating, changing, moving, renaming, archiving, or deleting any document — or
 when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
-in this repository) first; it defines placement, naming, and front matter. Do not
-classify or name documents from memory.
+in this repository) first; it defines placement, naming, and front matter.
 
 - `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md`, and language files (managed by dev-standards) and the application rules files
 - `docs/specs/` — application specifications
