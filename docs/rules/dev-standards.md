@@ -25,7 +25,7 @@ wins.
 - `dist/rules/` files are **token-free**: concrete commands with real project names live in each consuming repository's `AGENTS.md`, never here
 - `dist/rules/` files carry **no front matter and no in-file marker** — they are distributed byte-identical, and consuming repositories detect local edits by matching against this repository's tag history. Do not add either
 - Templates use literal `{{TOKEN}}` placeholders. Token names are part of the consumption interface: renaming or removing one is a MAJOR change
-- `dist/templates/dotnet/en/` and `ja/` are variants of the same content and must stay in parity: a change to one is applied to the other in the same commit
+- Each stack's `dist/templates/<stack>/en/` and `ja/` are variants of the same content and must stay in parity: a change to one is applied to the other in the same commit
 
 ## Changing this repository
 
@@ -34,7 +34,8 @@ wins.
 - **New or edited document → re-check against No Private References**: before committing any new or edited file under `docs/` (ADRs and guides especially), re-read it against the No Private References rule above — this is the rule most likely to be missed because a personal tool or path name slips in naturally while drafting a Context or rationale section
 - **New rule → matrix row**: adding a rule to a language file includes its enforcement-matrix row (Enforced with the mechanism named, or AUDIT)
 - **Impact check before editing distributed content**: a change under `dist/` lands in every consuming repository at its next retrofit — classify it against the versioning contract (MAJOR/MINOR/PATCH per the specification) before committing
-- **Rule text goes to `dist/rules/`, never to templates**: template `AGENTS.md` variants carry facts, commands, and routing only
+- **`docs/specs/template-requirements.md` may name concrete .NET mechanisms**: its reference-realization column maps each stack-agnostic requirement to the .NET template set for traceability — a deliberate, authorized exception to `documentation.md`'s no-implementation rule for specifications
+- **Rule text goes to `dist/rules/`, never to templates**: template `AGENTS.md` variants carry facts, commands, and routing only. The one exception is the app-rules skeleton (`app-rules.md.tmpl`) — it seeds the repository-authored rules file, the place rule text belongs in a generated repository
 
 ## Releases
 

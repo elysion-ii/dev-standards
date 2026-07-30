@@ -22,12 +22,9 @@ if (-not (Test-Path $ProjectPath)) {
     exit 1
 }
 
-# Cleanup temp folder
 if (Test-Path $PublishDir) { Remove-Item $PublishDir -Recurse -Force }
-# Clean existing output folder
 if (Test-Path $OutputDir) { Remove-Item $OutputDir -Recurse -Force }
 
-# Create output folder
 New-Item -ItemType Directory -Path $OutputDir -Force -ErrorAction SilentlyContinue | Out-Null
 
 Write-Host "Verifying code format..." -ForegroundColor Cyan
