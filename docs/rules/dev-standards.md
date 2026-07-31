@@ -37,6 +37,10 @@ wins.
 - **`docs/specs/template-requirements.md` may name concrete .NET mechanisms**: its reference-realization column maps each stack-agnostic requirement to the .NET template set for traceability — a deliberate, authorized exception to `documentation.md`'s no-implementation rule for specifications
 - **Rule text goes to `dist/rules/`, never to templates**: template `AGENTS.md` variants carry facts, commands, and routing only. The one exception is the app-rules skeleton (`app-rules.md.tmpl`) — it seeds the repository-authored rules file, the place rule text belongs in a generated repository
 
+## Git
+
+- Work directly on `main`: this repository does not branch per change, so `dist/rules/git.md`'s default of always branching does not apply here
+
 ## Releases
 
 - Tags are the consumption interface. Any change to distributed content (`dist/`) is not consumable until tagged — follow `docs/guides/release.md`. Changes outside distributed content need no tag
