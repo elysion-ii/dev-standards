@@ -132,6 +132,7 @@ What `dist/rules/<language>.md` itself must contain.
 | L4 | States the stack's version-management rules: where the single version definition lives and how the displayed value derives from it | `standard.md` Version Display (delegates to the language file) | VERSION |
 | L5 | Token-free and free of front matter, like every distributed rule file | `docs/rules/dev-standards.md` Distributed content | — |
 | L6 | Every matrix row marked Enforced names a mechanism the template set actually ships — configuration, dependencies, and gate wiring included — and, for each Enforced row, a representative violation fails the build on a fresh scaffold | `standard.md` How to use §4 (Enforced means scaffold-guaranteed); the verification duty: **this document** | `Directory.Build.props` + `.editorconfig` + the VSTHRD package carry ANALYZERS, NAMESPACE, ASYNC; `Build.ps1` wires the FORMAT gate; the fresh-scaffold violation check is a release-check obligation |
+| L7 | States the stack's logging rules: where log files go, how they rotate, and a retention policy that bounds what an application keeps — including the default an application overrides only in its own rules file. The limiting axis follows what the stack's logging tooling makes first-class | **this document** | LOGGING |
 
 ## 6. Template-set invariants
 
@@ -190,4 +191,5 @@ Confirm every item before releasing a new stack template set:
 - [ ] S9: fresh scaffolds of every app type and variant pass format check, build, and test (exit 0)
 - [ ] L1–L5: language file complete, matrix rows for every rule
 - [ ] L6: every Enforced mechanism ships in the scaffold; per Enforced row, a representative violation fails a fresh-scaffold build
+- [ ] L7: log location, rotation, and a bounded retention policy stated for the stack
 - [ ] §6: en/ja parity, token vocabulary respected, no rule text outside the app-rules skeleton
