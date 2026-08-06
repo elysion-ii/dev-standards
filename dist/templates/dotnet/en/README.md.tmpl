@@ -18,7 +18,7 @@ Output: `build/{{APP_NAME}}/{{APP_NAME}}.exe`
 
 ## Installer
 
-Inno Setup 6 must be installed at `C:\Program Files (x86)\Inno Setup 6\`.
+Inno Setup 6 or later must be installed. Its location is discovered from the uninstall registry, PATH, and the default install locations, so either a per-machine or a per-user installation works.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\Installer.ps1

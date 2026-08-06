@@ -18,7 +18,7 @@ powershell -ExecutionPolicy Bypass -File build\Build.ps1
 
 ## インストーラ作成
 
-Inno Setup 6 を `C:\Program Files (x86)\Inno Setup 6\` にインストールしておく必要があります。
+Inno Setup 6 以降がインストールされている必要があります。インストール先はレジストリ・PATH・既定の配置先から自動的に検出するため、システム全体・ユーザー単位のどちらのインストールでも動作します。
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\Installer.ps1
