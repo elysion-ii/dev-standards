@@ -23,21 +23,20 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 ## Rules and AUDIT
 
-The shared rules dev-standards distributes are `docs/rules/standard.md`,
-`documentation.md`, `git.md`, `cli.md`, and `dotnet.md`; alongside them sits this
-repository's own `docs/rules/{{APP_NAME}}.md`. **All of them bind equally.** Reading is
-split only so that no single task has to carry all of it: three are read for every
-change, the rest whenever the work matches. A file left unread because the work looked
-unrelated to it is a rule broken by default.
+`docs/rules/` holds the core — `standard.md`, `documentation.md`, `git.md`, `cli.md`,
+`dotnet.md` — and `{{APP_NAME}}.md`, which carries this repository's own rules and its
+overrides of the core. `{{APP_NAME}}.md` wins on conflict; within the core the language file
+wins over `standard.md`.
+
+Every core file binds. What differs between them is when they are read, not whether they
+apply: a file left unread because the work looked unrelated to it is a rule broken by
+default.
 
 **Always, before implementing any change**, read these three in order:
 
 1. `docs/rules/standard.md` — design, comments, testing, specifications, and the AUDIT procedure
 2. `docs/rules/dotnet.md` — the .NET rules
-3. The application's rules file and specification, from the Applications table above
-
-Read them in that order because the more specific file wins on conflict
-(the application's rules file > `dotnet.md` > `standard.md`).
+3. `docs/rules/{{APP_NAME}}.md` and the specification, from the Applications table above
 
 **Additionally, whenever the work matches a row, read that file too** — this is not
 optional and not covered by the three above:
