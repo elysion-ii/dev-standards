@@ -75,6 +75,10 @@ Refines the core's Synchronous vs Asynchronous section for .NET:
 
 ## STRING: String Comparison
 
+A comparison written without `StringComparison` takes whatever the platform default is,
+and leaves the reader — and every analyzer and reviewer that passes over it — to work out
+which semantics were meant. Naming it settles that where the code is written.
+
 - **Always specify `StringComparison`** for string methods (`StartsWith`, `EndsWith`, `IndexOf`, `Contains`, `Equals`)
 - **Use `StringComparison.Ordinal`** for technical comparisons (paths, identifiers)
 - **Use `StringComparison.OrdinalIgnoreCase`** when case-insensitivity is needed
@@ -126,6 +130,11 @@ Refines the core's Synchronous vs Asynchronous section for .NET:
 
 ## TEMPWORK: File Operations in %TEMP%
 
+Reading and writing straight against a network path fails in ways local I/O does not:
+every operation carries the link's latency, and a connection dropped mid-write leaves a
+truncated file at the destination. Doing the work locally and moving the finished file
+keeps both problems away from the destination.
+
 When I/O targets may be network paths, perform all file reads/writes in local `%TEMP%`.
 
 - **Input**: Copy source files from network to `%TEMP%` before processing
@@ -164,6 +173,10 @@ C# specifics:
 - **Displayed version** (Version Display in `standard.md`, VERSIONOUT in `cli.md`): read `AssemblyInformationalVersionAttribute` — it equals `<Version>` because `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false`, which stops the SDK from appending `+<git sha>`. Never remove that property while the displayed version must stay `AppName X.Y.Z`
 
 ## OUTPUT: Build Outputs
+
+The build script is where the format check and the test suite run. An artifact that
+reached the output directory by any other route never passed them, and nothing about the
+file says so.
 
 - **Never manually add files to build output directories, and never commit them** — outputs are produced only by the build scripts (the scaffold gitignores the output directories; `AGENTS.md` names them)
 - **Produce distributables only via the build scripts** — `Build.ps1` runs the format check and the test suite before publishing; invoking `dotnet publish` by hand skips those gates

@@ -65,6 +65,9 @@ matching kind of work.
 
 ### No Lasagna Code
 
+A layer that adds no behavior still has to be read, navigated, and kept in step with the
+one it forwards to. Layers earn their place by doing something.
+
 - Do not create pass-through delegation methods that just call another service with the same arguments
 - When extracting shared logic into a new service, update **all** callers to use the new service directly
 - Do not leave wrapper methods on the original class
@@ -75,6 +78,9 @@ matching kind of work.
 - If sharing would require flags or parameters that grow with each new caller, stop sharing
 
 ### Change as Addition
+
+Adding the tenth variation should cost what the second one cost. It stops costing that as
+soon as a variation means editing branches spread across existing code.
 
 - Prefer structures where adding a variation (new screen, format, identifier) means adding a new unit plus a registration, not editing branches across existing code
 - Health check: count the files that must be edited to add one variation
@@ -186,6 +192,10 @@ If the current code is clear without a comment, write no comment. If the reason 
 ---
 
 ## Version Display
+
+The first thing to establish about a reported problem is which build produced it. An
+application that cannot state its own version turns that into guesswork, and every answer
+after it is built on a guess.
 
 - Every application must expose the version it was built with, in the form `AppName X.Y.Z` (e.g., `MyApp 1.22.3`)
 - GUI applications display it somewhere always reachable in the UI (title bar, about screen, footer)

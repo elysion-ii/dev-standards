@@ -162,6 +162,10 @@ The `--help` output contains:
 
 ## EXITCODES: Exit Codes
 
+Whatever calls the command — a shell script, a scheduler, another program — branches on
+the exit code. Unless the meanings are fixed, every command invents its own and no caller
+can be written without reading each one's source.
+
 | Code | Meaning |
 |---|---|
 | 0 | Success |

@@ -25,8 +25,14 @@ ready.
 
 ## Operation Language
 
+Git text is typed back into shell commands — branch names into `git checkout`, messages
+into `-m`, tags into `git push`. Non-ASCII text there is a standing source of mistakes:
+mistyped names, pathspecs that match nothing, garbled output. English is also the common
+language of the tooling and of everyone who reads the history. So English is the default
+and stays the default unless a project decides otherwise.
+
 - Write all Git-related text in English by default: commit messages, branch names, PR titles and descriptions, tags, and the like
-- If the application rules file specifies another language (e.g., Japanese), follow it instead
+- If the application's rules file (`docs/rules/<App>.md`) specifies another language (e.g., Japanese), follow it instead
 - When no language is specified, English is the default
 
 ## Commit Format

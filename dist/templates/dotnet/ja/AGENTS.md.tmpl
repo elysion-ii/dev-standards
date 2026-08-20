@@ -23,11 +23,28 @@
 
 ## 規則とAUDIT
 
-- **実装に着手する前に**、次の順で読むこと: `docs/rules/standard.md`(共有コア)→ `docs/rules/dotnet.md`(.NET規則)→ 上のアプリケーション表にある対象アプリの規則ファイルと仕様書。矛盾する場合はより具体的なファイルが優先される(アプリ > 言語 > コア)
-- **変更対象のアプリがコマンドラインインターフェースを持つ場合**(コンソールアプリ、またはコマンドラインオプションを受け取るGUIアプリ)は、`docs/rules/cli.md` も読むこと
-- **ドキュメントの作成・変更・移動・改名・アーカイブまたは削除の前に**、`docs/rules/documentation.md` も読むこと
-- **Gitの書き込み操作またはPR操作(commit・branch・push・PRの作成/更新/merge)の前に**、`docs/rules/git.md` も読むこと
-- **仕様書にない振る舞いが必要な変更では**、spec-first が適用される — 実装前に `docs/rules/standard.md` の Specifications 節を読むこと
+`docs/rules/` 配下のファイルはすべて作業を拘束する。読む量を抑えるため、常に読む鎖と、
+作業の種類ごとに読むファイルに分かれているが、無関係に見えたという理由で飛ばしたファイルは
+そのまま破られた規則になる。
+
+**実装に着手する前に、必ず次の3つをこの順で読むこと:**
+
+1. `docs/rules/standard.md` — 言語非依存のコア
+2. `docs/rules/dotnet.md` — .NET規則
+3. 上のアプリケーション表にある、対象アプリの規則ファイルと仕様書
+
+この順で読むのは、矛盾したときにより具体的なファイルが優先されるため(アプリ > 言語 > コア)。
+
+**加えて、作業が次の行に当てはまるときは、そのファイルも読むこと。** 上の3つには含まれず、
+省略もできない:
+
+| 行う作業 | 追加で読むファイル |
+|---|---|
+| 変更対象のアプリがコマンドラインインターフェースを持つ(コンソールアプリ、またはコマンドラインオプションを受け取るGUIアプリ) | `docs/rules/cli.md` |
+| ドキュメントの作成・変更・移動・改名・アーカイブ・削除 | `docs/rules/documentation.md` |
+| Gitの書き込み操作またはPR操作 — commit・branch・push・PRの作成/更新/merge | `docs/rules/git.md` |
+| 仕様書にない振る舞いが必要な変更(spec-first が適用される) | 実装前に `docs/rules/standard.md` の Specifications 節 |
+
 - **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と規則ファイルを再読込してから実装に着手すること
 - **実装タスクの完了を報告する前に**、`docs/rules/standard.md` 末尾のAUDIT手順を実行すること
 - `docs/rules/standard.md`・`docs/rules/documentation.md`・`docs/rules/git.md`・`docs/rules/cli.md`・`docs/rules/dotnet.md` は dev-standards の管理ファイルであり、編集してはならない。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
