@@ -31,6 +31,7 @@ mechanism is added.
 | TESTNAME | xUnit test naming | — | AUDIT |
 | VERSION | Single version definition + CHANGELOG release gate + clean displayed version | Installer script `#ifndef MyAppVersion → #error` guard; the installer build injects the version and gates on a CHANGELOG heading; `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false` | AUDIT — the gates cover only the installer path; "no `<Version>` in a csproj" has no guard, and a deleted `<Version>` in `Directory.Build.props` falls back to the SDK default (1.0.0) unguarded |
 | OUTPUT | Build outputs come only from the build scripts; never manual, never committed | Output directories are gitignored by the scaffold; `Build.ps1` gates publishing on the format check and the test suite | AUDIT — gitignore keeps outputs out of normal staging; it does not stop forced adds, manual additions, or hand-run publishing |
+| NATIVEDEP | Publishing never self-extracts; the native dependencies decide the published file layout | `Directory.Build.props` fails the build when `IncludeNativeLibrariesForSelfExtract` is enabled; `Build.ps1` publishes without it; the installer script ships the whole publish output | Enforced for the property — removing a native dependency, and keeping the installer's file list exhaustive, stay AUDIT items |
 | SERIAL | One dotnet command at a time per solution | — | AUDIT — behavioral: observed at command-execution time, leaves no file artifact to check |
 
 ---
@@ -165,6 +166,20 @@ C# specifics:
 
 - **Never manually add files to build output directories, and never commit them** — outputs are produced only by the build scripts (the scaffold gitignores the output directories; `AGENTS.md` names them)
 - **Produce distributables only via the build scripts** — `Build.ps1` runs the format check and the test suite before publishing; invoking `dotnet publish` by hand skips those gates
+
+## NATIVEDEP: Native Dependencies and Publish Layout
+
+A self-contained single-file application that bundles NuGet-provided native libraries
+unpacks them into a per-build directory under the user's temp folder on first run. The
+runtime keeps one such directory per build and deletes none of them — an artifact that
+grows without bound on a machine nobody is watching, the same failure the LOGGING
+retention rule exists to prevent.
+
+- **Never enable `IncludeNativeLibrariesForSelfExtract`** — `Directory.Build.props` fails the build when it is set. That property is the only thing that turns publishing into a temp-directory writer; without it nothing is ever unpacked, and the runtime and every managed assembly still load straight from the bundle
+- **The published layout follows from the dependencies, not from a setting.** With no NuGet-provided native library the publish output is the single executable; with one it is the executable plus those libraries beside it. Accept the extra files — forcing the single-file shape back is exactly what re-enables unpacking
+- **Prefer removing the native dependency to accepting the extra files.** A native library the application never reaches is still published: drop it with `ExcludeAssets="all"` on a direct `PackageReference` to the transitive package. Where a library offers a managed implementation of the same function, select it (for example an `AppContext` switch replacing a native networking layer) and exclude the native package
+- **The installer's file list covers the whole publish output**, never a named executable alone: a list naming only the executable installs a broken application the moment a native dependency appears
+- Native AOT does not change this rule. It statically links nothing that ships as a native DLL, so it alters the executable's size and startup, never the file count — it is worth considering only for an application that already has no NuGet-provided native libraries
 
 ## SERIAL: Sequential Command Execution
 

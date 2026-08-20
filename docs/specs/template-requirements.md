@@ -101,6 +101,7 @@ toolchain cannot enforce one mechanically still states the rule and marks it AUD
 | G5 | Each stack designates its release packaging step — the step that produces what end users receive — and that step fails when `CHANGELOG.md` exists without a heading for the current version. Build steps that emit runnable outputs for development are not release steps and carry no gate | `dotnet.md` VERSION (stack form, including the designation); generic: **this document** | `Installer.ps1` is the designated release step and carries the gate; the EXE from `Build.ps1` is the build output the installer wraps |
 | G6 | The displayed version is the bare `AppName X.Y.Z` by default — the application rules file may override the format; absent an override, the toolchain is configured so no build metadata (commit hash, date) is appended | `standard.md` Version Display; `cli.md` VERSIONOUT | `IncludeSourceRevisionInInformationalVersion=false` in `Directory.Build.props` |
 | G7 | Build output directories are produced only by the build scripts and are gitignored | `dotnet.md` OUTPUT (stack form); generic: **this document** | `common/gitignore.tmpl` keeps outputs out of normal staging (not forced adds or already-tracked files); produced-only-by-scripts is behavioral (`dotnet.md` OUTPUT, AUDIT) |
+| G8 | The distributable leaves nothing behind in a shared location that nothing cleans up: it does not unpack part of itself into a temp directory at run time, and its packaging step ships the whole build output rather than a named artifact — so the delivered file set follows from the dependencies instead of a packaging setting | `dotnet.md` NATIVEDEP (stack form); generic: **this document** | `Directory.Build.props` fails the publish when `IncludeNativeLibrariesForSelfExtract` is enabled; `Setup.iss` ships the publish directory by wildcard; whether a native dependency can be removed altogether is AUDIT (`dotnet.md` NATIVEDEP) |
 
 ## 4. Seeded implementation
 
@@ -181,6 +182,7 @@ Confirm every item before releasing a new stack template set:
 - [ ] G5: the designated release packaging step gated on the `CHANGELOG.md` heading
 - [ ] G6: displayed version bare `X.Y.Z` by default — toolchain appends no metadata
 - [ ] G7: build outputs gitignored and produced only by the build scripts
+- [ ] G8: no run-time self-unpacking into a shared temp location; the packaging step ships the whole build output
 - [ ] S1: sanity test passes on a fresh scaffold and follows the language file's test rules
 - [ ] S2–S3: entry-point seeds satisfy `cli.md` / Version Display
 - [ ] S4: `docs/plans/` and `docs/archive/plans/` gitignored

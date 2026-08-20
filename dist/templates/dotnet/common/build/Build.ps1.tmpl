@@ -51,14 +51,13 @@ dotnet publish $ProjectPath `
     -r $Runtime `
     --self-contained true `
     -p:PublishSingleFile=true `
-    -p:IncludeNativeLibrariesForSelfExtract=true `
     -p:DebugType=none `
     -p:DebugSymbols=false `
     -p:DebuggerSupport=false `
     -o "$PublishDir"
 
 if ($LASTEXITCODE -eq 0) {
-    Copy-Item "$PublishDir\*" "$OutputDir\" -Force
+    Copy-Item "$PublishDir\*" "$OutputDir\" -Force -Recurse
     Remove-Item $PublishDir -Recurse -Force
 
     Write-Host "   [OK] {{APP_NAME}}.exe deployed" -ForegroundColor Green

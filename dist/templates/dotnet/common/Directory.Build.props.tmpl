@@ -32,4 +32,14 @@
          ASYNC. -->
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.*" PrivateAssets="all" />
   </ItemGroup>
+
+  <!-- Self-extracting publish is prohibited: it unpacks native libraries into a
+       per-build directory under the temp folder that nothing ever deletes. The
+       published layout must follow from the dependencies instead
+       (see docs/rules/dotnet.md, NATIVEDEP). -->
+  <Target Name="ForbidSelfExtractingPublish"
+          BeforeTargets="PrepareForPublish"
+          Condition="'$(IncludeNativeLibrariesForSelfExtract)' == 'true'">
+    <Error Text="IncludeNativeLibrariesForSelfExtract is enabled. Publishing would unpack native libraries into the temp folder on every new build. Remove the property and publish the native libraries beside the executable (see docs/rules/dotnet.md, NATIVEDEP)." />
+  </Target>
 </Project>
