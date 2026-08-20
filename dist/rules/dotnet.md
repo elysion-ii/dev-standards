@@ -173,7 +173,7 @@ C# specifics:
 The rule is Configuration Files in the Repository in `standard.md`. Its .NET form:
 
 - **The tracked template is `appsettings.template.json`**; the file the application reads is `appsettings.json`, which the scaffold gitignores. Any other shipped configuration file follows the same `<name>.template.<ext>` naming
-- **`Build.ps1` fails when git tracks the real name** derived from a tracked `*.template.*` file with a configuration extension. The check derives the name instead of consulting a list, so it needs no maintenance and stays inert in a repository that has no template file
+- **`Build.ps1` fails when git tracks the real name** derived from a tracked `*.template.*` file with a configuration extension. The check needs no list to maintain and stays inert in a repository that has no template file
 - **`Build.ps1` copies the template into the publish output under the real name** — that copy, not any file from the working tree, is what the installer packages
 - **The installer entry for a configuration file carries `onlyifdoesntexist`** and is excluded from the wildcard that ships the rest of the publish output, so an update keeps the operator's settings
 
@@ -189,7 +189,6 @@ retention rule exists to prevent.
 - **The published layout follows from the dependencies, not from a setting.** With no NuGet-provided native library the publish output is the single executable; with one it is the executable plus those libraries beside it. Accept the extra files — forcing the single-file shape back is exactly what re-enables unpacking
 - **Prefer removing the native dependency to accepting the extra files.** A native library the application never reaches is still published: drop it with `ExcludeAssets="all"` on a direct `PackageReference` to the transitive package. Where a library offers a managed implementation of the same function, select it (for example an `AppContext` switch replacing a native networking layer) and exclude the native package
 - **The installer's file list covers the whole publish output**, never a named executable alone: a list naming only the executable installs a broken application the moment a native dependency appears
-- Native AOT does not change this rule. It statically links nothing that ships as a native DLL, so it alters the executable's size and startup, never the file count — it is worth considering only for an application that already has no NuGet-provided native libraries
 
 ## SERIAL: Sequential Command Execution
 
