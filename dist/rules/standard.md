@@ -200,7 +200,7 @@ after it is built on a guess.
 - Every application must expose the version it was built with, in the form `AppName X.Y.Z` (e.g., `MyApp 1.22.3`)
 - GUI applications display it somewhere always reachable in the UI (title bar, about screen, footer)
 - CLI applications provide `--version` / `-V`; the concrete requirements are in `cli.md`
-- The default format is the bare product version — no build hash, build date, or other metadata. The application rules file may override the format (e.g., to append a build identifier); without such an override, the simple form applies
+- The default format is the bare product version — no build hash, build date, or other metadata
 - The displayed value comes from the project's single version definition (see the language file's version-management rules), never from a hardcoded string
 
 ---
