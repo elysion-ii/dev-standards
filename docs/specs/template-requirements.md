@@ -73,6 +73,7 @@ verifiable against `dist/`.
 | R4 | `docs/rules/` receives, verbatim: `standard.md`, `documentation.md`, `git.md`, `cli.md`, and the stack's `<language>.md` | `dev-standards.md` Distribution contract | Scaffolding obligation — copy each file this row selects, byte-identical (never the whole `dist/rules/` directory: other stacks' language files stay out) |
 | R5 | Application rules file and specification skeletons: front-mattered, declared as a pair in the Applications table, and the specification skeleton carries the section structure `documentation.md` requires (purpose, scope, users/external systems, behavior, I/O, errors, invariants, non-functional, out of scope) | `dev-standards.md` Distribution contract; `documentation.md` Category notes (`docs/specs/`) and Front matter | `{lang}/app-rules.md.tmpl`, `{lang}/spec.md.tmpl` |
 | R6 | When a language rule's rationale lives in an ADR, that ADR is scaffolded into every generated repository so the citation resolves — and the ADR itself conforms to `documentation.md`'s ADR rules (front matter `status` only; body sections Context / Decision / Consequences) | scaffolding: **this document**; ADR conformance: `documentation.md` Category notes (`docs/adr/`) | `{lang}/0001-cancellation-token-plumbing.md.tmpl` for `dotnet.md` CANCEL; landing it in the generated repository is a scaffolding obligation |
+| R7 | The router names every rule and specification file it routes to by the path it is generated at — the stack's language rule file, the application's rules file, the application's specification — never by a generic description ("the language file", "the specification"). A stack template set resolves its own stack; leaving the reader to do it is how a file goes unread | **this document** | `{lang}/AGENTS.md.tmpl` names `docs/rules/dotnet.md`, `docs/rules/{{APP_NAME}}.md`, and `docs/specs/{{APP_NAME}}.md` |
 
 ## 2. Agent harness wiring
 
@@ -173,6 +174,7 @@ Confirm every item before releasing a new stack template set:
 - [ ] R4: distribution list covers `standard.md`, `documentation.md`, `git.md`, `cli.md`, `<language>.md`
 - [ ] R5: app-rules and spec skeletons — front-mattered, paired in the Applications table, spec sections per `documentation.md`
 - [ ] R6: every ADR cited by the language file has a scaffolded, `documentation.md`-conformant template
+- [ ] R7: the router names generated paths, never "the language file" or "the specification"
 - [ ] H1–H2: `shared/` hooks reused unchanged
 - [ ] H3: permission allowlist lists the AUDIT commands (format check, build, test)
 - [ ] H4: squash-only repository setting applied by the scaffolding procedure when the host supports it (default strategy per `git.md`)
