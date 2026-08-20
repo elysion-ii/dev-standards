@@ -33,13 +33,13 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.*" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Self-extracting publish is prohibited: it unpacks native libraries into a
-       per-build directory under the temp folder that nothing ever deletes. The
-       published layout must follow from the dependencies instead
-       (see docs/rules/dotnet.md, NATIVEDEP). -->
+  <!-- A single file that unpacks itself at run time is prohibited: it writes a
+       per-build directory under the temp folder that nothing ever deletes. Both
+       the project and a framework can turn this on, so the guard checks the
+       resolved values (see docs/rules/dotnet.md, NATIVEDEP). -->
   <Target Name="ForbidSelfExtractingPublish"
-          BeforeTargets="PrepareForPublish"
-          Condition="'$(IncludeNativeLibrariesForSelfExtract)' == 'true'">
-    <Error Text="IncludeNativeLibrariesForSelfExtract is enabled. Publishing would unpack native libraries into the temp folder on every new build. Remove the property and publish the native libraries beside the executable (see docs/rules/dotnet.md, NATIVEDEP)." />
+          BeforeTargets="GenerateSingleFileBundle"
+          Condition="'$(IncludeNativeLibrariesForSelfExtract)' == 'true' Or '$(IncludeAllContentForSelfExtract)' == 'true'">
+    <Error Text="This single-file publish would unpack itself into the temp folder on every new build, and nothing deletes what it leaves there. IncludeNativeLibrariesForSelfExtract=$(IncludeNativeLibrariesForSelfExtract), IncludeAllContentForSelfExtract=$(IncludeAllContentForSelfExtract). Remove whichever the project sets; where a framework sets it (WinUI 3 does), stop publishing that project as a single file (see docs/rules/dotnet.md, NATIVEDEP)." />
   </Target>
 </Project>
