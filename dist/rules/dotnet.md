@@ -32,7 +32,7 @@ mechanism is added.
 | VERSION | Single version definition + CHANGELOG release gate + clean displayed version | Installer script `#ifndef MyAppVersion → #error` guard; the installer build injects the version and gates on a CHANGELOG heading; `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false` | AUDIT — the gates cover only the installer path; "no `<Version>` in a csproj" has no guard, and a deleted `<Version>` in `Directory.Build.props` falls back to the SDK default (1.0.0) unguarded |
 | OUTPUT | Build outputs come only from the build scripts; never manual, never committed | Output directories are gitignored by the scaffold; `Build.ps1` gates publishing on the format check and the test suite | AUDIT — gitignore keeps outputs out of normal staging; it does not stop forced adds, manual additions, or hand-run publishing |
 | CONFIGFILE | Only the placeholder template of a configuration file is tracked; the file the application reads is never committed | `Build.ps1` derives the real name of every tracked `*.template.*` configuration file and fails when git tracks it; the scaffold gitignores `appsettings.json` | Enforced for the commit — deriving the shipped file and the installer's no-overwrite entry stay AUDIT items |
-| NATIVEDEP | Publishing never self-extracts; the native dependencies decide the published file layout | `Directory.Build.props` fails the build when `IncludeNativeLibrariesForSelfExtract` is enabled; `Build.ps1` publishes without it; the installer script ships the whole publish output | Enforced for the property — removing a native dependency, and keeping the installer's file list exhaustive, stay AUDIT items |
+| NATIVEDEP | The distributable is as few files as possible and never unpacks itself at run time; native dependencies are reduced to reach that | `Directory.Build.props` fails the build when `IncludeNativeLibrariesForSelfExtract` is enabled; the installer script ships the whole publish output | Enforced for the property — how far the native dependencies are reduced, and keeping the installer's file list exhaustive, stay AUDIT items |
 | SERIAL | One dotnet command at a time per solution | — | AUDIT — behavioral: observed at command-execution time, leaves no file artifact to check |
 
 ---
@@ -179,15 +179,25 @@ The rule is Configuration Files in the Repository in `standard.md`. Its .NET for
 
 ## NATIVEDEP: Native Dependencies and Publish Layout
 
-A self-contained single-file application that bundles NuGet-provided native libraries
-unpacks them into a per-build directory under the user's temp folder on first run. The
-runtime keeps one such directory per build and deletes none of them — an artifact that
-grows without bound on a machine nobody is watching, the same failure the LOGGING
-retention rule exists to prevent.
+**The goal is the smallest distributable: one self-contained executable.** Self-contained
+single-file publishing reaches it by bundling the runtime and every managed assembly into
+the executable — that is what `PublishSingleFile` in each application's csproj is for, and
+a project with no native dependency publishes as exactly one file.
 
-- **Never enable `IncludeNativeLibrariesForSelfExtract`** — `Directory.Build.props` fails the build when it is set. That property is the only thing that turns publishing into a temp-directory writer; without it nothing is ever unpacked, and the runtime and every managed assembly still load straight from the bundle
-- **The published layout follows from the dependencies, not from a setting.** With no NuGet-provided native library the publish output is the single executable; with one it is the executable plus those libraries beside it. Accept the extra files — forcing the single-file shape back is exactly what re-enables unpacking
-- **Prefer removing the native dependency to accepting the extra files.** A native library the application never reaches is still published: drop it with `ExcludeAssets="all"` on a direct `PackageReference` to the transitive package. Where a library offers a managed implementation of the same function, select it (for example an `AppContext` switch replacing a native networking layer) and exclude the native package
+NuGet-provided native libraries are the one thing that cannot go inside. Bundling them is
+possible — `IncludeNativeLibrariesForSelfExtract` does it — but they are then unpacked at
+run time into a per-build directory under the user's temp folder, one directory per build,
+and the runtime deletes none of them: an artifact that grows without bound on a machine
+nobody is watching, the same failure the LOGGING retention rule exists to prevent. One
+fewer file to download is not worth that.
+
+So the single executable is earned by **not depending on native libraries**, never by
+hiding them inside the bundle.
+
+- **Keep native dependencies out.** Before taking a NuGet package, check whether it carries native assets: a package that does costs the application its single-file shape for as long as it stays
+- **Remove the ones already there.** A native library the application never reaches is still published — drop it with `ExcludeAssets="all"` on a direct `PackageReference` to the transitive package. Where the library offers a managed implementation of the same function, select it (for example an `AppContext` switch replacing a native networking layer) and exclude the native package
+- **Never enable `IncludeNativeLibrariesForSelfExtract`** — `Directory.Build.props` fails the build when it is set, because nothing ever cleans up the temp directories it creates
+- **What genuinely cannot be removed ships beside the executable.** A UI framework's rendering engine, a database engine's own binary: publishing writes them next to the executable and nothing is unpacked at run time. Two or three files beside the executable is the accepted cost of keeping such a library; a temp directory per build is not
 - **The installer's file list covers the whole publish output**, never a named executable alone: a list naming only the executable installs a broken application the moment a native dependency appears
 
 ## SERIAL: Sequential Command Execution
