@@ -27,11 +27,11 @@ matching kind of work.
 5. Precedence on conflict within this always-read chain: the more specific file wins —
    application rules > language rules and `cli.md` > this file. `AGENTS.md` holds no
    rule text; it only routes.
-6. Two more rule files in this directory are task-specific, outside the chain above,
-   and read in addition only when that kind of work is underway: `documentation.md`
-   when creating, changing, moving, renaming, archiving, or deleting any document;
-   `git.md` for any Git write operation or PR operation. `AGENTS.md` states when each
-   applies.
+6. Two more rule files in this directory are task-specific: `documentation.md` when
+   creating, changing, moving, renaming, archiving, or deleting any document, and
+   `git.md` for any Git write operation or PR operation. Sitting outside the always-read
+   chain makes them conditional to read, never optional to follow — they bind exactly as
+   the chain does. `AGENTS.md` states when each applies.
 7. Before reporting an implementation task as complete, run **AUDIT** (bottom of this
    file).
 
