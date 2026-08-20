@@ -13,7 +13,7 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 | Language | C# |
 | Runtime | {{TFM}} |
 | UI | {{APP_UI_DESCRIPTION}} |
-| Distribution | Self-contained single EXE + Inno Setup installer |
+| Distribution | Self-contained publish + Inno Setup installer; the published file set follows from the native dependencies (`docs/rules/dotnet.md` NATIVEDEP) |
 
 ## Applications
 
@@ -25,7 +25,7 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 `docs/rules/` holds the core — `standard.md`, `documentation.md`, `git.md`, `cli.md`,
 `dotnet.md` — and `{{APP_NAME}}.md`, which carries this repository's own rules and its
-overrides of the core. `{{APP_NAME}}.md` wins on conflict; within the core the language file
+overrides of the core. `{{APP_NAME}}.md` wins on conflict; within the core `dotnet.md`
 wins over `standard.md`.
 
 Every core file binds. What differs between them is when they are read, not whether they
@@ -36,7 +36,7 @@ default.
 
 1. `docs/rules/standard.md` — design, comments, testing, specifications, and the AUDIT procedure
 2. `docs/rules/dotnet.md` — the .NET rules
-3. `docs/rules/{{APP_NAME}}.md` and the specification, from the Applications table above
+3. `docs/rules/{{APP_NAME}}.md` and `docs/specs/{{APP_NAME}}.md`
 
 **Additionally, whenever the work matches a row, read that file too** — this is not
 optional and not covered by the three above:
@@ -46,9 +46,9 @@ optional and not covered by the three above:
 | The application being changed exposes a command-line interface (a console application, or a GUI application that accepts command-line options) | `docs/rules/cli.md` |
 | Creating, changing, moving, renaming, archiving, or deleting any document | `docs/rules/documentation.md` |
 | Any Git write operation or PR operation — commit, branch, push, PR creation, update, or merge | `docs/rules/git.md` |
-| The change requires behavior the specification does not cover (spec-first applies) | the Specifications section of `docs/rules/standard.md`, before implementing |
+| The change requires behavior `docs/specs/{{APP_NAME}}.md` does not cover (spec-first applies) | the Specifications section of `docs/rules/standard.md`, before implementing |
 
-- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rules files first, so all rules are loaded before code is written
+- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rule files named above, so all rules are loaded before code is written
 - **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
 - `docs/rules/standard.md`, `docs/rules/documentation.md`, `docs/rules/git.md`, `docs/rules/cli.md`, and `docs/rules/dotnet.md` are managed by dev-standards — never edit them; repository- and application-specific rules go in `docs/rules/{{APP_NAME}}.md`
 
@@ -77,9 +77,9 @@ xUnit test project.
 
 Build scripts and installer configuration.
 
-- `Build.ps1` runs format verification (`dotnet format --verify-no-changes`) and tests, then publishes {{APP_NAME}} as a self-contained single-file EXE to `build/{{APP_NAME}}/`. Both gates must pass before publish proceeds
+- `Build.ps1` runs the configuration-file check, format verification (`dotnet format --verify-no-changes`), and tests, then publishes {{APP_NAME}} to `build/{{APP_NAME}}/`. All three gates must pass before publish proceeds
 - `Installer.ps1` invokes Inno Setup (ISCC.exe) on `Setup_{{APP_NAME}}.iss`; requires `build/{{APP_NAME}}/{{APP_NAME}}.exe` to exist. Before running ISCC it reads `<Version>` from `Directory.Build.props`, injects it via `/DMyAppVersion`, and — if `CHANGELOG.md` exists — verifies it contains a heading for the current version (fails otherwise). The version and CHANGELOG rules are `docs/rules/dotnet.md` VERSION
-- Output directories: `build/{{APP_NAME}}/` (self-contained EXE) and `build/Installer/` (installer package), both gitignored (rules: `docs/rules/dotnet.md` OUTPUT)
+- Output directories: `build/{{APP_NAME}}/` (publish output) and `build/Installer/` (installer package), both gitignored (rules: `docs/rules/dotnet.md` OUTPUT)
 
 ### `docs/`
 

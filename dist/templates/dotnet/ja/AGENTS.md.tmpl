@@ -13,7 +13,7 @@
 | 言語 | C# |
 | ランタイム | {{TFM}} |
 | UI | {{APP_UI_DESCRIPTION}} |
-| 配布形式 | 自己完結型単一EXE + Inno Setup インストーラ |
+| 配布形式 | 自己完結型 publish + Inno Setup インストーラ。配布されるファイル構成はネイティブ依存によって決まる(`docs/rules/dotnet.md` の NATIVEDEP) |
 
 ## アプリケーション
 
@@ -26,7 +26,7 @@
 `docs/rules/` には core(`standard.md`・`documentation.md`・`git.md`・`cli.md`・
 `dotnet.md`)と、本リポジトリ固有のルールおよび core の上書きを収めた
 `docs/rules/{{APP_NAME}}.md` が置かれている。矛盾したときは `{{APP_NAME}}.md` が優先し、
-core の内部では言語ファイルが `standard.md` に優先する。
+core の内部では `dotnet.md` が `standard.md` に優先する。
 
 core のファイルはいずれも作業を拘束する。違うのは読むタイミングであって、適用される
 かどうかではない。無関係に見えたという理由で読まなかったファイルは、そのまま破られた
@@ -36,7 +36,7 @@ core のファイルはいずれも作業を拘束する。違うのは読むタ
 
 1. `docs/rules/standard.md` — 設計・コメント・テスト・仕様・AUDIT手順
 2. `docs/rules/dotnet.md` — .NET規則
-3. `docs/rules/{{APP_NAME}}.md` と、上のアプリケーション表にある仕様書
+3. `docs/rules/{{APP_NAME}}.md` と `docs/specs/{{APP_NAME}}.md`
 
 **加えて、作業が次の行に当てはまるときは、そのファイルも読むこと。** 上の3つには含まれず、
 省略もできない:
@@ -46,9 +46,9 @@ core のファイルはいずれも作業を拘束する。違うのは読むタ
 | 変更対象のアプリがコマンドラインインターフェースを持つ(コンソールアプリ、またはコマンドラインオプションを受け取るGUIアプリ) | `docs/rules/cli.md` |
 | ドキュメントの作成・変更・移動・改名・アーカイブ・削除 | `docs/rules/documentation.md` |
 | Gitの書き込み操作またはPR操作 — commit・branch・push・PRの作成/更新/merge | `docs/rules/git.md` |
-| 仕様書にない振る舞いが必要な変更(spec-first が適用される) | 実装前に `docs/rules/standard.md` の Specifications 節 |
+| `docs/specs/{{APP_NAME}}.md` にない振る舞いが必要な変更(spec-first が適用される) | 実装前に `docs/rules/standard.md` の Specifications 節 |
 
-- **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と規則ファイルを再読込してから実装に着手すること
+- **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と上に挙げた規則ファイルを再読込してから実装に着手すること
 - **実装タスクの完了を報告する前に**、`docs/rules/standard.md` 末尾のAUDIT手順を実行すること
 - `docs/rules/standard.md`・`docs/rules/documentation.md`・`docs/rules/git.md`・`docs/rules/cli.md`・`docs/rules/dotnet.md` は dev-standards の管理ファイルであり、編集してはならない。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
 
@@ -77,9 +77,9 @@ xUnit テストプロジェクト。
 
 ビルドスクリプトとインストーラ設定。
 
-- `Build.ps1` はフォーマット検証(`dotnet format --verify-no-changes`)とテストを実行し、両方通過した場合のみ {{APP_NAME}} を自己完結型単一ファイルEXEとして `build/{{APP_NAME}}/` に publish する
+- `Build.ps1` は設定ファイル検査・フォーマット検証(`dotnet format --verify-no-changes`)・テストを実行し、3つすべてを通過した場合のみ {{APP_NAME}} を `build/{{APP_NAME}}/` に publish する
 - `Installer.ps1` は Inno Setup (ISCC.exe) を `Setup_{{APP_NAME}}.iss` に対して実行する。`build/{{APP_NAME}}/{{APP_NAME}}.exe` の存在が前提。実行前に `Directory.Build.props` の `<Version>` を読み取って `/DMyAppVersion` で注入し、`CHANGELOG.md` が存在する場合は現行バージョンの見出しがあることを検証する(なければ失敗)。バージョンとCHANGELOGの規則は `docs/rules/dotnet.md` の VERSION
-- 出力ディレクトリ: `build/{{APP_NAME}}/`(自己完結型EXE)と `build/Installer/`(インストーラパッケージ)。いずれも git 管理外(規則: `docs/rules/dotnet.md` の OUTPUT)
+- 出力ディレクトリ: `build/{{APP_NAME}}/`(publish 出力)と `build/Installer/`(インストーラパッケージ)。いずれも git 管理外(規則: `docs/rules/dotnet.md` の OUTPUT)
 
 ### `docs/`
 
