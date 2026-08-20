@@ -26,12 +26,9 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 ## Rules and AUDIT
 
-- **Before implementing any change**, read in order: `docs/rules/standard.md` (shared core), every language file under `docs/rules/` matching this project's stack, then the application's rules file and specification from the Applications table. On conflict the more specific file wins (application > language > core)
-- **When the application being changed exposes a command-line interface** (a console application, or a GUI application that accepts command-line options), also read `docs/rules/cli.md`
-- **Before creating, changing, moving, renaming, archiving, or deleting any document**, also read `docs/rules/documentation.md`
-- **Before any Git write operation or PR operation** (commit, branch, push, PR creation, update, or merge), also read `docs/rules/git.md`
-- **When a change requires behavior not in the specification**, spec-first applies — read the Specifications section of `docs/rules/standard.md` before implementing
-- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rules files first, so all rules are loaded before code is written
+- **Before implementing any change**, read every file under `docs/rules/`, and the rules file and specification of the application being changed from the Applications table above. `docs/rules/cli.md` is the only one you may skip, and only while that application exposes no command-line interface (neither a console application nor a GUI application that accepts command-line options)
+- On conflict the more specific file wins: the application's rules file > the language files and `docs/rules/cli.md` > `docs/rules/standard.md`
+- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and every file under `docs/rules/`, so all rules are loaded before code is written
 - **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
 - `docs/rules/standard.md`, `docs/rules/documentation.md`, `docs/rules/git.md`, `docs/rules/cli.md`, and the language files are managed by dev-standards — never edit them; repository- and application-specific rules go in the application's rules file
 

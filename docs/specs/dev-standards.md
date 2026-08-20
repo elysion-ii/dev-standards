@@ -61,14 +61,12 @@ repository's own maintenance files is that single path prefix.
 
 ## Placement model (what consumers end up with)
 
-- Rule bodies live only in `docs/rules/`. Three layers are always read, applied in
-  order: `standard.md` (core) → language files → application rules file; the more
-  specific layer wins on conflict. `cli.md` joins the chain at the language-file level
-  whenever the application being changed exposes a command-line interface. Two more are
-  task-specific rule files, read in
-  addition only when that kind of work is underway: `documentation.md` for creating,
-  changing, moving, renaming, archiving, or deleting any document; `git.md` for any
-  Git write operation or PR operation
+- Rule bodies live only in `docs/rules/`, and every one of them is read before
+  implementing any change. `cli.md` is the single exception: it is skipped while the
+  application being changed exposes no command-line interface. On conflict the more
+  specific file wins — application rules file > language files and `cli.md` >
+  `standard.md`; `documentation.md` and `git.md` govern subjects the others do not
+  cover, so they do not compete for precedence
 - `AGENTS.md` is the only router: facts, commands, Applications table, reading and
   AUDIT instructions
 - Scope rule for every docs category: directly under `docs/<category>/` =

@@ -1,9 +1,9 @@
 # Git
 
 Rules for Git write operations and pull request operations, distributed into each
-repository at `docs/rules/git.md`. Read this file together with `standard.md` whenever a
-task commits, creates or updates a branch, or creates, updates, or merges a pull
-request.
+repository at `docs/rules/git.md`. Read this file before implementing any change, as
+`standard.md` How to use these rules directs, and consult it again before every commit,
+branch, push, and pull request.
 
 ## Confirming Scope
 

@@ -7,33 +7,23 @@ rules file listed in the repository's `AGENTS.md` Applications table.
 
 ## How to use these rules
 
-This directory holds rule files in two groups: a chain that is always read (this file →
-language files → application rules), and task-specific rule files read only for the
-matching kind of work.
+Read every rule file in this directory before implementing any change, together with
+the rules file and specification of the application being changed — the `AGENTS.md`
+Applications table names both. `cli.md` is the only file that may be skipped, and only
+while that application exposes no command-line interface (neither a console application
+nor a GUI application that accepts command-line options). Judging any other file
+unrelated to the work at hand and leaving it unread is how a rule goes unapplied.
 
-1. Read this file.
-2. Read every language file in this directory that matches the project's technology
-   stack (a .NET repository reads `dotnet.md`; a multi-stack repository reads all
-   matching files). The repository's `AGENTS.md` states the stack and the concrete
-   commands (formatter, build, test). When the application being changed exposes a
-   command-line interface — a console application, or a GUI application that accepts
-   command-line options — also read `cli.md`; it applies regardless of stack and sits
-   at the same precedence level as the language files.
-3. Identify the application being changed in the `AGENTS.md` Applications table, then
-   read its rules file and its specification (`docs/specs/...`).
-4. Each language file begins with an **enforcement matrix** stating which rules the
-   project scaffold enforces mechanically (analyzers, build gates) and which must be
-   checked by AUDIT.
-5. Precedence on conflict within this always-read chain: the more specific file wins —
-   application rules > language rules and `cli.md` > this file. `AGENTS.md` holds no
-   rule text; it only routes.
-6. Two more rule files in this directory are task-specific: `documentation.md` when
-   creating, changing, moving, renaming, archiving, or deleting any document, and
-   `git.md` for any Git write operation or PR operation. Sitting outside the always-read
-   chain makes them conditional to read, never optional to follow — they bind exactly as
-   the chain does. `AGENTS.md` states when each applies.
-7. Before reporting an implementation task as complete, run **AUDIT** (bottom of this
-   file).
+- A repository reads the language files matching its technology stack — a .NET
+  repository reads `dotnet.md`, a multi-stack repository reads every matching file. Its
+  `AGENTS.md` states the stack and the concrete commands (formatter, build, test).
+- Each language file begins with an **enforcement matrix** stating which rules the
+  project scaffold enforces mechanically (analyzers, build gates) and which must be
+  checked by AUDIT.
+- Precedence on conflict: the more specific file wins — application rules > language
+  rules and `cli.md` > this file. `AGENTS.md` holds no rule text; it only routes.
+- Before reporting an implementation task as complete, run **AUDIT** (bottom of this
+  file).
 
 ---
 

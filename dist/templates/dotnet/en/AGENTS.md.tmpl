@@ -28,27 +28,13 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 overrides of the core. `{{APP_NAME}}.md` wins on conflict; within the core `dotnet.md`
 wins over `standard.md`.
 
-Every core file binds. What differs between them is when they are read, not whether they
-apply: a file left unread because the work looked unrelated to it is a rule broken by
-default.
+**Before implementing any change, read all of them, and `docs/specs/{{APP_NAME}}.md` with
+them.** `cli.md` is the only one you may skip, and only while {{APP_NAME}} exposes no
+command-line interface — neither a console application nor a GUI application that
+accepts command-line options. Judging any other file unrelated to the work at hand and
+leaving it unread is how a rule goes unapplied.
 
-**Always, before implementing any change**, read these three in order:
-
-1. `docs/rules/standard.md` — design, comments, testing, specifications, and the AUDIT procedure
-2. `docs/rules/dotnet.md` — the .NET rules
-3. `docs/rules/{{APP_NAME}}.md` and `docs/specs/{{APP_NAME}}.md`
-
-**Additionally, whenever the work matches a row, read that file too** — this is not
-optional and not covered by the three above:
-
-| Work being done | Also read |
-|---|---|
-| The application being changed exposes a command-line interface (a console application, or a GUI application that accepts command-line options) | `docs/rules/cli.md` |
-| Creating, changing, moving, renaming, archiving, or deleting any document | `docs/rules/documentation.md` |
-| Any Git write operation or PR operation — commit, branch, push, PR creation, update, or merge | `docs/rules/git.md` |
-| The change requires behavior `docs/specs/{{APP_NAME}}.md` does not cover (spec-first applies) | the Specifications section of `docs/rules/standard.md`, before implementing |
-
-- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the rule files named above, so all rules are loaded before code is written
+- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the files listed above, so all rules are loaded before code is written
 - **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
 - `docs/rules/standard.md`, `docs/rules/documentation.md`, `docs/rules/git.md`, `docs/rules/cli.md`, and `docs/rules/dotnet.md` are managed by dev-standards — never edit them; repository- and application-specific rules go in `docs/rules/{{APP_NAME}}.md`
 
