@@ -207,6 +207,17 @@ files, environment variables, and any other external store.
 - This does not relax Enforce Invariants in Code — that rule governs values the program itself produces, where a violation is a defect and must fail fast. An external value is operator input: the program keeps running on a known-good value and reports what it rejected
 - Precedence between sources, for applications that expose a command line, is in `cli.md` (CONFIG)
 
+### Configuration Files in the Repository
+
+Applies to every configuration file that ships with the application — application
+settings, deployment descriptors, workflow definitions, and the like.
+
+- **The repository tracks a placeholder template, never a working configuration.** The tracked file is `<name>.template.<ext>` and carries placeholder values only; the file the application actually reads is derived from it and stays untracked. A working configuration holds the credentials, host names, and paths of whoever wrote it — committing one leaks them and makes every other environment inherit them
+- **A developer's own configuration is local to that developer.** Derive it from the template, keep it out of version control, and never treat it as a source of truth for anyone else
+- **What ships is derived from the template by the build**, so the distributed file is placeholder-clean by construction. Distribution never picks up a configuration file that happened to be sitting in a working tree
+- **Installation never overwrites an existing configuration.** The derived file is written only when none is present, so updating an installation keeps what the operator configured
+- The template is a real, complete configuration in shape: every key the application reads appears in it, so the file doubles as the documentation of what is configurable
+
 ---
 
 ## Procedure Design

@@ -102,6 +102,7 @@ toolchain cannot enforce one mechanically still states the rule and marks it AUD
 | G6 | The displayed version is the bare `AppName X.Y.Z` by default — the application rules file may override the format; absent an override, the toolchain is configured so no build metadata (commit hash, date) is appended | `standard.md` Version Display; `cli.md` VERSIONOUT | `IncludeSourceRevisionInInformationalVersion=false` in `Directory.Build.props` |
 | G7 | Build output directories are produced only by the build scripts and are gitignored | `dotnet.md` OUTPUT (stack form); generic: **this document** | `common/gitignore.tmpl` keeps outputs out of normal staging (not forced adds or already-tracked files); produced-only-by-scripts is behavioral (`dotnet.md` OUTPUT, AUDIT) |
 | G8 | The distributable leaves nothing behind in a shared location that nothing cleans up: it does not unpack part of itself into a temp directory at run time, and its packaging step ships the whole build output rather than a named artifact — so the delivered file set follows from the dependencies instead of a packaging setting | `dotnet.md` NATIVEDEP (stack form); generic: **this document** | `Directory.Build.props` fails the publish when `IncludeNativeLibrariesForSelfExtract` is enabled; `Setup.iss` ships the publish directory by wildcard; whether a native dependency can be removed altogether is AUDIT (`dotnet.md` NATIVEDEP) |
+| G9 | A configuration file that ships with the application is tracked only as a placeholder template; the build step fails when the real file it derives is under version control, so credentials cannot reach the repository unnoticed | `standard.md` Configuration Files in the Repository; `dotnet.md` CONFIGFILE (stack form) | `Build.ps1` derives the real name of every tracked `*.template.*` configuration file and fails when git tracks it; `gitignore.tmpl` ignores `appsettings.json`; deriving the shipped copy and the installer's `onlyifdoesntexist` entry are AUDIT (`dotnet.md` CONFIGFILE) |
 
 ## 4. Seeded implementation
 
@@ -183,6 +184,7 @@ Confirm every item before releasing a new stack template set:
 - [ ] G6: displayed version bare `X.Y.Z` by default — toolchain appends no metadata
 - [ ] G7: build outputs gitignored and produced only by the build scripts
 - [ ] G8: no run-time self-unpacking into a shared temp location; the packaging step ships the whole build output
+- [ ] G9: only the placeholder template of a configuration file is tracked; the build fails when the derived real file is under version control
 - [ ] S1: sanity test passes on a fresh scaffold and follows the language file's test rules
 - [ ] S2–S3: entry-point seeds satisfy `cli.md` / Version Display
 - [ ] S4: `docs/plans/` and `docs/archive/plans/` gitignored

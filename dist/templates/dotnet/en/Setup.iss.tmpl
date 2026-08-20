@@ -32,6 +32,9 @@ Name: "startmenu"; Description: "Create a Start Menu shortcut"
 ; Ship the whole publish output, not just the executable: a native dependency
 ; adds files beside it (see docs/rules/dotnet.md, NATIVEDEP).
 Source: "{{APP_NAME}}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; An application with a configuration file excludes it from the line above
+; (Excludes: "appsettings.json") and installs it with onlyifdoesntexist, so an
+; update keeps the operator's settings (see docs/rules/dotnet.md, CONFIGFILE).
 
 [Icons]
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon

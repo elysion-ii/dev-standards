@@ -31,6 +31,7 @@ mechanism is added.
 | TESTNAME | xUnit test naming | — | AUDIT |
 | VERSION | Single version definition + CHANGELOG release gate + clean displayed version | Installer script `#ifndef MyAppVersion → #error` guard; the installer build injects the version and gates on a CHANGELOG heading; `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false` | AUDIT — the gates cover only the installer path; "no `<Version>` in a csproj" has no guard, and a deleted `<Version>` in `Directory.Build.props` falls back to the SDK default (1.0.0) unguarded |
 | OUTPUT | Build outputs come only from the build scripts; never manual, never committed | Output directories are gitignored by the scaffold; `Build.ps1` gates publishing on the format check and the test suite | AUDIT — gitignore keeps outputs out of normal staging; it does not stop forced adds, manual additions, or hand-run publishing |
+| CONFIGFILE | Only the placeholder template of a configuration file is tracked; the file the application reads is never committed | `Build.ps1` derives the real name of every tracked `*.template.*` configuration file and fails when git tracks it; the scaffold gitignores `appsettings.json` | Enforced for the commit — deriving the shipped file and the installer's no-overwrite entry stay AUDIT items |
 | NATIVEDEP | Publishing never self-extracts; the native dependencies decide the published file layout | `Directory.Build.props` fails the build when `IncludeNativeLibrariesForSelfExtract` is enabled; `Build.ps1` publishes without it; the installer script ships the whole publish output | Enforced for the property — removing a native dependency, and keeping the installer's file list exhaustive, stay AUDIT items |
 | SERIAL | One dotnet command at a time per solution | — | AUDIT — behavioral: observed at command-execution time, leaves no file artifact to check |
 
@@ -166,6 +167,15 @@ C# specifics:
 
 - **Never manually add files to build output directories, and never commit them** — outputs are produced only by the build scripts (the scaffold gitignores the output directories; `AGENTS.md` names them)
 - **Produce distributables only via the build scripts** — `Build.ps1` runs the format check and the test suite before publishing; invoking `dotnet publish` by hand skips those gates
+
+## CONFIGFILE: Configuration Files
+
+The rule is Configuration Files in the Repository in `standard.md`. Its .NET form:
+
+- **The tracked template is `appsettings.template.json`**; the file the application reads is `appsettings.json`, which the scaffold gitignores. Any other shipped configuration file follows the same `<name>.template.<ext>` naming
+- **`Build.ps1` fails when git tracks the real name** derived from a tracked `*.template.*` file with a configuration extension. The check derives the name instead of consulting a list, so it needs no maintenance and stays inert in a repository that has no template file
+- **`Build.ps1` copies the template into the publish output under the real name** — that copy, not any file from the working tree, is what the installer packages
+- **The installer entry for a configuration file carries `onlyifdoesntexist`** and is excluded from the wildcard that ships the rest of the publish output, so an update keeps the operator's settings
 
 ## NATIVEDEP: Native Dependencies and Publish Layout
 
