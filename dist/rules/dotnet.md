@@ -86,7 +86,7 @@ which semantics were meant. Naming it settles that where the code is written.
 ## ERROR: Error Handling
 
 - **No empty catch blocks:** Every `catch` must handle or log the exception
-- **No raw exception messages in output:** Never display `ex.Message` directly to users
+- **No raw exception messages in output:** Never display `ex.Message` directly to users — it is written for a developer, and carries internal paths, connection strings, and type names
 - **Don't log and rethrow:** The layer that handles an exception (catches without rethrowing) is responsible for logging it. A layer that rethrows must NOT log — each failure is logged exactly once
 
 ## CANCEL: Cancellation Token Propagation
@@ -142,13 +142,15 @@ When I/O targets may be network paths, perform all file reads/writes in local `%
 - **Naming**: Flat under `Path.GetTempPath()` as `{FeatureName}_{Guid.NewGuid():N}.{ext}`
 - **Cleanup**: Always delete in `finally`. Deletion failure is best-effort (log and continue)
 - **Recleanup of leftover files**: Don't rely on the `finally` deletion alone — a killed process or crash can skip it, so retry cleanup elsewhere too
-  - **Desktop apps**: On next startup, retry deleting leftover temp files older than a threshold (tune to the app's run interval)
-  - **Console/long-running apps**: On startup, or at a suitable point within the processing loop (start, end, etc. — whatever fits the app's structure), retry deleting leftover temp files the same way
+  - **Default policy: delete leftover files older than 24 hours.** An application whose run interval makes 24 the wrong number picks its own limit and states the value and the reason in its application rules file
+  - **Desktop apps**: On next startup, retry deleting leftover temp files past that age
+  - **Console/long-running apps**: On startup, or at a suitable point within the processing loop (start, end, etc. — whatever fits the app's structure), retry the same way
 
 ## CONSTANTS: Constants
 
-- **No magic numbers/strings:** Extract hardcoded values to named constants
+- **Name a value when the use site cannot show what it means, or when several sites must keep holding the same value.** A literal whose meaning is evident where it is written (`0`, `1`, an empty string) stays a literal — extracting it names nothing
 - **Application constants** as `const` in the owning class
+- A value operators adjust in the field is a configuration value, not a constant — Configuration Values in `standard.md` states what making it configurable obliges
 
 ## COMMENTS: Code Comments (C# specifics)
 
@@ -156,7 +158,7 @@ The comment philosophy (when to write, what never to write) is in `standard.md`.
 C# specifics:
 
 - **Language:** English
-- **Style:** Simple inline comments (`//`). No XML documentation
+- **Style:** Simple inline comments (`//`). XML documentation comments (`<summary>`, ...) describe an API published to callers outside the repository; an application that publishes none does not write them. A project that ships a library for others to reference is where they belong
 
 ## TESTNAME: xUnit Test Naming
 
@@ -169,8 +171,8 @@ C# specifics:
 - **The version is defined ONLY in the `<Version>` tag of `Directory.Build.props`.** Never add `<Version>` to a csproj or `#define MyAppVersion` to the installer script — duplicate definitions are how versions drift out of sync. The EXE inherits it via MSBuild; the installer build injects it (the `.iss` fails with `#error` when it is not injected)
 - **Version bump**: update `<Version>`, add a `## [x.y.z]` heading and entry to `CHANGELOG.md` if it exists, and include both in the **same commit**. Building the installer without the changelog heading fails at the gate
 - **The installer build is the release packaging step** — it carries the CHANGELOG gate; the EXE that `Build.ps1` publishes is a build output the installer wraps, not a release
-- Semantic Versioning (MAJOR.MINOR.PATCH); during development `0.x.x` (release as `1.0.0`); MINOR: new features, PATCH: bug fixes and small changes
-- **Displayed version** (Version Display in `standard.md`, VERSIONOUT in `cli.md`): read `AssemblyInformationalVersionAttribute` — it equals `<Version>` because `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false`, which stops the SDK from appending `+<git sha>`. Never remove that property while the displayed version must stay `AppName X.Y.Z`
+- Semantic Versioning (MAJOR.MINOR.PATCH); during development `0.x.x` (release as `1.0.0`); MAJOR: incompatible changes, MINOR: new features, PATCH: bug fixes and small changes
+- **Displayed version** (Version Display in `standard.md`, VERSIONOUT in `cli.md`): read `AssemblyInformationalVersionAttribute` — it equals `<Version>` because `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false`, which stops the SDK from appending `+<git sha>`. Never remove that property while the displayed version must stay `<AppName> X.Y.Z`
 
 ## OUTPUT: Build Outputs
 
@@ -195,7 +197,8 @@ The rule is Configuration Files in the Repository in `standard.md`. Its .NET for
 **The goal is the smallest distributable: one self-contained executable.** Self-contained
 single-file publishing reaches it by bundling the runtime and every managed assembly into
 the executable — that is what `PublishSingleFile` in each application's csproj is for, and
-a project with no native dependency publishes as exactly one file.
+a project with no native dependency publishes the application itself as a single
+executable.
 
 NuGet-provided native libraries are the one thing that cannot go inside. Bundling them is
 possible — `IncludeNativeLibrariesForSelfExtract` does it — but they are then unpacked at
