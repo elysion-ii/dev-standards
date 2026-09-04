@@ -19,6 +19,7 @@ mechanism is added.
 | ANALYZERS | Static analysis, warnings are errors | `Directory.Build.props`: `AnalysisLevel=latest-recommended`, `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors` | Enforced |
 | NAMESPACE | File-scoped namespaces only | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`) + warnings-as-errors | Enforced |
 | ASYNC | No blocking on async code; no async without await | VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers`); CS1998 as error | Enforced |
+| DEFERRED | A LINQ query is deferred: no side effects inside a query, enumerate once, exceptions surface at enumeration | `.editorconfig` sets `dotnet_diagnostic.CA1851.severity = warning`, which `TreatWarningsAsErrors` turns into a build error | Enforced for multiple enumeration — side effects inside a query and the placement of `try` have no analyzer and stay AUDIT |
 | VAR | Type inference usage | `.editorconfig` suggestions only | AUDIT |
 | STRING | Explicit `StringComparison` | — | AUDIT |
 | ERROR | Error handling | — | AUDIT |
@@ -64,6 +65,17 @@ Refines the core's Synchronous vs Asynchronous section for .NET:
 - **Never block on async code** (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`) — enforced by the VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers` in `Directory.Build.props`)
 - **Do not mark a method async when nothing in it awaits** — CS1998 is an error under warnings-as-errors
 - When a suppression is genuinely justified (e.g., a synchronous entry point mandated by a framework), follow the ANALYZERS suppression tiers with a reason comment
+
+## DEFERRED: Deferred Execution (LINQ)
+
+A LINQ query is a description of work, not the work. `foreach` runs; a query waits for
+something to enumerate it. Three failures come out of that gap, and none of them
+announces itself.
+
+- **Never place a side effect inside a query.** `Select`, `Where`, and the rest run when the sequence is enumerated — later than the line that reads as the moment it happens, possibly more than once, possibly never. A save, a log write, or an assignment inside a projection fires at a time nothing in the code shows. Transform in the query; act in a `foreach` over the materialized result
+- **Enumerate once.** A sequence still typed as `IEnumerable<T>` re-runs its whole query on every enumeration, and a query over a database or the file system re-runs that I/O with it. Materialize with `ToList()` or `ToArray()` at the point the sequence stops being a query and becomes data. CA1851 makes a second enumeration a build error
+- **An exception surfaces where the sequence is enumerated, not where the query was written.** A `try` wrapped around the query definition catches nothing at all. Wrap the enumeration, or materialize inside the `try`
+- Materializing is the same act `standard.md` Snapshot Before Mutate requires before modifying the source being iterated: one deferral, seen from the mutation side
 
 ## NAMESPACE: Namespaces
 
