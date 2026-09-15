@@ -17,6 +17,7 @@ mechanism is added.
 |----|------|-----------|-------|
 | FORMAT | Formatting follows `.editorconfig` | `dotnet format --verify-no-changes` gate in `Build.ps1` | Enforced — but run the formatter before completion (command in `AGENTS.md`) |
 | ANALYZERS | Static analysis, warnings are errors | `Directory.Build.props`: `AnalysisLevel=latest-recommended`, `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors` | Enforced |
+| UNUSED | A member, parameter, or local the change stopped reaching is removed rather than left behind | `.editorconfig` sets `IDE0051`, `IDE0052`, and `IDE0060` to warning, which `TreatWarningsAsErrors` turns into build errors; the compiler reports an unused local as CS0168/CS0219 without any configuration | Enforced for what an analyzer can see — code still referenced but dead, and a name that outlived its replacement, stay AUDIT |
 | NAMESPACE | File-scoped namespaces only | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`) + warnings-as-errors | Enforced |
 | ASYNC | No blocking on async code; no async without await | VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers`); CS1998 as error | Enforced |
 | DEFERRED | A LINQ query is deferred: no side effects inside a query, enumerate once, exceptions surface at enumeration | `.editorconfig` sets `dotnet_diagnostic.CA1851.severity = warning`, which `TreatWarningsAsErrors` turns into a build error | Enforced for multiple enumeration — side effects inside a query and the placement of `try` have no analyzer and stay AUDIT |
@@ -57,6 +58,21 @@ mechanism is added.
 | A whole project | Add the ID to `<NoWarn>` in that csproj. Reason comment required |
 
 - The reason comment states why this warning is acceptable here as a current constraint ("for now" or "fix later" is not a reason)
+
+## UNUSED: Code the Change Stopped Reaching
+
+`standard.md` Leave No Vestiges requires the replaced code to go. `.editorconfig` raises
+the diagnostics that can see the part of that requirement a compiler can decide:
+
+| Diagnostic | What the diagnostic reports |
+|---|---|
+| CS0168 / CS0219 | A local declared, or assigned, and never read — a compiler warning already, needing no configuration |
+| IDE0051 / IDE0052 | A private member nothing references, and a private field nothing reads |
+| IDE0060 | A parameter the method body never uses |
+
+- Remove the member, parameter, or local the diagnostic names. A parameter still passed by a caller makes the caller the thing to change, not a reason to keep the parameter
+- Where something outside the method fixes the signature — a delegate shape, an interface implementation, a framework-invoked handler — suppress `IDE0060` at the narrowest scope in the ANALYZERS table, with the reason naming what fixes the signature. Never lower the severity repository-wide
+- What no diagnostic can see stays an AUDIT item: a branch still called but never taken, a wrapper retained for an old call shape, and a name that outlived the thing the name was distinguished from
 
 ## ASYNC: Asynchronous Code
 

@@ -87,6 +87,18 @@ soon as a variation means editing branches spread across existing code.
 
 - Prefer structures where adding a variation (new screen, format, identifier) means adding a new unit plus a registration, not editing branches across existing code
 
+### Leave No Vestiges
+
+A reader of the code cannot see what the code used to be, so whatever survives from the
+previous shape reads as a live requirement. Write the change so that the code reads as
+though the new shape were the only shape the code ever had.
+
+- Delete what the change replaced: the superseded implementation, the fields, parameters, and branches nothing reaches any more, and the flag that selected between the old path and the new one. A wrapper left behind so that the old call shape still compiles is the No Lasagna Code case arriving by way of a change, and goes the same way
+- Do not name a thing by its relation to what that thing replaced (`_old`, `_new`, `V2`, `Legacy`, `Ex`) — a relational name is legible only to a reader who saw both shapes, and a relational name is already wrong at the change after this one. The replacement takes the name the replaced thing held
+- Git history holds the previous shape, so keeping a second copy of the previous shape in the working tree is the "what was changed or removed" row of Where to Put What, committed as code instead of as a comment
+- **The exception is a dependent the change cannot reach**: a published API whose consumers this repository does not edit, a persisted data format, a wire protocol, a stored configuration schema. Where every caller is inside the change's reach, nothing is owed — update the callers rather than preserve the old shape on their behalf
+- A path retained for compatibility is a current requirement rather than a vestige, so the site states which dependent requires the retained path and which condition ends the obligation. Lacking the named dependent and the ending condition, no reader can tell the retained path from a leftover, and no reader ever removes the retained path
+
 ### Enforce Invariants in Code
 
 - Prefer compile-time impossibility over runtime checks: where practical, express the rule in types (stage-specific interface return types for call order, required constructor arguments, narrowed parameter types) so violations do not compile
