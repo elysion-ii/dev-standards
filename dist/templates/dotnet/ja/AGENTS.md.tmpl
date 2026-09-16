@@ -23,20 +23,17 @@
 
 ## 規則とAUDIT
 
-`docs/rules/` には core(`standard.md`・`documentation.md`・`git.md`・`cli.md`・
-`dotnet.md`)と、本リポジトリ固有のルールおよび core の上書きを収めた
-`docs/rules/{{APP_NAME}}.md` が置かれている。矛盾したときは `{{APP_NAME}}.md` が優先し、
-core の内部では `dotnet.md` が `standard.md` に優先する。
+`docs/rules/` の規則は3層で構成される。
+- **アプリルール**: `docs/rules/{{APP_NAME}}.md`(本リポジトリ固有の規則および上書き)
+- **スタックルール**: `docs/rules/dotnet.md`(.NET スタック規則、dev-standards 管理)
+- **coreルール**: 共有エンジニアリング標準(`standard.md`・`documentation.md`・`git.md`・`cli.md`、dev-standards 管理)
 
-**実装に着手する前に、これらすべてと `docs/specs/{{APP_NAME}}.md` を読むこと。**
-省略してよいのは `cli.md` だけで、{{APP_NAME}} がコマンドラインインターフェースを持たない間
-(コンソールアプリでもなく、コマンドラインオプションを受け取るGUIアプリでもない)に限る。
-それ以外を「今回の作業には関係ない」と判断して読まずにおくことが、規則が適用されない
-まま終わる原因になる。
+**競合時の優先順位**: アプリルール > スタックルール > coreルール
 
-- **計画から実装へ移行するとき**は、本ファイル(ルートおよび作業範囲を覆うネストされた `AGENTS.md`)と上に挙げたファイルを再読込してから実装に着手すること
-- **実装タスクの完了を報告する前に**、`docs/rules/standard.md` 末尾のAUDIT手順を実行すること
-- `docs/rules/standard.md`・`docs/rules/documentation.md`・`docs/rules/git.md`・`docs/rules/cli.md`・`docs/rules/dotnet.md` は dev-standards の管理ファイルであり、編集してはならない。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
+- **規則の適用範囲**: すべての変更は `docs/rules/` 配下のすべての規則ファイルと `docs/specs/{{APP_NAME}}.md` に厳格に従う。`cli.md` は {{APP_NAME}} がコマンドラインインターフェースを持つ場合にのみ適用する
+- **規則の読み込み**: コードを書き始める前(計画から実装へ移行する時点を含む)に、本ファイルと `docs/rules/` 配下のすべてのファイルを読むこと
+- **完了ゲート(AUDIT)**: 実装タスクの完了を報告する前に、`docs/rules/standard.md` 末尾のAUDITゲートを通過すること
+- **ファイルの編集権限**: dev-standards が管理する `docs/rules/` 配下の規則ファイルは読み取り専用である。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
 
 ## コマンド
 

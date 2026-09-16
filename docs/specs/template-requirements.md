@@ -7,7 +7,7 @@ created: 2026-07-30
 
 The stack-agnostic requirements every stack template set must satisfy, so that a
 repository generated from it complies with the shared standards. Work through this
-document when adding a new stack (a new `dist/rules/<language>.md` plus
+document when adding a new stack (a new `dist/rules/<stack>.md` plus
 `dist/templates/<stack>/`), and when auditing an existing template set against the
 standard.
 
@@ -35,7 +35,7 @@ the mechanism may differ, the guarantee may not.
 
 | Part | Content |
 |---|---|
-| `dist/rules/<language>.md` | The language rule file, opening with an enforcement matrix |
+| `dist/rules/<stack>.md` | The stack rule file, opening with an enforcement matrix |
 | `dist/templates/<stack>/common/` | Scaffold files identical across natural-language variants |
 | `dist/templates/<stack>/en/`, `ja/` | Natural-language variants, in parity (invariant in `docs/specs/dev-standards.md`) |
 
@@ -69,11 +69,11 @@ verifiable against `dist/`.
 |----|-------------|-----------|------------------|
 | R1 | `AGENTS.md` router: stack facts, real commands, Applications table, reading and AUDIT instructions — no rule text. The boundary: a router line may state a trigger and point at the rule body ("spec-first applies — read ..."), and may state facts about maintaining the router files themselves (which file to edit, which files are dev-standards-managed); any other sentence that would still bind on its own if the rule file dropped it is rule text and belongs in `docs/rules/` | `dev-standards.md` Placement model; `documentation.md` Document responsibilities; the boundary criterion: **this document** | `{lang}/AGENTS.md.tmpl` |
 | R2 | `CLAUDE.md` at the root is a one-line import of `AGENTS.md`, so both harness entry files route to the same single router | **this document** (each generated router restates it in place) | `dotnet/common/CLAUDE.md.tmpl` |
-| R3 | The `AGENTS.md` Commands table names the stack's real commands for format, format check, build, and test; AUDIT step 4 runs the format check, build, and test entries (the plain format command exists to fix code, not to verify it) | `standard.md` How to use §2 (`AGENTS.md` states the concrete commands) and AUDIT step 4; the Commands-table form: **this document** | Commands table in `AGENTS.md.tmpl` |
-| R4 | `docs/rules/` receives, verbatim: `standard.md`, `documentation.md`, `git.md`, `cli.md`, and the stack's `<language>.md` | `dev-standards.md` Distribution contract | Scaffolding obligation — copy each file this row selects, byte-identical (never the whole `dist/rules/` directory: other stacks' language files stay out) |
+| R3 | The `AGENTS.md` Commands table names the stack's real commands for format, format check, build, and test; AUDIT step 4 runs the format check, build, and test entries (the plain format command exists to fix code, not to verify it) | `standard.md` How to use → Stack conformance (`AGENTS.md` states the concrete commands) and AUDIT step 4; the Commands-table form: **this document** | Commands table in `AGENTS.md.tmpl` |
+| R4 | `docs/rules/` receives, verbatim: `standard.md`, `documentation.md`, `git.md`, `cli.md`, and the stack's `<stack>.md` | `dev-standards.md` Distribution contract | Scaffolding obligation — copy each file this row selects, byte-identical (never the whole `dist/rules/` directory: other stacks' stack rule files stay out) |
 | R5 | Application rules file and specification skeletons: front-mattered, declared as a pair in the Applications table, and the specification skeleton carries the section structure `documentation.md` requires (purpose, scope, users/external systems, behavior, I/O, errors, invariants, non-functional, out of scope) | `dev-standards.md` Distribution contract; `documentation.md` Category notes (`docs/specs/`) and Front matter | `{lang}/app-rules.md.tmpl`, `{lang}/spec.md.tmpl` |
-| R6 | When a language rule's rationale lives in an ADR, that ADR is scaffolded into every generated repository so the citation resolves — and the ADR itself conforms to `documentation.md`'s ADR rules (front matter `status` only; body sections Context / Decision / Consequences) | scaffolding: **this document**; ADR conformance: `documentation.md` Category notes (`docs/adr/`) | `{lang}/0001-cancellation-token-plumbing.md.tmpl` for `dotnet.md` CANCEL; landing it in the generated repository is a scaffolding obligation |
-| R7 | The router names every rule and specification file it routes to by the path it is generated at — the stack's language rule file, the application's rules file, the application's specification — never by a generic description ("the language file", "the specification"). A stack template set resolves its own stack; leaving the reader to do it is how a file goes unread | **this document** | `{lang}/AGENTS.md.tmpl` names `docs/rules/dotnet.md`, `docs/rules/{{APP_NAME}}.md`, and `docs/specs/{{APP_NAME}}.md` |
+| R6 | When a stack rule's rationale lives in an ADR, that ADR is scaffolded into every generated repository so the citation resolves — and the ADR itself conforms to `documentation.md`'s ADR rules (front matter `status` only; body sections Context / Decision / Consequences) | scaffolding: **this document**; ADR conformance: `documentation.md` Category notes (`docs/adr/`) | `{lang}/0001-cancellation-token-plumbing.md.tmpl` for `dotnet.md` CANCEL; landing it in the generated repository is a scaffolding obligation |
+| R7 | The router names every rule and specification file it routes to by the path it is generated at — the stack's stack rule file, the application's rules file, the application's specification — never by a generic description ("the stack rule file", "the specification"). A stack template set resolves its own stack; leaving the reader to do it is how a file goes unread | **this document** | `{lang}/AGENTS.md.tmpl` names `docs/rules/dotnet.md`, `docs/rules/{{APP_NAME}}.md`, and `docs/specs/{{APP_NAME}}.md` |
 
 ## 2. Agent harness wiring
 
@@ -89,16 +89,16 @@ contributes only H3's command list.
 
 ## 3. Mechanical gates
 
-Every stack provides these guarantees. The language file's enforcement matrix
+Every stack provides these guarantees. The stack rule file's enforcement matrix
 classifies each resulting rule as Enforced (mechanism named) or AUDIT; a stack whose
 toolchain cannot enforce one mechanically still states the rule and marks it AUDIT.
 
 | ID | Requirement | Stated in | .NET realization |
 |----|-------------|-----------|------------------|
-| G1 | A code formatter exists with a single root configuration and a check mode; the check is a build-script gate and a completion condition | `standard.md` How to use §2 and AUDIT step 4 (a formatter with a check mode is presupposed and run); root configuration and build-script wiring: **this document**; `dotnet.md` FORMAT (stack form) | `.editorconfig`; `dotnet format --verify-no-changes` in `Build.ps1` |
+| G1 | A code formatter exists with a single root configuration and a check mode; the check is a build-script gate and a completion condition | `standard.md` How to use → Stack conformance and AUDIT step 4 (a formatter with a check mode is presupposed and run); root configuration and build-script wiring: **this document**; `dotnet.md` FORMAT (stack form) | `.editorconfig`; `dotnet format --verify-no-changes` in `Build.ps1` |
 | G2 | Static analysis (lint) is configured, enabling at least the toolchain's standard recommended ruleset — an effectively empty diagnostic set does not qualify; warnings fail the build (zero-warnings); disabling the gate wholesale is prohibited; individual diagnostics are suppressed at the narrowest scope with a current reason | `standard.md` AUDIT step 4 (zero-warning build); analysis configuration, no wholesale disabling, suppression discipline: **this document**; `dotnet.md` ANALYZERS (stack form) | `Directory.Build.props`: `AnalysisLevel=latest-recommended`, `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors`; VSTHRD analyzers |
 | G3 | Tests run as a gate before any distributable artifact is produced | **this document** (generic); `dotnet.md` OUTPUT (stack form) | `Build.ps1`: format check → tests → publish; `dotnet.md` OUTPUT requires distributables to come only from the build scripts |
-| G4 | The version is defined in exactly one place and every artifact and displayed value derives from it. The language file enumerates every derivation path the stack's artifacts actually have (e.g. artifact or package metadata, an installer where one exists, the displayed value); each path either carries a build-time guard that fails when the value does not come from the single source, or appears as an AUDIT item with the reason no guard is possible. Fallback constants that mask a missing source value are prohibited — a derivation that cannot obtain the value fails fast | `standard.md` Version Display (display side); single-sourcing: `dotnet.md` VERSION (stack form), generic: **this document** | `<Version>` in `Directory.Build.props`; the installer build injects it and the `.iss` fails with `#error` when not injected; "no `<Version>` in a csproj" has no guard and stays AUDIT (`dotnet.md` VERSION) |
+| G4 | The version is defined in exactly one place and every artifact and displayed value derives from it. The stack rule file enumerates every derivation path the stack's artifacts actually have (e.g. artifact or package metadata, an installer where one exists, the displayed value); each path either carries a build-time guard that fails when the value does not come from the single source, or appears as an AUDIT item with the reason no guard is possible. Fallback constants that mask a missing source value are prohibited — a derivation that cannot obtain the value fails fast | `standard.md` Version Display (display side); single-sourcing: `dotnet.md` VERSION (stack form), generic: **this document** | `<Version>` in `Directory.Build.props`; the installer build injects it and the `.iss` fails with `#error` when not injected; "no `<Version>` in a csproj" has no guard and stays AUDIT (`dotnet.md` VERSION) |
 | G5 | Each stack designates its release packaging step — the step that produces what end users receive — and that step fails when `CHANGELOG.md` exists without a heading for the current version. Build steps that emit runnable outputs for development are not release steps and carry no gate | `dotnet.md` VERSION (stack form, including the designation); generic: **this document** | `Installer.ps1` is the designated release step and carries the gate; the EXE from `Build.ps1` is the build output the installer wraps |
 | G6 | The displayed version is the bare `AppName X.Y.Z` by default: the toolchain is configured so no build metadata (commit hash, date) is appended | `standard.md` Version Display; `cli.md` VERSIONOUT | `IncludeSourceRevisionInInformationalVersion=false` in `Directory.Build.props` |
 | G7 | Build output directories are produced only by the build scripts and are gitignored | `dotnet.md` OUTPUT (stack form); generic: **this document** | `common/gitignore.tmpl` keeps outputs out of normal staging (not forced adds or already-tracked files); produced-only-by-scripts is behavioral (`dotnet.md` OUTPUT, AUDIT) |
@@ -114,28 +114,28 @@ against (S8 turns that claim into a checkable duty).
 
 | ID | Requirement | Stated in | .NET realization |
 |----|-------------|-----------|------------------|
-| S1 | An executable test suite the G3 gate runs, containing a passing sanity test that conforms to the language file's test rules — a separate test project or an in-package test directory, per the stack's convention | **this document** | `common/csproj/tests.csproj.tmpl` + `common/SanityTest.cs.tmpl` |
+| S1 | An executable test suite the G3 gate runs, containing a passing sanity test that conforms to the stack rule file's test rules — a separate test project or an in-package test directory, per the stack's convention | **this document** | `common/csproj/tests.csproj.tmpl` + `common/SanityTest.cs.tmpl` |
 | S2 | CLI entry point seeds implement, compliantly with `cli.md`: `--version`/`-V` printing `appname X.Y.Z` from the single version source (mandatory); `--help`/`-h` (recommended by `cli.md`; seeding it is required here); `--` ends option parsing; unknown option → `app: <message>` on stderr with a `--help` hint, exit 2. The version read carries no hardcoded fallback constant — it fails fast when the version metadata is absent; paths the seed cannot guard (a toolchain substituting its own default when the single source is deleted) are G4 AUDIT items | `cli.md` RESERVED, VERSIONOUT, OPTIONS, ERRORMSG, EXITCODES; help seeding and the fail-fast version read: **this document** (G4) | `common/entrypoint/console.Program.cs.tmpl` |
 | S3 | GUI entry points display `AppName X.Y.Z` somewhere always reachable, read from the single version source with no hardcoded fallback constant (unguardable toolchain-default paths are G4 AUDIT items) | `standard.md` Version Display; the fail-fast read: **this document** (G4) | WPF/WinUI 3 title bar; Win32 caption |
 | S4 | `docs/plans/` and `docs/archive/plans/` are gitignored (plans stay local by default) | `documentation.md` Category notes (`docs/plans/`) | `common/gitignore.tmpl` |
 | S5 | Text normalization and encoding policy is pinned at the root: text files are normalized in the Git index, file types that demand a fixed line ending declare it explicitly, and the charset is pinned in the editor/formatter configuration | **this document** | `common/gitattributes.tmpl` (`* text=auto` plus per-type refinements; explicit `eol=` for platform scripts); `common/editorconfig.tmpl` (`charset = utf-8`) |
 | S6 | README and LICENSE exist as template variants; whether they are generated is the scaffolding procedure's choice — the template set never forces them | **this document** | Templates: `{lang}/README.md.tmpl`, `common/LICENSE.MIT.tmpl`; offering the choice is a scaffolding obligation |
 | S7 | Non-artifact files generated by the stack toolchain, IDEs, and the OS (caches, virtual environments, editor state, `Thumbs.db`/`.DS_Store`) are gitignored | **this document** | `common/gitignore.tmpl` IDE and OS sections |
-| S8 | Every template-generated file passes the AUDIT rules that apply to it — core and language file for code, `documentation.md` for documents | **this document** | All of `common/` and `{lang}/`; checking them against the rules is a release-check obligation |
+| S8 | Every template-generated file passes the AUDIT rules that apply to it — core and stack rule file for code, `documentation.md` for documents | **this document** | All of `common/` and `{lang}/`; checking them against the rules is a release-check obligation |
 | S9 | A fresh scaffold of every application type and every natural-language variant passes the three gates — the format check, the build, and the tests all exit 0 | `standard.md` AUDIT step 4 (the gates); running them per scaffold combination: **this document** | Release-check obligation — scaffold each combination and run the three commands |
 
-## 5. Language rule file obligations
+## 5. Stack rule file obligations
 
-What `dist/rules/<language>.md` itself must contain.
+What `dist/rules/<stack>.md` itself must contain.
 
 | ID | Requirement | Stated in | .NET realization |
 |----|-------------|-----------|------------------|
-| L1 | Opens with an enforcement matrix classifying **every** rule in the file as Enforced (mechanism named) or AUDIT | `standard.md` How to use §4; `docs/rules/dev-standards.md` (new rule → matrix row) | `dotnet.md` matrix |
+| L1 | Opens with an enforcement matrix classifying **every** rule in the file as Enforced (mechanism named) or AUDIT | `standard.md` How to use → Enforcement matrix; `docs/rules/dev-standards.md` (new rule → matrix row) | `dotnet.md` matrix |
 | L2 | States the stack form of each §3 gate, naming the mechanism where one exists and classifying the rule Enforced or AUDIT accordingly — a partially guarded rule stays AUDIT with its mechanism named | **this document** | FORMAT, ANALYZERS (Enforced); VERSION, OUTPUT (mechanism named, AUDIT) — OUTPUT is the stack form of G3 |
-| L3 | Refines `standard.md` Synchronous vs Asynchronous for the stack's concurrency model | `standard.md` (language files refine it) | ASYNC |
-| L4 | States the stack's version-management rules: where the single version definition lives and how the displayed value derives from it | `standard.md` Version Display (delegates to the language file) | VERSION |
+| L3 | Refines `standard.md` Synchronous vs Asynchronous for the stack's concurrency model | `standard.md` (stack rules refine it) | ASYNC |
+| L4 | States the stack's version-management rules: where the single version definition lives and how the displayed value derives from it | `standard.md` Version Display (delegates to the stack rule file) | VERSION |
 | L5 | Token-free and free of front matter, like every distributed rule file | `docs/rules/dev-standards.md` Distributed content | — |
-| L6 | Every matrix row marked Enforced names a mechanism the template set actually ships — configuration, dependencies, and gate wiring included — and, for each Enforced row, a representative violation fails the build on a fresh scaffold | `standard.md` How to use §4 (Enforced means scaffold-guaranteed); the verification duty: **this document** | `Directory.Build.props` + `.editorconfig` + the VSTHRD package carry ANALYZERS, NAMESPACE, ASYNC; `Build.ps1` wires the FORMAT gate; the fresh-scaffold violation check is a release-check obligation |
+| L6 | Every matrix row marked Enforced names a mechanism the template set actually ships — configuration, dependencies, and gate wiring included — and, for each Enforced row, a representative violation fails the build on a fresh scaffold | `standard.md` How to use → Enforcement matrix (Enforced means scaffold-guaranteed); the verification duty: **this document** | `Directory.Build.props` + `.editorconfig` + the VSTHRD package carry ANALYZERS, NAMESPACE, ASYNC; `Build.ps1` wires the FORMAT gate; the fresh-scaffold violation check is a release-check obligation |
 | L7 | States the stack's logging rules: where log files go, how they rotate, and a retention policy that bounds what an application keeps — including the default an application overrides only in its own rules file. The limiting axis follows what the stack's logging tooling makes first-class | **this document** | LOGGING |
 
 ## 6. Template-set invariants
@@ -172,15 +172,15 @@ Confirm every item before releasing a new stack template set:
 
 - [ ] R1–R2: `AGENTS.md` router variant (en/ja) with `CLAUDE.md` one-line import
 - [ ] R3: Commands table filled with the stack's real format / format check / build / test commands
-- [ ] R4: distribution list covers `standard.md`, `documentation.md`, `git.md`, `cli.md`, `<language>.md`
+- [ ] R4: distribution list covers `standard.md`, `documentation.md`, `git.md`, `cli.md`, `<stack>.md`
 - [ ] R5: app-rules and spec skeletons — front-mattered, paired in the Applications table, spec sections per `documentation.md`
-- [ ] R6: every ADR cited by the language file has a scaffolded, `documentation.md`-conformant template
-- [ ] R7: the router names generated paths, never "the language file" or "the specification"
+- [ ] R6: every ADR cited by the stack rule file has a scaffolded, `documentation.md`-conformant template
+- [ ] R7: the router names generated paths, never "the stack rule file" or "the specification"
 - [ ] H1–H2: `shared/` hooks reused unchanged
 - [ ] H3: permission allowlist lists the AUDIT commands (format check, build, test)
 - [ ] H4: squash-only repository setting applied by the scaffolding procedure when the host supports it (default strategy per `git.md`)
 - [ ] G1: formatter + root config + check mode wired as a build gate
-- [ ] G2: static analysis with zero-warnings gate; suppression tiers defined in the language file
+- [ ] G2: static analysis with zero-warnings gate; suppression tiers defined in the stack rule file
 - [ ] G3: tests gate artifact production in the build script
 - [ ] G4: single version definition wired to artifacts and display; every derivation path guarded or an AUDIT item with reason; no fallback constants
 - [ ] G5: the designated release packaging step gated on the `CHANGELOG.md` heading
@@ -189,7 +189,7 @@ Confirm every item before releasing a new stack template set:
 - [ ] G8: fewest files, ideally one executable; no run-time self-unpacking into a shared location; the packaging step ships the whole build output
 - [ ] G9: only the placeholder template of a configuration file is tracked; the build fails when the derived real file is under version control
 - [ ] G10: installing over and removing a running application is handled — detected, the user is offered a way to close it, nothing force-closed on the user's behalf
-- [ ] S1: sanity test passes on a fresh scaffold and follows the language file's test rules
+- [ ] S1: sanity test passes on a fresh scaffold and follows the stack rule file's test rules
 - [ ] S2–S3: entry-point seeds satisfy `cli.md` / Version Display
 - [ ] S4: `docs/plans/` and `docs/archive/plans/` gitignored
 - [ ] S5: text normalization and charset pinned at the root
@@ -197,7 +197,7 @@ Confirm every item before releasing a new stack template set:
 - [ ] S7: toolchain/IDE/OS-generated non-artifacts gitignored
 - [ ] S8: every template-generated file (all of `common/` and `{lang}/`) passes its applicable AUDIT rules
 - [ ] S9: fresh scaffolds of every app type and variant pass format check, build, and test (exit 0)
-- [ ] L1–L5: language file complete, matrix rows for every rule
+- [ ] L1–L5: stack rule file complete, matrix rows for every rule
 - [ ] L6: every Enforced mechanism ships in the scaffold; per Enforced row, a representative violation fails a fresh-scaffold build
 - [ ] L7: log location, rotation, and a bounded retention policy stated for the stack
 - [ ] §6: en/ja parity, token vocabulary respected, no rule text outside the app-rules skeleton

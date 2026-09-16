@@ -1,9 +1,8 @@
 # .NET Standards
 
-Language rules file for .NET. Read together with `standard.md` (the language-agnostic
-core) in the same directory. This file is token-free by design: concrete commands with
-real project names (`dotnet format <App>.slnx`, ...) live in each repository's
-`AGENTS.md`.
+Stack rules file for .NET, refining the shared core rules (`docs/rules/`) for the
+.NET platform. Concrete commands with real project names (`dotnet format <App>.slnx`, ...)
+live in each repository's `AGENTS.md`.
 
 ## Enforcement matrix
 

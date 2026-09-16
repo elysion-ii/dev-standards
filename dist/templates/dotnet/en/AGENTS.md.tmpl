@@ -23,20 +23,17 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 ## Rules and AUDIT
 
-`docs/rules/` holds the core — `standard.md`, `documentation.md`, `git.md`, `cli.md`,
-`dotnet.md` — and `{{APP_NAME}}.md`, which carries this repository's own rules and its
-overrides of the core. `{{APP_NAME}}.md` wins on conflict; within the core `dotnet.md`
-wins over `standard.md`.
+Rules in `docs/rules/` are organized into three tiers:
+- **Application rules**: `docs/rules/{{APP_NAME}}.md` (this repository's own rules and overrides)
+- **Stack rules**: `docs/rules/dotnet.md` (.NET stack rules, managed by dev-standards)
+- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `cli.md`; managed by dev-standards)
 
-**Before implementing any change, read all of them, and `docs/specs/{{APP_NAME}}.md` with
-them.** `cli.md` is the only one you may skip, and only while {{APP_NAME}} exposes no
-command-line interface — neither a console application nor a GUI application that
-accepts command-line options. Judging any other file unrelated to the work at hand and
-leaving it unread is how a rule goes unapplied.
+**Precedence on conflict**: Application rules > Stack rules > Core rules.
 
-- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and the files listed above, so all rules are loaded before code is written
-- **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
-- `docs/rules/standard.md`, `docs/rules/documentation.md`, `docs/rules/git.md`, `docs/rules/cli.md`, and `docs/rules/dotnet.md` are managed by dev-standards — never edit them; repository- and application-specific rules go in `docs/rules/{{APP_NAME}}.md`
+- **Rule Scope**: Every change must strictly comply with every rule file under `docs/rules/` and `docs/specs/{{APP_NAME}}.md`. `cli.md` applies only while {{APP_NAME}} exposes a command-line interface.
+- **Loading Rules**: Read this file and every file under `docs/rules/` before writing code (including when transitioning from a plan to implementation).
+- **Completion Gate (AUDIT)**: Before reporting an implementation task as complete, pass the AUDIT gate in `docs/rules/standard.md`.
+- **File Ownership**: Rules managed by dev-standards under `docs/rules/` are read-only; place repository- and application-specific rules in `docs/rules/{{APP_NAME}}.md`.
 
 ## Commands
 

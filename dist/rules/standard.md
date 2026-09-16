@@ -1,29 +1,25 @@
 # Shared Engineering Standards (core)
 
 Shared engineering standards, distributed into each repository at `docs/rules/`. This
-file is the language-agnostic core. Language-specific rules live in sibling files in the
-same directory (`dotnet.md`, ...); application-specific rules live in the application's
-rules file listed in the repository's `AGENTS.md` Applications table.
+file is the stack-agnostic core. Stack-specific rules live in sibling files in the
+same directory (`dotnet.md`, `typescript.md`, `python.md`, ...); application-specific
+rules live in the application's rules file listed in the repository's `AGENTS.md`
+Applications table.
 
 ## How to use these rules
 
-Read every rule file in this directory before implementing any change, together with
-the rules file and specification of the application being changed — the `AGENTS.md`
-Applications table names both. `cli.md` is the only file that may be skipped, and only
-while that application exposes no command-line interface (neither a console application
-nor a GUI application that accepts command-line options). Judging any other file
-unrelated to the work at hand and leaving it unread is how a rule goes unapplied.
+Rules in `docs/rules/` are organized into three tiers:
+- **Application rules**: `docs/rules/<App>.md` (repository- and application-specific rules)
+- **Stack rules**: Technology-stack rules (`dotnet.md`, `typescript.md`, `python.md`, ...)
+- **Core rules**: Shared standards (`standard.md`, `documentation.md`, `git.md`, `cli.md`)
 
-- A repository reads the language files matching its technology stack — a .NET
-  repository reads `dotnet.md`, a multi-stack repository reads every matching file. Its
-  `AGENTS.md` states the stack and the concrete commands (formatter, build, test).
-- Each language file begins with an **enforcement matrix** stating which rules the
-  project scaffold enforces mechanically (analyzers, build gates) and which must be
-  checked by AUDIT.
-- Precedence on conflict: the more specific file wins — application rules > language
-  rules and `cli.md` > this file. `AGENTS.md` holds no rule text; it only routes.
-- Before reporting an implementation task as complete, run **AUDIT** (bottom of this
-  file).
+**Precedence on conflict**: Application rules > Stack rules > Core rules. `AGENTS.md` provides routing and commands only.
+
+- **Rule Scope**: Every change complies with every file under `docs/rules/` and the specification of the application being changed under `docs/specs/`.
+- **Required reading**: Read all of them before implementing any change. `cli.md` is the single exception, left unread only while that application exposes no command-line interface.
+- **Stack conformance**: Repositories apply the stack rules matching their technology stack, verified by commands in `AGENTS.md`.
+- **Enforcement matrix**: Each stack rule file opens with a matrix classifying every rule as mechanically enforced (analyzers, build gates) or verified by AUDIT.
+- **Completion requirement**: Passing the AUDIT gate at the end of this file is mandatory before reporting any task complete.
 
 ---
 
@@ -48,28 +44,23 @@ unrelated to the work at hand and leaving it unread is how a rule goes unapplied
 
 ### Declarative Where It Removes Machinery
 
-Neither form is better by default. A query pipeline is not safer than a loop, and a loop
-is not clearer than a pipeline. What decides it is how much the reader has to hold in
-their head, and that is visible.
+Choose between declarative pipelines (LINQ, map/filter) and imperative loops based on which form minimizes cognitive load:
 
-- Write the transformation declaratively when doing so **removes** machinery that carries no meaning: a mutable accumulator, an index, a nesting level, an append call. What remains is the transformation the reader came for — filter, map, group, sort
-- Keep the loop when the declarative form **adds** machinery to force the logic into a shape it does not have: a tuple accumulator standing in for mutable state, extra traversals to produce what one traversal already produced, a fold whose body is the loop body with its state spelled out
-- The test is not "which is simpler". Simplicity is a judgement about the reader, and the writer is a poor judge of it. The test is whether the rewrite subtracted mechanism or added it, which anyone can check
-- Control flow is machinery a declarative form usually adds rather than removes: early exit with a reason, per-item error handling, cancellation checks, state that depends on the previous element. These stay imperative
-- Performance justifies keeping the form that reads worse **only with a measurement behind it**. Without one, write the form that removes machinery: an unmeasured belief about speed is not a reason to make code harder to read
-- This rule governs the inside of a function. Which side of the boundary code sits on — pure decision or effectful shell — is Functional Core, Imperative Shell above, and it wins where the two meet: the shell is a sequence of steps and stays one
+- **Use declarative pipelines** when doing so removes boilerplate machinery: mutable accumulators, manual index tracking, nested loops, or manual list appending. Pure data transformations (filtering, mapping, grouping, sorting) belong here.
+- **Use imperative loops** when a declarative form forces unnecessary complexity: tuple accumulators mimicking mutable state, multiple traversals where one suffices, or complex folds with convoluted state.
+- **Keep complex control flow imperative**: early exits with reasons, per-item error handling, cancellation checks, and dependencies on previous element states belong in loops.
+- **Performance claims require measurement**: never justify a harder-to-read construct by unmeasured performance assumptions. Keep the cleaner form unless profiler data proves otherwise.
+- **Function boundary precedence**: this rule governs implementation inside a function. Across function boundaries, Functional Core, Imperative Shell governs.
 
 ### Snapshot Before Mutate
 
 - Never modify a data source while lazily iterating over it. This applies to any deferred/streaming enumeration in any language: directory listings (e.g., C# `Directory.EnumerateFiles`, Python `os.scandir`, POSIX `readdir`), collections under `foreach`, DB cursors, lazy queries (LINQ, generators)
 - Some environments throw immediately; others fail silently — entries get skipped, processed twice, or the loop ends early. Absence of an exception does not mean absence of the bug
 - Snapshot first, then mutate: materialize the full item list (e.g., `.ToList()`, `Directory.GetFiles`, `list(...)`, fetch-all) before the loop that modifies the source
-- This is the same principle as Functional Core, Imperative Shell applied to iteration: read everything first, then act on the data already read
 
 ### No Lasagna Code
 
-A layer that adds no behavior still has to be read, navigated, and kept in step with the
-one it forwards to. Layers earn their place by doing something.
+Every layer must add behavior. A layer that only forwards to another is prohibited:
 
 - Do not create pass-through delegation methods that just call another service with the same arguments
 - When extracting shared logic into a new service, update **all** callers to use the new service directly
@@ -82,22 +73,19 @@ one it forwards to. Layers earn their place by doing something.
 
 ### Change as Addition
 
-Adding the tenth variation should cost what the second one cost. It stops costing that as
-soon as a variation means editing branches spread across existing code.
+Adding a variation must not require editing existing code:
 
 - Prefer structures where adding a variation (new screen, format, identifier) means adding a new unit plus a registration, not editing branches across existing code
 
 ### Leave No Vestiges
 
-A reader of the code cannot see what the code used to be, so whatever survives from the
-previous shape reads as a live requirement. Write the change so that the code reads as
-though the new shape were the only shape the code ever had.
+Code must read as though the current implementation were the only one that ever existed. Never preserve superseded code or transitional artifacts in the working tree.
 
-- Delete what the change replaced: the superseded implementation, the fields, parameters, and branches nothing reaches any more, and the flag that selected between the old path and the new one. A wrapper left behind so that the old call shape still compiles is the No Lasagna Code case arriving by way of a change, and goes the same way
-- Do not name a thing by its relation to what that thing replaced (`_old`, `_new`, `V2`, `Legacy`, `Ex`) — a relational name is legible only to a reader who saw both shapes, and a relational name is already wrong at the change after this one. The replacement takes the name the replaced thing held
-- Git history holds the previous shape, so keeping a second copy of the previous shape in the working tree is the "what was changed or removed" row of Where to Put What, committed as code instead of as a comment
-- **The exception is a dependent the change cannot reach**: a published API whose consumers this repository does not edit, a persisted data format, a wire protocol, a stored configuration schema. Where every caller is inside the change's reach, nothing is owed — update the callers rather than preserve the old shape on their behalf
-- A path retained for compatibility is a current requirement rather than a vestige, so the site states which dependent requires the retained path and which condition ends the obligation. Lacking the named dependent and the ending condition, no reader can tell the retained path from a leftover, and no reader ever removes the retained path
+- **Delete replaced code completely**: remove superseded implementations, unreachable fields/parameters/branches, obsolete feature flags, and temporary wrapper methods.
+- **Avoid relational naming**: never name symbols after their predecessor (`_old`, `_new`, `V2`, `Legacy`, `Ex`). The replacement assumes the canonical name directly.
+- **Rely on Git history**: past implementations belong in Git history, never as commented-out code, dead branches, or duplicate classes in the working tree.
+- **External compatibility exception**: preserve superseded shapes only for unmodifiable external dependents (published APIs, wire protocols, stored data schemas). When all callers exist within the repository, update the callers instead of preserving compatibility wrappers.
+- **Document retained compatibility paths**: when preserving a path for external compatibility, explicitly document which external dependent requires it and what condition ends the obligation.
 
 ### Enforce Invariants in Code
 
@@ -110,7 +98,7 @@ though the new shape were the only shape the code ever had.
 - Use async for I/O-bound work (network, DB, file access); keep CPU-bound and pure logic synchronous
 - Async propagates end-to-end: never block on async code (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`)
 - Do not mark a method async when nothing in it awaits
-- Language files refine this per language/framework; they take precedence
+- Stack rules refine this per stack; they take precedence
 
 ---
 
@@ -118,21 +106,19 @@ though the new shape were the only shape the code ever had.
 
 ### Principle
 
-Comments are generally unnecessary. Prefer clear names, simple structure, and code that explains itself.
+Comments are generally unnecessary. Prefer clear naming, explicit types, and self-explaining structure.
 
-Write a comment only when the code cannot express the necessary context by itself. A useful comment explains **why the current shape, condition, guard, or order must be this way now**.
+Write comments only when code cannot express the necessary context by itself. A valid comment explains **why the current shape, condition, guard, or order is required now**.
 
-Even a justified comment is capped at a short conclusion (1–2 lines):
+A justified comment must be concise (1–2 lines at most):
+- **Enforce with code first**: do not write comments for constraints that types or fail-fast assertions can enforce mechanically.
+- **Cite decisions**: when an ADR exists, cite its path alongside a 1-line summary conclusion.
+- **Offload document-sized context**: context exceeding 1–2 lines belongs in an ADR or `docs/references/`, leaving only a 1-line conclusion and a file path in the code comment.
 
-- Check Enforce Invariants in Code first — a constraint that types or a fail-fast check can enforce needs neither a comment nor an ADR
-- When an ADR covers the context, the comment states only the conclusion plus the ADR path
-- Context that does not fit in those two lines is document-sized: its body belongs in an ADR or `docs/references/`, with a one-line conclusion plus the path left at the site. Add it to the document that already covers the subject; a new file is warranted only when the context stands on its own as a decision or a durable fact
-
-Before writing a comment, ask:
-
-- Can a better name, extracted function, type, or test make this clear? If yes, do that instead.
-- Is this about what changed, what was removed, who requested it, or how it was aligned? If yes, put it in Git history, a PR, a ticket, or a design document, not in code.
-- Can the comment be phrased as "this must be this way because..." in terms of the current behavior? If not, do not write it.
+Before writing a comment, verify:
+- Can a clearer name, extracted function, type, or test express this? If yes, do that instead.
+- Is this historical context (what changed, who asked, what was reviewed)? If yes, place it in Git history or a PR description, never in code.
+- Can this be phrased as an active constraint ("this must be this way because...")? If not, omit the comment.
 
 ### Good Comments
 
@@ -221,7 +207,7 @@ after it is built on a guess.
 - GUI applications display it somewhere always reachable in the UI (title bar, about screen, footer)
 - CLI applications provide `--version` / `-V`; the concrete requirements are in `cli.md`
 - The default format is the bare product version — no build hash, build date, or other metadata
-- The displayed value comes from the project's single version definition (see the language file's version-management rules), never from a hardcoded string
+- The displayed value comes from the project's single version definition (see the stack rule's version-management rules), never from a hardcoded string
 
 ---
 
@@ -233,7 +219,7 @@ files, environment variables, and any other external store.
 - **Every configurable value has a built-in default in code**, and the application runs on that default whenever the external value is missing, unparsable, or out of range. A configuration source that is absent or corrupt never fails startup
 - **Validate on read**: replace or clamp invalid values while the configuration is being loaded, so no later code has to defend against them. The valid range belongs to the value's definition, not to checks scattered across its use sites
 - **Report every substitution once**, naming the value, what was rejected, and the default applied. A silent fallback hides operator mistakes and turns a typo into an invisible change of behavior
-- **Externalizing a value is a choice**: a value nobody adjusts in the field stays a named constant in code (see the language file's constants rule). Making it configurable adds the obligations above
+- **Externalizing a value is a choice**: a value nobody adjusts in the field stays a named constant in code (see the stack rule's constants rule). Making it configurable adds the obligations above
 - This does not relax Enforce Invariants in Code — that rule governs values the program itself produces, where a violation is a defect and must fail fast. An external value is operator input: the program keeps running on a known-good value and reports what it rejected
 - Precedence between sources, for applications that expose a command line, is in `cli.md` (CONFIG)
 
@@ -252,72 +238,40 @@ settings, deployment descriptors, workflow definitions, and the like.
 
 ## Procedure Design
 
-Applies to any ordered sequence of steps written for someone — human or agent — to
-execute: guides (`docs/guides/`), release and migration steps, setup instructions, and
-step sequences delivered in a PR description or conversation. Where procedure documents
-are placed is `documentation.md`'s concern; this section governs how the steps
-themselves are designed.
+Applies to all ordered step sequences written for execution by humans or agents: guides (`docs/guides/`), release steps, setup instructions, and procedure lists in PRs or tasks.
 
 ### Design Before Writing
 
-- Do not accrete steps ad hoc. Fix the entry state and the goal state first, then design
-  the path between them before writing any step
-- When the design stops holding mid-way, do not patch around it with extra steps —
-  return to the design, reorder, then rewrite
+- **Define boundaries first**: fix the entry state and target goal state before drafting any step.
+- **Redesign on failure**: when a procedure design breaks midway, re-evaluate and reorder the flow rather than patching around it with ad-hoc steps.
 
 ### Phases and Steps
 
-- Structure any procedure beyond a few steps in two layers: phases (headings) and the
-  steps inside them. One phase = one concern; one step = one operation
-- The phase sequence alone must tell the whole story (e.g., prepare → change → verify →
-  clean up)
-- Do not split for splitting's sake: work that forms one responsibility stays in one
-  step, and a short procedure needs no phases — the same judgment as not creating a
-  folder for a single file
+- **Two-layer structure**: organize long procedures into phases (headings) and discrete steps. One phase = one clear concern; one step = one distinct operation.
+- **Narrative sequence**: phase headings alone must convey the full end-to-end lifecycle (e.g., prepare → change → verify → clean up).
+- **Proportional granularity**: avoid over-splitting. Work that constitutes a single logical operation remains one step; short procedures require no phase headings.
 
 ### Motivated Order
 
-- Adjacency is the only grouping device a document has. Code expresses relatedness
-  through folders and namespaces regardless of distance; a linear document cannot —
-  operations of the same kind scattered across distant steps lose their structure
-- Keep same-kind operations adjacent (e.g., one "update configuration" phase covering
-  app A, then app B) unless a dependency or verification requirement forces separation —
-  "change A, verify A, only then change B" is a valid reason to separate
-- Every step's position must be explainable by dependency, verification, or locality.
-  A step that could move elsewhere without breaking the procedure has no reason to be
-  where it is — regroup it
+- **Group related operations**: keep operations of the same kind adjacent (e.g., updating configuration across multiple services) unless sequencing or verification requirements demand interleaving.
+- **Justifiable positioning**: every step's placement must be strictly explainable by prerequisite dependencies, verification needs, or locality. Regroup steps that could be moved arbitrarily without impact.
 
 ### Step Contract
 
-- A step may rely only on explicitly stated inputs or the outputs of earlier steps —
-  no implicit preconditions. Reading top to bottom must never require looking ahead
-- Every step ends with a verifiable confirmation: not "done" but an observable check
-  ("the command exits 0", "the service responds on port 8080")
-- For substantial procedures, write each step as precondition / operation / confirmation
+- **Explicit prerequisites**: each step relies exclusively on explicit inputs or outputs from prior steps. Never assume implicit preconditions or require looking ahead.
+- **Observable confirmations**: conclude every step with a verifiable outcome (e.g., "command exits 0", "service responds on port 8080"), never a vague "done".
+- **Structured format**: for substantial procedures, format steps as: Precondition → Operation → Confirmation.
 
 ### Name the Place
 
-- Steps adjacent in text implicitly claim "you are still in the same place". When that
-  claim is false, the reader hunts for a control that does not exist in front of them,
-  with no way to tell "wrong place" from "not found yet" — never leave the location
-  implicit
-- Every step names the place it operates in (URL, screen, full path), stated so the
-  reader can verify "am I here?" before looking for the operation's target. On the
-  named place with the item absent, the document is wrong — stop searching, fix the
-  document
-- Moving between places is itself an operation: when consecutive steps happen in
-  different places, write the transition as an explicit step
-- The named place is a claim about the external system, not about the document — verify
-  it against the actual structure (the real UI hierarchy, the real directory tree)
-  instead of assuming continuity from the previous step
+- **Explicit operational context**: state the exact operational location (URL, screen, working directory, window) at the start of each step so the reader can verify context before acting. Never leave location implicit.
+- **Explicit transitions**: moving between environments, directories, or screens is an independent operation; write every transition as an explicit step.
+- **Ground truth verification**: verify stated locations against the real system (actual UI tree, current directory layout), never assuming continuity from prior steps.
 
 ### Automation Boundary
 
-- Do not leave automatable work as manual steps out of inertia; fold it into existing
-  automation (build scripts, batch files) where one exists
-- Keep operations that require human judgment, and irreversible operations, as manual
-  steps, explicitly marked as such ("requires confirmation", "irreversible"). Do not
-  over-integrate
+- **Automate mechanical tasks**: fold repetitive or mechanical steps into scripts and build tooling where available.
+- **Preserve human gates**: keep irreversible actions and critical judgment calls as explicit manual steps, clearly tagged (e.g., "requires manual confirmation", "irreversible").
 
 ---
 
@@ -328,41 +282,47 @@ complete**. Do not report completion until AUDIT passes.
 
 ### 1. Reload the rules
 
-- Re-read the root `AGENTS.md`, and any nested `AGENTS.md` covering the directories you touched
-- Re-read this file, every applicable language file in this directory, and the rules files of the applications you touched (skim is enough if already read this session and unchanged)
+Re-read the following before verifying anything:
+
+- **Routers**: the root `AGENTS.md`, and every nested `AGENTS.md` covering a directory you touched.
+- **Rule files**: every file under `docs/rules/`.
+- **Specifications**: the specification of each application you touched under `docs/specs/`.
+- **Already-read exemption**: a file read in full earlier in the same session and unchanged since does not require re-reading.
 
 ### 2. Identify target files
 
-Git changes determine which **files** are targets — not which lines.
+Git changes determine which **files** are targets — not which lines:
 
-| Input | Targets |
-|-------|---------|
+| Input | Target Scope |
+|-------|--------------|
 | (none specified) | All uncommitted changes: `git status --porcelain` (modified, added, untracked) |
 | A file path | Only that file |
-| A folder path | Files in that folder only |
+| A folder path | All files in that folder |
 
-Check ALL target files. Do not skip any. Do not sample.
+Check ALL target files. Verification applies to **the entire content of every target file** —
+not merely changed lines. Pre-existing violations in a touched file carry the same weight
+as newly introduced violations; every line must comply. Do not sample or skip any target file.
 
-### 3. Check file contents
+### 3. Verify the change against rules and specifications
 
-Once a file is a target, **every line in that file** is subject to all rules — do not
-distinguish between changed and pre-existing lines; a violation is a violation regardless
-of when it was introduced. Check each target file against:
+Verify all of the following:
 
-- The core principles in this file
-- Every language-file rule whose enforcement matrix row says **AUDIT** (skip rules marked as mechanically enforced — the build gate covers them; but if the repository lacks the enforcing mechanism, treat those rules as AUDIT items too)
-- The application-specific rules from the application's rules file (and any other repository-authored files under `docs/rules/`)
-- The application's specification (`docs/specs/...`): implemented behavior must match it, and any needed spec change must have happened before the implementation, never as an after-the-fact edit
-- If the task created, changed, moved, renamed, archived, or deleted any document, also check it against `documentation.md`; if the task performed a Git write or PR operation, also check it against `git.md`
+- **Core rules, in every target file**: Zero violations against `standard.md`, `documentation.md`, and `cli.md` — `cli.md` only while the application exposes a command-line interface.
+- **Git operations, in the change itself**: Zero violations against `git.md`. What `git.md` governs is the commit split, the commit messages, the branch name, and the pull request of this change, so the object verified against it is the change, never a file's content.
+- **Stack rules, in every target file**: Zero violations against all stack rules marked **AUDIT** in their enforcement matrix (if an enforcing mechanism is missing from the repository, treat those rules as AUDIT items as well).
+- **Application rules, in every target file**: Zero violations against `docs/rules/<App>.md` and any other repository-authored rules under `docs/rules/`.
+- **Specification**: Implemented behavior must strictly match the application specification under `docs/specs/`. Any needed specification change must be committed before or alongside implementation, never retrospectively.
 
-### 4. Run the mechanical gates
+### 4. Run mechanical gates
 
-Run the commands defined in `AGENTS.md`: the formatter in check mode, the build
-(zero warnings), and the tests. All must pass.
+Run the commands defined in `AGENTS.md`. All must execute and exit with code 0:
+- **Format check**: Formatter in check mode.
+- **Build**: Zero-warning build.
+- **Tests**: Clean execution of the full test suite.
 
 ### 5. Fix and report
 
-Fix violations and re-run from step 2. Report completion only when clean, including:
+Fix any violations found and re-run from step 2. Report completion only when clean, including:
 
 - Files checked
 - Violations found and fixed (file / line / rule), or "no violations"

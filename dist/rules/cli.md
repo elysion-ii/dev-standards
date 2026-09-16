@@ -1,14 +1,13 @@
 # CLI Standards
 
-Rules for the command-line interface of an application: option and subcommand naming
-and syntax, help, output streams, exit codes, configuration precedence, and version
-output. Read together with `standard.md` whenever the application being changed exposes
-a command-line interface — a console application, or a GUI application that accepts
-command-line options. The rules are stack-agnostic; the baseline is GNU-style options
-plus subcommands.
+Part of the shared core rules (`docs/rules/`). Governs the command-line interface of an
+application: syntax, option and subcommand naming, help output, stream separation, exit
+codes, configuration precedence, and version display. Applies whenever an application
+exposes a command-line interface (console applications and CLI-option-enabled GUI
+applications). Baseline is GNU-style options with subcommands.
 
-This file is **not a list of features to implement**. It is the naming and syntax
-standard to follow when adding an option or a subcommand. Except for the mandatory
+This file is **not a list of features to implement**. It defines the naming, syntax, and
+behavioral standard to follow when adding CLI capabilities. Except for the mandatory
 `--version`, implement an option only when the application provides the corresponding
 feature.
 
@@ -107,7 +106,7 @@ one:
 
 - `--version` prints a single line: the application's name, a space, and the product version — `MyApp 1.22.3`. When the command name differs from the application name, the application name is printed — the same name a GUI would display (Version Display in `standard.md`)
 - Default format is the bare product version only: no build hash, build date, commit id, or other metadata
-- The value comes from the project's single version definition (see the language file's version-management rules, e.g., `dotnet.md` VERSION), never from a hardcoded string
+- The value comes from the project's single version definition (see the stack rule's version-management rules, e.g., `dotnet.md` VERSION), never from a hardcoded string
 - This is the CLI shape of the Version Display rule in `standard.md`; GUI display requirements are stated there
 
 ## SUBCOMMANDS: Subcommands
@@ -162,9 +161,7 @@ The `--help` output contains:
 
 ## EXITCODES: Exit Codes
 
-Whatever calls the command — a shell script, a scheduler, another program — branches on
-the exit code. Unless the meanings are fixed, every command invents its own and no caller
-can be written without reading each one's source.
+Callers (shell scripts, schedulers, automated orchestrators) branch strictly on exit codes. Standardize exit code semantics across all commands:
 
 | Code | Meaning |
 |---|---|
@@ -200,9 +197,9 @@ Precedence, strongest first:
 
 ## COMPAT: Compatibility
 
-- Avoid incompatible changes to published option names, subcommand names, and exit-code meanings
-- When a rename is warranted, replace the old name outright — no deprecation period, no warning phase, no old-name alias. An alias doubles the surface that has to keep working, and leaves the help unable to say which name is the current one
-- To guarantee machine-readable output, provide `--format json` and state that the plain-text output's stability is not guaranteed
+- Avoid breaking changes to published option names, subcommand names, and exit-code semantics.
+- When a rename is warranted, replace the old name outright without backward-compatibility aliases. Compatibility aliases expand the test surface and clutter `--help` documentation.
+- To guarantee machine-readable stability, provide `--format json`; plain-text terminal output provides no stability guarantees.
 
 ## Checklist
 

@@ -19,7 +19,7 @@ that file, and keeping it synced is a manual step.
 ## Decision
 
 - Rule bodies live in one place per consuming repository: `docs/rules/`, in three
-  layers applied in order — shared core (`standard.md`) → language files → application
+  layers applied in order — shared core (`standard.md`) → stack rules → application
   rules files. The more specific file wins on conflict.
 - The root `AGENTS.md` is the only router: facts, commands, an Applications table, and
   reading/AUDIT instructions — no rule text. All three harnesses read `AGENTS.md`

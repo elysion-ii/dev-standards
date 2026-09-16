@@ -28,12 +28,15 @@ repository content itself takes the application slot:
 
 ## Rules and AUDIT
 
-- **Before changing anything**, read `dist/rules/standard.md` (the product doubles as this repository's own shared core), `docs/rules/dev-standards.md` (repository-specific rules), and `docs/specs/dev-standards.md` (the structure and consumption contract)
-- **When a change alters the structure or the distribution/versioning contract**, spec-first applies — see Changing this repository in `docs/rules/dev-standards.md`
-- **Before reporting a change as complete**, run the AUDIT procedure at the end of `dist/rules/standard.md`. This repository has no build or test gates, so treat every applicable rule as an AUDIT item
-- **Before adding a new stack template set or changing what an existing one provides**, read `docs/specs/template-requirements.md` — the stack-agnostic requirements every template set must satisfy, with the .NET set as the reference realization
-- **Before creating, moving, renaming, or archiving any document**, also read `dist/rules/documentation.md` (the product doubles as this repository's own documentation rules)
-- **Before any Git write operation or PR operation**, also read `dist/rules/git.md` (the product doubles as this repository's own Git rules); after merging a PR, decide whether a release is due per `docs/guides/release.md`
+Rules for this repository follow the three-tier model:
+- **Application rules**: `docs/rules/dev-standards.md` (repository-specific rules and overrides)
+- **Core rules**: `dist/rules/` (this repository's own product doubles as its core standards: `standard.md`, `documentation.md`, `git.md`, `cli.md`)
+- **Specifications**: `docs/specs/dev-standards.md` (contract) and `docs/specs/template-requirements.md` (template requirements)
+
+**Precedence on conflict**: Application rules (`docs/rules/dev-standards.md`) > Core rules.
+
+- **Spec-First**: Any change altering repository structure or the distribution contract requires updating `docs/specs/dev-standards.md` before or alongside the change.
+- **Completion Gate (AUDIT)**: Before reporting a change as complete, pass the AUDIT gate at the end of `dist/rules/standard.md`. Because this repository has no build or test gates, verify every applicable rule as an AUDIT item.
 
 ## Commands
 

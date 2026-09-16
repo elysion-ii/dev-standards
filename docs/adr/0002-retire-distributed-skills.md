@@ -32,7 +32,7 @@ keeping them in parity across harnesses and persistence layers.
   move to a new distributed rule file, `dist/rules/git.md`, consumed at
   `docs/rules/git.md`.
 - These two files are **task-specific rule files**: unlike the always-read chain
-  (`standard.md` → language files → application rules), they are read only when that
+  (`standard.md` → stack rules → application rules), they are read only when that
   kind of work is underway — document work for `documentation.md`, a Git write or PR
   operation for `git.md`. `AGENTS.md` states the reading condition for each; it holds no
   rule text of its own for either.
@@ -63,8 +63,8 @@ keeping them in parity across harnesses and persistence layers.
   would force every task to read document-placement and Git-merge rules regardless of
   whether the task touches either, and would make `standard.md` the largest,
   least-focused rule file. Splitting by task keeps each file read only when relevant.
-- **Make `documentation.md` and `git.md` part of the always-read chain, like language
-  files** — rejected: most implementation tasks touch neither documents nor Git
+- **Make `documentation.md` and `git.md` part of the always-read chain, like stack
+  rules** — rejected: most implementation tasks touch neither documents nor Git
   operations directly; adding them to the unconditional chain would add reading cost
   with no benefit for the common case.
 

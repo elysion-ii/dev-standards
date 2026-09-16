@@ -36,11 +36,11 @@ repository's own maintenance files is that single path prefix.
 | Path | Must contain |
 |------|--------------|
 | `dist/` | The entire consumption interface — nothing outside it is distributed |
-| `dist/rules/standard.md` | The language-agnostic core: design principles, comment philosophy, testing principles, the spec-first principle, configuration-value handling, procedure-design principles, and the AUDIT procedure |
+| `dist/rules/standard.md` | The stack-agnostic core: design principles, comment philosophy, testing principles, the spec-first principle, configuration-value handling, procedure-design principles, and the AUDIT procedure |
 | `dist/rules/documentation.md` | Task-specific rule file for documentation work: document responsibility, classification, placement, naming, front matter, specification content and structure, and document lifecycle |
 | `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
-| `dist/rules/cli.md` | Interface-specific rule file for applications that expose a command-line interface: option and subcommand naming and syntax, help, output streams, exit codes, configuration precedence, and version output. Stack-agnostic; starts with an enforcement matrix like the language files |
-| `dist/rules/<language>.md` | One file per supported stack (`dotnet.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
+| `dist/rules/cli.md` | Interface-specific rule file for applications that expose a command-line interface: option and subcommand naming and syntax, help, output streams, exit codes, configuration precedence, and version output. Stack-agnostic; starts with an enforcement matrix like the stack rule files |
+| `dist/rules/<stack>.md` | One file per supported stack (`dotnet.md`, `typescript.md`, `python.md`, ...), each starting with an enforcement matrix that classifies every rule as mechanically Enforced or AUDIT-checked |
 | `dist/templates/shared/` | Stack-agnostic templates: generic router `AGENTS.md` (for repositories without a stack template set — a stack template set ships its own router variants), plus `settings.json.tmpl` (Claude Code hooks) and `hooks.json.tmpl` (Codex hooks) — each carrying a session-start hook that directs the agent to read `docs/rules/` in full before acting, and a pre-commit hook that blocks `git commit` until the AUDIT procedure is confirmed |
 | `dist/templates/dotnet/common/` | Language-independent scaffold files |
 | `dist/templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
@@ -50,7 +50,7 @@ repository's own maintenance files is that single path prefix.
 
 - `dist/rules/*.md` are copied **byte-identical** into each consuming repository at
   `docs/rules/` — no front matter, no in-file markers, no token replacement. The core,
-  the task-specific files, and `cli.md` go to every repository; each language file goes
+  the task-specific files, and `cli.md` go to every repository; each stack rule file goes
   to repositories of the matching stack. Local edits in consumers are detected by
   matching against this repository's tag history
 - Templates generate files by literal `{{TOKEN}}` replacement. The token set is part of
@@ -64,9 +64,7 @@ repository's own maintenance files is that single path prefix.
 - Rule bodies live only in `docs/rules/`, and every one of them is read before
   implementing any change. `cli.md` is the single exception: it is skipped while the
   application being changed exposes no command-line interface. On conflict the more
-  specific file wins — application rules file > language files and `cli.md` >
-  `standard.md`; `documentation.md` and `git.md` govern subjects the others do not
-  cover, so they do not compete for precedence
+  specific rule wins — application rules > stack rules > core rules
 - `AGENTS.md` is the only router: facts, commands, Applications table, reading and
   AUDIT instructions
 - Scope rule for every docs category: directly under `docs/<category>/` =
@@ -80,7 +78,7 @@ repository's own maintenance files is that single path prefix.
   Untagged `main` is never consumed
 - **MAJOR**: restructuring that breaks consumers — moved/renamed distributed files,
   changed or removed token names
-- **MINOR**: new content — new rules, new language files, new templates
+- **MINOR**: new content — new rules, new stack rule files, new templates
 - **PATCH**: fixes and wording corrections
 - Changes outside `dist/` need no tag and ride along with the next release
 

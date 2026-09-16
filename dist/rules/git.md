@@ -1,36 +1,23 @@
 # Git
 
-Rules for Git write operations and pull request operations, distributed into each
-repository at `docs/rules/git.md`. Read this file before implementing any change, as
-`standard.md` How to use these rules directs, and consult it again before every commit,
-branch, push, and pull request.
+Part of the shared core rules (`docs/rules/`). Governs Git write operations, branch
+lifecycle, commit composition, and pull requests. Every Git operation must strictly
+adhere to these rules.
 
 ## Confirming Scope
 
-How far a task goes is the user's decision, not something to infer from the work being
-complete. Agree on the destination before the first Git write operation.
+The extent of Git operations is decided by the user, never assumed by the agent. Always agree on the stopping stage before the first Git write operation:
 
-Ask how far to go:
+1. **Commit only**: stage and commit changes locally.
+2. **Commit and push**: commit and push the feature branch to the remote.
+3. **Through PR creation**: push and open a pull request.
+4. **Full lifecycle**: PR creation, squash merge, return to default branch, and delete the feature branch.
 
-1. Commit only
-2. Commit and push
-3. Through PR creation
-4. All the way — PR, merge, return to the default branch, delete the branch
-
-Stop at the agreed point and report. Stopping early is normal: a branch holding unpushed
-or unmerged commits is a valid resting state, not unfinished work.
-
-Never go beyond the agreed point. Do not push, open a PR, or merge because the work looks
-ready.
+Stop strictly at the agreed stage and report. Never proceed beyond the agreed stage autonomously; unpushed or unmerged branches are valid resting states.
 
 ## Operation Language
 
-Git text is typed back into shell commands — branch names into `git checkout`, messages
-into `-m`, tags into `git push`. Non-ASCII text there is a standing source of mistakes:
-mistyped names, pathspecs that match nothing, garbled output. English is also the common
-language of the tooling and of everyone who reads the history.
-
-- Write all Git-related text in English by default: commit messages, branch names, PR titles and descriptions, tags, and the like
+Write all Git-related text in English: commit messages, branch names, PR titles and descriptions, tags, and release notes. This prevents shell encoding issues, garbled terminal output, and cross-environment inconsistencies.
 
 ## Commit Format
 

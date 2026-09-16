@@ -1,6 +1,6 @@
 # <PROJECT NAME> — Agent Instructions
 
-<!-- Generic boilerplate for any repository (language-agnostic). Replace every
+<!-- Generic boilerplate for any repository (stack-agnostic). Replace every
      <PLACEHOLDER>, fill in the tables, and delete these comments. For .NET
      applications, use dist/templates/dotnet/ instead. -->
 
@@ -26,11 +26,17 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 
 ## Rules and AUDIT
 
-- **Before implementing any change**, read every file under `docs/rules/`, and the rules file and specification of the application being changed from the Applications table above. `docs/rules/cli.md` is the only one you may skip, and only while that application exposes no command-line interface (neither a console application nor a GUI application that accepts command-line options)
-- On conflict the more specific file wins: the application's rules file > the language files and `docs/rules/cli.md` > `docs/rules/standard.md`
-- **When transitioning from a plan to implementation**, re-read this file (root and any nested `AGENTS.md` covering the work area) and every file under `docs/rules/`, so all rules are loaded before code is written
-- **Before reporting an implementation task as complete**, run the AUDIT procedure at the end of `docs/rules/standard.md`
-- `docs/rules/standard.md`, `docs/rules/documentation.md`, `docs/rules/git.md`, `docs/rules/cli.md`, and the language files are managed by dev-standards — never edit them; repository- and application-specific rules go in the application's rules file
+Rules in `docs/rules/` are organized into three tiers:
+- **Application rules**: `docs/rules/<APP>.md` (repository- and application-specific rules)
+- **Stack rules**: Technology-stack rules (`docs/rules/<STACK>.md`; <CHOOSE: managed by dev-standards | repository-authored>)
+- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `cli.md`; managed by dev-standards)
+
+**Precedence on conflict**: Application rules > Stack rules > Core rules.
+
+- **Rule Scope**: Every change must strictly comply with every rule file under `docs/rules/` and the application specification under `docs/specs/`. `cli.md` applies only when the application exposes a command-line interface.
+- **Loading Rules**: Read this file and every file under `docs/rules/` before writing code (including when transitioning from a plan to implementation).
+- **Completion Gate (AUDIT)**: Before reporting an implementation task as complete, pass the AUDIT gate in `docs/rules/standard.md`.
+- **File Ownership**: Rules managed by dev-standards (core rules, and distributed stack rules) are read-only; repository-authored rules (application rules, and local stack rules) are edited in this repository.
 
 ## Commands
 
@@ -53,5 +59,5 @@ Before creating, changing, moving, renaming, archiving, or deleting any document
 when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
 in this repository) first; it defines placement, naming, and front matter.
 
-- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md`, and language files (managed by dev-standards) and the application rules files
+- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md`, stack rules (managed by dev-standards or repository-authored), and the application rules files
 - `docs/specs/` — application specifications

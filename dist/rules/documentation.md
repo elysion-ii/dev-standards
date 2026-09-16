@@ -1,11 +1,9 @@
 # Documentation
 
-Rules for writing, classifying, placing, naming, and retiring every non-source document
-in a repository — specs, guides, references, ADRs, investigations, notes, and the rest.
-Read this file before implementing any change, as `standard.md` How to use these rules
-directs, and consult it again whenever a task creates, changes, moves, renames,
-archives, or deletes a document, or when it is unclear where a new one belongs. Do not
-classify or name documents from memory.
+Part of the shared core rules (`docs/rules/`). Governs the classification, lifecycle,
+placement, naming, and authoring of all non-source documents across a repository —
+specifications, guides, references, ADRs, investigations, notes, and plans. Every document
+operation must strictly follow these rules. Do not classify, name, or place documents from memory.
 
 ## Principles
 
@@ -27,11 +25,16 @@ classify or name documents from memory.
 
 ## Writing
 
-Applies to the body of every document in this tree.
+Applies to all documents across the repository:
 
-- **State the what and the why before the how.** Cover the 5W1H the subject actually needs — what, why, who, when, where, how. Which of them matter varies by category; the ones that do are written down rather than left to be inferred from the surrounding text
-- **Re-read a finished draft for means presented as ends.** A document drifts there while it is being written: the mechanism gets named where the property belongs, and a tool or a threshold stands in for the criterion it was chosen to serve. State the property or the criterion first, then the mechanism that currently satisfies it
-- **A number belongs in a document when it is the criterion**, never when it stands in for one. A version, a limit the system enforces, or a default stated together with the condition for departing from it is a criterion; a quantity offered as an illustration of an acceptable cost is not, and it will be read as a threshold it was never meant to be
+- **State purpose before procedure**: explain *what* and *why* before *how*. Explicitly document all required 5W1H context instead of leaving it to inference.
+- **Distinguish criteria from mechanism**: state the required property or criterion first, then the specific mechanism or tool currently satisfying it. Never present temporary mechanisms or tools as the objective itself.
+- **Include numbers only as true criteria**: cite numerical values only when they define enforceable boundaries (system limits, version numbers, configurable defaults). Never quote arbitrary examples or illustrations as requirements.
+- **Open with the rule, not an essay**: the first sentence of a section declares what the section requires or decides, and the conditional bullets follow immediately. Never open with reflection, self-questioning, or address to the reader.
+- **Each item stands alone**: state the requirement and its reason within the item itself. Never justify a requirement by invoking another rule or by analogy.
+- **Write contracts, not admonitions**: state required and prohibited behavior as a contract a human and an agent verify the same way. Never write reassurance, scolding, or commentary about the act of writing.
+- **One item, one verdict**: each bullet takes the form `**headword**: applicable condition + required action + reason where needed`, and resolves to a single pass or fail. Never chain multiple requirements, exceptions, and reasons into one sentence.
+- **Criteria must be checkable**: state what to remove, what to include, and what condition ends an obligation. Never instruct with subjective adjectives alone ("simple", "readable", "clean").
 
 ## Directory layout
 
@@ -41,7 +44,7 @@ AGENTS.md                   router: repository facts, commands, Applications tab
 
 docs/
   rules/                    rule bodies: shared core + task-specific rule files +
-                            language files (managed by dev-standards) + application
+                            stack rules (managed by dev-standards) + application
                             rules files
   adr/                      active ADRs
     archive/                superseded / rejected / withdrawn ADRs
@@ -88,7 +91,7 @@ differ between categories. Use the same application identifier in every category
 
 | Question | Destination |
 |---|---|
-| Is it a development or change rule that cannot be enforced mechanically? | `docs/rules/` — repository/application rules go in the application's rules file; shared core, task-specific rule files, and language files are managed by dev-standards |
+| Is it a development or change rule that cannot be enforced mechanically? | `docs/rules/` — repository/application rules go in the application's rules file; shared core and task-specific rule files are managed by dev-standards; stack rules are managed by dev-standards (or repository-authored until promoted) |
 | Is it a repository fact, command, or routing instruction (no rule text)? | Root `AGENTS.md` (or a nested `AGENTS.md` for a subtree) |
 | Does it define correct results (input → output)? | Test code (table-driven) |
 | Does it record why a decision was made? | `docs/adr/` |
@@ -106,7 +109,7 @@ differ between categories. Use the same application identifier in every category
 ## Category notes
 
 - **`AGENTS.md` (router)**: repository and application descriptions, technology stack, the Applications table (rules ↔ specification paths), real commands, and reading/AUDIT instructions. No rule text — rule bodies live in `docs/rules/`. Never duplicate a rule across files.
-- **`docs/rules/`**: rule bodies in layers — the shared core (`standard.md`), the subject-specific `documentation.md` and `git.md`, the interface-specific `cli.md` (the one file skippable, and only while the application exposes no command-line interface), and per-stack language files are distributed verbatim by dev-standards (never edit them; retrofit updates them from a pinned tag and reports local edits); application rules files are repository-authored and hold only deltas and overrides against the shared rules. The more specific file wins on conflict.
+- **`docs/rules/`**: rule bodies organized in three tiers — Core rules (`standard.md`, `documentation.md`, `git.md`, `cli.md`), Stack rules (`dotnet.md`, `typescript.md`, `python.md`, ...; managed by dev-standards when distributed, or repository-authored), and Application rules (`<App>.md`, repository-authored deltas and overrides). Precedence: Application rules > Stack rules > Core rules. Never duplicate a rule across files.
 - **`docs/specs/`**: states what the system must do — purpose, scope, users and external systems, required behavior, inputs and outputs, error behavior, invariants, non-functional requirements, and what is out of scope. Specifications describe behavior, not implementation: no class structures, libraries, or internal algorithms. Requirement IDs are optional; when present, tests reference them so conformance is verifiable. (The rule that a spec must be updated before implementing behavior it does not yet cover — spec-first — is a development rule and lives in `standard.md`, not here.)
 - **`docs/adr/`**: the adopted decision plus reasoning, constraints, rejected alternatives, and revisit conditions. Body sections (Nygard-style): Context, Decision, Consequences (required); Alternatives considered, Revisit when (when they exist). A superseded ADR names its successor in front matter (`superseded-by`); an ADR stays an ADR — retired ones go to `docs/adr/archive/`, never `docs/archive/`.
 - **`docs/guides/`**: repository- or application-specific reproducible procedures. Exception: a generic procedure that a distributed task-specific rule file already defines (e.g., the `gh pr merge` procedure in `git.md`) is not duplicated here — the rule file is the sole source for that procedure. `docs/guides/` holds only what the rule files do not already cover, including a procedure that layers repository-specific decisions on top of one (e.g., a release guide that adds this repository's own release/tag decision on top of the generic Git procedure).
