@@ -11,12 +11,14 @@ Applications table.
 Rules in `docs/rules/` are organized into three tiers:
 - **Application rules**: `docs/rules/<App>.md` (repository- and application-specific rules)
 - **Stack rules**: Technology-stack rules (`dotnet.md`, `typescript.md`, `python.md`, ...)
-- **Core rules**: Shared standards (`standard.md`, `documentation.md`, `git.md`, `cli.md`)
+- **Core rules**: Shared standards (`standard.md`, `documentation.md`, `git.md`) and the conditional core files (`cli.md`, `db.md`)
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules. `AGENTS.md` provides routing and commands only.
 
 - **Rule Scope**: Every change complies with every file under `docs/rules/` and the specification of the application being changed under `docs/specs/`.
-- **Required reading**: Read all of them before implementing any change. `cli.md` is the single exception, left unread only while that application exposes no command-line interface.
+- **Required reading**: Read all of them before implementing any change. The conditional core files are the only exception.
+- **Conditional core files**: Each conditional core file opens with the condition under which it applies, a fact about the application settled by its code. Leave the file unread only while that condition is false for the application being changed. Whether the task at hand touches the file's subject never decides it.
+- **A change that makes a condition true**: A change that gives the application the property (its first command-line option, its first database access) is subject to that conditional core file.
 - **Stack conformance**: Repositories apply the stack rules matching their technology stack, verified by commands in `AGENTS.md`.
 - **Enforcement matrix**: Each stack rule file opens with a matrix classifying every rule as mechanically enforced (analyzers, build gates) or verified by AUDIT.
 - **Completion requirement**: Passing the AUDIT gate at the end of this file is mandatory before reporting any task complete.
@@ -29,6 +31,7 @@ Rules in `docs/rules/` are organized into three tiers:
 
 - Structure code in layers with distinct responsibilities (e.g., UI → business logic → infrastructure)
 - Keep the UI layer thin: event handlers delegate to logic, they do not contain it
+- What the UI shows is decision logic too: a color, whether a control is enabled or visible, and which message appears are decided outside the UI layer, where a test reaches the decision without rendering anything
 
 ### Dependency Direction
 
@@ -92,6 +95,19 @@ Code must read as though the current implementation were the only one that ever 
 - Prefer compile-time impossibility over runtime checks: where practical, express the rule in types (stage-specific interface return types for call order, required constructor arguments, narrowed parameter types) so violations do not compile
 - When a rule can be broken silently (wrong call order, configuration after startup, out-of-range values), make the code fail fast with a clear message instead of relying on documentation
 - The error message should state the rule itself
+
+### Writes That Hold Together
+
+Applies to every write to durable state — a database, files, a message sent to another system.
+
+- **Atomic units**: writes that are only valid together (a header and its rows, a file and the record pointing at it) are applied as one unit that either completes or leaves no trace (e.g., a database transaction, writing to a temporary file and then moving it into place). A process that stops between separate writes leaves a half-applied state nothing repairs.
+- **Safe to re-run**: a process that can stop partway (a crash, a killed job, a request sent twice) reaches the same final state when run again as when it runs once to completion. Whoever re-runs it cannot see how far the first run got.
+- **Concurrent updates**: where two users or processes can change the same data, a write checks that the state it was based on is still current, and a write whose basis changed is reported instead of applied (e.g., a version column compared on update). Without the check, the later write silently discards the earlier one.
+
+### Stored Time
+
+- **Instants are UTC**: a point in time that is stored or sent to another system is UTC, or carries its UTC offset; conversion to a local time zone happens only when the value is displayed. A local time without an offset changes meaning when the machine, the server's location, or daylight saving time changes.
+- **Dates are not instants**: a calendar date with no time of day (a due date, a delivery date) is stored as a date, not as midnight of some time zone. Midnight in one time zone is a different date in another.
 
 ### Synchronous vs Asynchronous
 
@@ -187,6 +203,16 @@ If the current code is clear without a comment, write no comment. If the reason 
 - Order rows consistently: null/none → empty → minimal → main cases → boundaries
 - Make input values self-describing so the table reads as documentation
 
+### Tests Accompany the Change
+
+- **Decisions are tested**: a change that adds or changes decision logic includes tests that pin the new behavior. Behavior no test observes is free to break in the next change without any gate failing.
+- **Defects are reproduced first**: a defect fix includes a test that fails without the fix and passes with it. That test is what stops the same defect from returning.
+
+### Boundary Tests
+
+- **Test the boundary itself**: code that crosses the program's boundary (a database query, a file format another system reads, a network protocol) is tested through that boundary, with data the test creates (e.g., a database the test run creates and migrates, a file the test writes and parses back). A test of the logic behind the boundary leaves the query or the format unverified.
+- **No third-party services**: tests never call a service the project does not run, such as one that charges per call, limits the call rate, or answers nondeterministically. The test substitutes it behind the interface the code depends on.
+
 ---
 
 ## Specifications
@@ -211,12 +237,27 @@ after it is built on a guess.
 
 ---
 
+## External Input
+
+Applies to data the application receives while it runs — user input, imported files,
+requests, and responses from other systems, including generated output such as a
+language model's. Values an operator sets to configure the application are
+Configuration Values below.
+
+- **Validate at the boundary**: input is checked against its expected shape and range where it enters the program, and only checked data travels inward. A check repeated at each use site is missing from at least one of them.
+- **Reject, never repair**: input that fails the check is rejected — the whole input, or only the failing items when the input is a set of independent items — and the rejection states what was wrong. Input is never altered into something that passes: unlike a configuration value, input has no known-good value to fall back on, and a repaired input produces a result nobody submitted.
+- **Input never becomes code**: input is never concatenated into text that something executes or interprets (SQL, a shell command, HTML, a query language) — it is passed through the mechanism that keeps it data (e.g., bound query parameters, an argument array, encoding by the rendering layer). Concatenated input can rewrite the command it was placed in.
+
+---
+
 ## Configuration Values
 
-Applies to every value the application reads from outside its own code — configuration
+Applies to every value an operator sets to configure the application — configuration
 files, environment variables, and any other external store.
 
-- **Every configurable value has a built-in default in code**, and the application runs on that default whenever the external value is missing, unparsable, or out of range. A configuration source that is absent or corrupt never fails startup
+- **Every configurable value has a built-in default in code**, and the application runs on that default whenever the external value is missing, unparsable, or out of range. A configuration source that is absent or corrupt never fails startup on account of such a value
+- **Required values fail fast**: a value no default can stand in for (a credential, the address of the only database the application uses) is checked once at startup, and the application stops with a message naming the missing value before doing any work. Discovering it on the first operation that needs it hides the cause behind an unrelated failure
+- **The target environment is configuration**: which database, service address, or directory the application works against is a configuration value, never a constant in code. A target fixed in code ties the build to one environment, so the build that is tested is not the build that runs in production
 - **Validate on read**: replace or clamp invalid values while the configuration is being loaded, so no later code has to defend against them. The valid range belongs to the value's definition, not to checks scattered across its use sites
 - **Report every substitution once**, naming the value, what was rejected, and the default applied. A silent fallback hides operator mistakes and turns a typo into an invisible change of behavior
 - **Externalizing a value is a choice**: a value nobody adjusts in the field stays a named constant in code (see the stack rule's constants rule). Making it configurable adds the obligations above
@@ -233,6 +274,12 @@ settings, deployment descriptors, workflow definitions, and the like.
 - **What ships is derived from the template by the build**, so the distributed file is placeholder-clean by construction. Distribution never picks up a configuration file that happened to be sitting in a working tree
 - **Installation never overwrites an existing configuration.** The derived file is written only when none is present, so updating an installation keeps what the operator configured
 - The template is a real, complete configuration in shape: every key the application reads appears in it, so the file doubles as the documentation of what is configurable
+
+---
+
+## Failure Reporting
+
+- **Unattended failures reach a person**: a process that runs with nobody watching (a scheduled job, a service, a background task) reports a failure where a person sees it without going to look (e.g., a notification, a monitored event log, an exit code the scheduler alerts on). A failure recorded only in a log file is found when someone notices the missing result.
 
 ---
 
@@ -307,7 +354,7 @@ as newly introduced violations; every line must comply. Do not sample or skip an
 
 Verify all of the following:
 
-- **Core rules, in every target file**: Zero violations against `standard.md`, `documentation.md`, and `cli.md` — `cli.md` only while the application exposes a command-line interface.
+- **Core rules, in every target file**: Zero violations against `standard.md`, `documentation.md`, and each conditional core file (`cli.md`, `db.md`) whose condition holds for the application after the change.
 - **Git operations, in the change itself**: Zero violations against `git.md`. What `git.md` governs is the commit split, the commit messages, the branch name, and the pull request of this change, so the object verified against it is the change, never a file's content.
 - **Stack rules, in every target file**: Zero violations against all stack rules marked **AUDIT** in their enforcement matrix (if an enforcing mechanism is missing from the repository, treat those rules as AUDIT items as well).
 - **Application rules, in every target file**: Zero violations against `docs/rules/<App>.md` and any other repository-authored rules under `docs/rules/`.

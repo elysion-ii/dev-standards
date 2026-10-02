@@ -26,11 +26,11 @@
 `docs/rules/` の規則は3層で構成される。
 - **アプリルール**: `docs/rules/{{APP_NAME}}.md`(本リポジトリ固有の規則および上書き)
 - **スタックルール**: `docs/rules/dotnet.md`(.NET スタック規則、dev-standards 管理)
-- **coreルール**: 共有エンジニアリング標準(`standard.md`・`documentation.md`・`git.md`・`cli.md`、dev-standards 管理)
+- **coreルール**: 共有エンジニアリング標準(`standard.md`・`documentation.md`・`git.md`、および条件付きコアファイルの `cli.md`・`db.md`、dev-standards 管理)
 
 **競合時の優先順位**: アプリルール > スタックルール > coreルール
 
-- **規則の適用範囲**: すべての変更は `docs/rules/` 配下のすべての規則ファイルと `docs/specs/{{APP_NAME}}.md` に厳格に従う。`cli.md` は {{APP_NAME}} がコマンドラインインターフェースを持つ場合にのみ適用する
+- **規則の適用範囲**: すべての変更は `docs/rules/` 配下のすべての規則ファイルと `docs/specs/{{APP_NAME}}.md` に厳格に従う。`cli.md` と `db.md` は、各ファイルの冒頭に書かれた条件が {{APP_NAME}} に当てはまる間だけ適用する
 - **規則の読み込み**: コードを書き始める前(計画から実装へ移行する時点を含む)に、本ファイルと `docs/rules/` 配下のすべてのファイルを読むこと
 - **完了ゲート(AUDIT)**: 実装タスクの完了を報告する前に、`docs/rules/standard.md` 末尾のAUDITゲートを通過すること
 - **ファイルの編集権限**: dev-standards が管理する `docs/rules/` 配下の規則ファイルは読み取り専用である。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
@@ -70,7 +70,7 @@ xUnit テストプロジェクト。
 `guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`)に配置する。
 ドキュメントの作成・変更・移動・改名・アーカイブまたは削除の前(配置に迷ったときも)には、必ず `docs/rules/documentation.md`(本リポジトリに配布済み)を読むこと。配置・命名・front matter はそこで定義されている。
 
-- `docs/rules/` — 規則本文: `standard.md`・`documentation.md`・`git.md`・`cli.md` + `dotnet.md`(dev-standards 管理)と `{{APP_NAME}}.md`(アプリ固有規則)
+- `docs/rules/` — 規則本文: `standard.md`・`documentation.md`・`git.md`・`cli.md`・`db.md` + `dotnet.md`(dev-standards 管理)と `{{APP_NAME}}.md`(アプリ固有規則)
 - `docs/specs/{{APP_NAME}}.md` — {{APP_NAME}} の仕様書: 何をするか
 - `docs/adr/` — ADR (Architecture Decision Record)。退役した ADR は `docs/adr/archive/` へ移動する
 - `docs/plans/` と `docs/archive/plans/` — 計画書の作業領域。git 管理外(`docs/rules/documentation.md` の `docs/plans/` を参照)

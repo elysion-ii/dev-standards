@@ -1,10 +1,12 @@
 # CLI Standards
 
-Part of the shared core rules (`docs/rules/`). Governs the command-line interface of an
-application: syntax, option and subcommand naming, help output, stream separation, exit
-codes, configuration precedence, and version display. Applies whenever an application
-exposes a command-line interface (console applications and CLI-option-enabled GUI
-applications). Baseline is GNU-style options with subcommands.
+**Applies when** the application exposes a command-line interface: it is a console
+application, or a GUI application that accepts command-line options.
+
+A conditional core file of the shared core rules (`docs/rules/`). Governs the
+command-line interface of an application: syntax, option and subcommand naming, help
+output, stream separation, exit codes, configuration precedence, and version display.
+Baseline is GNU-style options with subcommands.
 
 This file is **not a list of features to implement**. It defines the naming, syntax, and
 behavioral standard to follow when adding CLI capabilities. Except for the mandatory

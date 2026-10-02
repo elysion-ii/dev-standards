@@ -13,7 +13,7 @@ repository's router — facts and reading instructions; it holds no rule text.
 | Path | Content |
 |------|---------|
 | `dist/` | **Everything distributed** — nothing outside it ships to consumers |
-| `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `cli.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
+| `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `cli.md`, `db.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
 | `dist/templates/` | Scaffold templates with literal `{{TOKEN}}` placeholders |
 | `docs/` | Documents about this repository itself (rules for editing it, ADRs, guides) |
 
@@ -30,7 +30,7 @@ repository content itself takes the application slot:
 
 Rules for this repository follow the three-tier model:
 - **Application rules**: `docs/rules/dev-standards.md` (repository-specific rules and overrides)
-- **Core rules**: `dist/rules/` (this repository's own product doubles as its core standards: `standard.md`, `documentation.md`, `git.md`, `cli.md`)
+- **Core rules**: `dist/rules/` (this repository's own product doubles as its core standards: `standard.md`, `documentation.md`, `git.md`, and the conditional core files `cli.md` and `db.md`)
 - **Specifications**: `docs/specs/dev-standards.md` (contract) and `docs/specs/template-requirements.md` (template requirements)
 
 **Precedence on conflict**: Application rules (`docs/rules/dev-standards.md`) > Core rules.

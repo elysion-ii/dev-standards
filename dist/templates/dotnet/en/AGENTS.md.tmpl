@@ -26,11 +26,11 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 Rules in `docs/rules/` are organized into three tiers:
 - **Application rules**: `docs/rules/{{APP_NAME}}.md` (this repository's own rules and overrides)
 - **Stack rules**: `docs/rules/dotnet.md` (.NET stack rules, managed by dev-standards)
-- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `cli.md`; managed by dev-standards)
+- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, and the conditional core files `cli.md` and `db.md`; managed by dev-standards)
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules.
 
-- **Rule Scope**: Every change must strictly comply with every rule file under `docs/rules/` and `docs/specs/{{APP_NAME}}.md`. `cli.md` applies only while {{APP_NAME}} exposes a command-line interface.
+- **Rule Scope**: Every change must strictly comply with every rule file under `docs/rules/` and `docs/specs/{{APP_NAME}}.md`. `cli.md` and `db.md` apply only while the condition each states at its top holds for {{APP_NAME}}.
 - **Loading Rules**: Read this file and every file under `docs/rules/` before writing code (including when transitioning from a plan to implementation).
 - **Completion Gate (AUDIT)**: Before reporting an implementation task as complete, pass the AUDIT gate in `docs/rules/standard.md`.
 - **File Ownership**: Rules managed by dev-standards under `docs/rules/` are read-only; place repository- and application-specific rules in `docs/rules/{{APP_NAME}}.md`.
@@ -72,7 +72,7 @@ Before creating, changing, moving, renaming, archiving, or deleting any document
 when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
 in this repository) first; it defines placement, naming, and front matter.
 
-- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md` + `dotnet.md` (managed by dev-standards) and `{{APP_NAME}}.md` (application rules)
+- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md`, `db.md` + `dotnet.md` (managed by dev-standards) and `{{APP_NAME}}.md` (application rules)
 - `docs/specs/{{APP_NAME}}.md` — the {{APP_NAME}} specification: what it does
 - `docs/adr/` — Architecture Decision Records; retired ADRs move to `docs/adr/archive/`
 - `docs/plans/` and `docs/archive/plans/` — working area for plans, gitignored (`docs/rules/documentation.md`, `docs/plans/`)

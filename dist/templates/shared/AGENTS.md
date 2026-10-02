@@ -29,11 +29,11 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 Rules in `docs/rules/` are organized into three tiers:
 - **Application rules**: `docs/rules/<APP>.md` (repository- and application-specific rules)
 - **Stack rules**: Technology-stack rules (`docs/rules/<STACK>.md`; <CHOOSE: managed by dev-standards | repository-authored>)
-- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `cli.md`; managed by dev-standards)
+- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, and the conditional core files `cli.md` and `db.md`; managed by dev-standards)
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules.
 
-- **Rule Scope**: Every change must strictly comply with every rule file under `docs/rules/` and the application specification under `docs/specs/`. `cli.md` applies only when the application exposes a command-line interface.
+- **Rule Scope**: Every change must strictly comply with every rule file under `docs/rules/` and the application specification under `docs/specs/`. `cli.md` and `db.md` apply only while the condition each states at its top holds for the application.
 - **Loading Rules**: Read this file and every file under `docs/rules/` before writing code (including when transitioning from a plan to implementation).
 - **Completion Gate (AUDIT)**: Before reporting an implementation task as complete, pass the AUDIT gate in `docs/rules/standard.md`.
 - **File Ownership**: Rules managed by dev-standards (core rules, and distributed stack rules) are read-only; repository-authored rules (application rules, and local stack rules) are edited in this repository.
@@ -59,5 +59,5 @@ Before creating, changing, moving, renaming, archiving, or deleting any document
 when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
 in this repository) first; it defines placement, naming, and front matter.
 
-- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md`, stack rules (managed by dev-standards or repository-authored), and the application rules files
+- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md`, `db.md`, stack rules (managed by dev-standards or repository-authored), and the application rules files
 - `docs/specs/` — application specifications
