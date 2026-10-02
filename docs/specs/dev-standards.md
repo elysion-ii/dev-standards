@@ -91,6 +91,8 @@ repository's own maintenance files is that single path prefix.
 
 - Each stack's `dist/templates/<stack>/en/` and `ja/` express the same content
 - `dist/rules/` files are token-free and repository-agnostic
+- Core rule files never contradict each other: each subject is stated in exactly one
+  core file
 - Distributed bytes at a tag never change after the tag is published
 
 ## Out of scope

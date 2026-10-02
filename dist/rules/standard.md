@@ -15,6 +15,7 @@ Rules in `docs/rules/` are organized into three tiers:
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules. `AGENTS.md` provides routing and commands only.
 
+- **No conflicts within the core**: Core rule files never contradict each other. A contradiction found between two core files is a defect in the rules: do not resolve it by choosing one — report it to the user and continue only on the user's decision.
 - **Rule Scope**: Every change complies with every file under `docs/rules/` and the specification of the application being changed under `docs/specs/`.
 - **Required reading**: Read all of them before implementing any change. The conditional core files are the only exception.
 - **Conditional core files**: Each conditional core file opens with the condition under which it applies, a fact about the application settled by its code. Leave the file unread only while that condition is false for the application being changed. Whether the task at hand touches the file's subject never decides it.
