@@ -34,10 +34,17 @@ specific hosting platform and its database.
   about the application, is distributed to every repository, and is skipped only while
   its condition is false. `db.md` is the second one, for applications that read or
   write a database
-- A new conditional core file or stack rule file is created only after its rules have
-  been written for two consuming repositories (on two stacks for a conditional core
-  file). A stack-agnostic principle is promoted from one sample, because the sample
-  count guards against generalizing a mechanism and such a principle carries none
+- A new stack rule file is created only after its rules have been written for two
+  consuming repositories on that stack, because a stack rule file states mechanisms and
+  the sample count guards against generalizing one repository's mechanism
+- A new conditional core file is created only when applications meeting its condition
+  exist in two consuming repositories on two stacks. Its content is principles, which
+  carry no mechanism to over-generalize; what the threshold guards is that the
+  condition is not one stack's property in disguise. `db.md` meets it: a .NET
+  repository and a TypeScript repository both hold applications that use a database,
+  although only the TypeScript one had written database rules
+- A stack-agnostic principle is promoted from one sample, for the same reason a
+  conditional core file's content needs no second written sample
 - A property stated in two stack rule files moves to the core, leaving each stack rule
   file its mechanism
 

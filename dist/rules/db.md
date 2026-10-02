@@ -5,8 +5,8 @@ database engine, whether the engine runs as a server, a hosted service, or a fil
 application opens.
 
 A conditional core file of the shared core rules (`docs/rules/`). Governs who changes a
-database schema, how schema changes are written, recorded, and deployed, and the shape of
-the queries the application sends. Stack-agnostic: the migration tool, the database
+database schema, which invariants the schema itself enforces, how schema changes are
+written, recorded, and deployed, and the shape of the queries the application sends. Stack-agnostic: the migration tool, the database
 engine, and the data-access library are the stack's or the application's choice.
 
 Rules that bind every durable store and every input, databases included, are in
@@ -23,17 +23,23 @@ already applied changes) records it in its own rules file.
 | ID | Rule | Mechanism | Check |
 |----|------|-----------|-------|
 | OWNER | Each schema has one owning repository, and only the owner changes it | — | AUDIT |
+| CONSTRAINTS | Uniqueness, references, and required values are declared as database constraints | — | AUDIT |
 | MIGRATION | The owner changes the schema only through migration scripts committed to its repository | — | AUDIT |
 | APPLIED | The database records which migrations it has applied | — | AUDIT |
 | FORWARD | Migrations are applied forward only; an applied migration is never edited | — | AUDIT |
 | MEANING | A migration that changes what stored data means converts the stored rows | — | AUDIT |
-| DEPLOY | A deployment applies its migrations before the code that depends on them runs | — | AUDIT |
+| DEPLOY | Each migration stays compatible with every code version running against the database while it is applied | — | AUDIT |
 | QUERY | Set work runs in the query; one query per decision, never one per row | — | AUDIT |
 
 ## OWNER: Schema Ownership
 
 - **One owner per schema**: each schema (each database, or each set of tables one team changes) is owned by exactly one repository, and only that repository's migrations change it. Two repositories that both change one schema each hold a definition the other does not know about.
 - **Other users treat the schema as external**: an application that reads or writes a schema it does not own changes nothing in it. A schema change it needs is made by the owner's migration, and the application states its dependency on that change in its own specification.
+
+## CONSTRAINTS: Database Constraints
+
+- **The schema enforces what it can express**: a value that must be unique, a reference that must point at an existing row, and a column that must always hold a value are declared as constraints (e.g., primary key, unique, foreign key, not null). A check in application code alone is bypassed by concurrent writes, by another application using the schema, and by a defect in the code.
+- **A prior check in code is for the message**: the application may also check before writing, so the user gets a clear message instead of a constraint error. The constraint remains the guarantee, and the code handles the constraint's rejection as well.
 
 ## MIGRATION: Schema Changes
 
@@ -56,8 +62,11 @@ already applied changes) records it in its own rules file.
 
 ## DEPLOY: Deploying Schema Changes
 
-- **Migrations go first**: a deployment applies its migrations before any code that depends on them runs against the database. Code that runs against a schema it does not expect fails on its first query, or writes rows the next migration misreads.
+- **Compatible with every running version**: a migration keeps working for every version of the code that runs against the database while the migration is applied — the version still running and the version being deployed. Clients and instances are rarely replaced at the same moment, and a version that meets a schema it does not expect fails on its first query.
+- **Destructive changes come last**: removing or renaming a column or a table is split across releases — first a migration adds the new shape and the code moves to it, then a later migration removes the old shape once no running version uses it (expand, then contract).
+- **Migrations go before the code that needs them**: code that depends on a migration runs against a database only after that migration has been applied to it.
 - **A deployment without its migrations is incomplete**: a deployment counts as done only when every migration it carries has been applied to that environment's database.
+- **A database inside each installation is migrated by the application**: where every installation holds its own database (e.g., a file the application opens on the user's machine), the application applies its pending migrations at startup, before its first query. No deployment step reaches those databases.
 
 ## QUERY: Query Shape
 

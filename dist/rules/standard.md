@@ -246,7 +246,8 @@ language model's. Values an operator sets to configure the application are
 Configuration Values below.
 
 - **Validate at the boundary**: input is checked against its expected shape and range where it enters the program, and only checked data travels inward. A check repeated at each use site is missing from at least one of them.
-- **Reject, never repair**: input that fails the check is rejected — the whole input, or only the failing items when the input is a set of independent items — and the rejection states what was wrong. Input is never altered into something that passes: unlike a configuration value, input has no known-good value to fall back on, and a repaired input produces a result nobody submitted.
+- **Canonicalize, then validate**: a deterministic canonicalization that the input's specification defines (e.g., trimming surrounding whitespace, unifying line endings, Unicode normalization) is applied before the check. Guessing what an invalid value was meant to be is not canonicalization.
+- **Reject, never repair**: input that fails the check is rejected — the whole input, or only the failing items when the input is a set of independent items — and the rejection states what was wrong. Beyond canonicalization, input is never altered into something that passes: unlike a configuration value, input has no known-good value to fall back on, and a repaired input produces a result nobody submitted.
 - **Input never becomes code**: input is never concatenated into text that something executes or interprets (SQL, a shell command, HTML, a query language) — it is passed through the mechanism that keeps it data (e.g., bound query parameters, an argument array, encoding by the rendering layer). Concatenated input can rewrite the command it was placed in.
 
 ---
