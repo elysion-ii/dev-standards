@@ -111,6 +111,7 @@ The principle is Minimal Visibility in `standard.md`. Its .NET form:
 |---|---|
 | The C# language | An implicit interface implementation, and an override of a `public` member |
 | `ConfigurationBinder` | It binds only `public` properties, and it skips a non-public property without an error — the setting silently keeps its default |
+| The DI container (`Microsoft.Extensions.DependencyInjection`) | It creates a registered type only through a `public` constructor. A type whose constructors are all `internal` builds, then fails when it is resolved with `InvalidOperationException` (no suitable constructor) |
 | The WPF XAML loader | It creates what XAML instantiates — the window `StartupUri` names, for one — through `Activator.CreateInstance`, which finds only a `public` parameterless constructor. An `internal` one builds, then fails at startup with `MissingMethodException` |
 
 - **Never widen a framework's reach to avoid `public`.** `BinderOptions.BindNonPublicProperties` and its equivalents open every non-public member of the type to the framework, not only the ones it is meant to set
