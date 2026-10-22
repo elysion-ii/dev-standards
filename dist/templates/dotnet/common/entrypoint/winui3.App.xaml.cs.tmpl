@@ -1,12 +1,14 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 
 namespace {{APP_NAME}};
 
+[SuppressMessage("Maintainability", "CA1515", Justification = "The WinUI 3 XAML compiler generates App as public in XamlTypeInfo.g.cs and supports no x:ClassModifier (docs/rules/dotnet.md, VISIBILITY)")]
 public partial class App : Application
 {
     private Window? _window;
 
-    public App()
+    internal App()
     {
         InitializeComponent();
     }

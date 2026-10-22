@@ -39,6 +39,16 @@ Rules in `docs/rules/` are organized into three tiers:
 - Dependencies must flow in one direction only (e.g., UI → Service → Common → Database)
 - Never introduce reverse or circular dependencies. If a change would require one, reconsider the design before implementing
 
+### Minimal Visibility
+
+A declaration's visibility tells the reader who calls it. A declaration visible wider than its callers claims callers that do not exist, and invites the first one to depend on it.
+
+- **Visible only as widely as its callers**: each type and member is visible to the narrowest scope that contains every caller it has. Visibility widens when a caller that needs it is written, never in advance
+- **The declaration states the reach it has**: a member is never declared wider than its containing type lets it reach, unless a framework that calls the member requires the wider declaration. A modifier that claims more than the member gets misstates who can call it
+- **A framework that calls code is a caller**: a test runner, a serializer, a UI binding, and code a tool generates reach code by their own rules, and the visibility they require is the visibility the code needs. Configuring a framework to reach past the visibility it reads by default is not narrower — it opens every member of that visibility to the framework, not only the ones meant for it
+- **Tests never widen visibility**: a test reaches code it cannot see through the stack's test-access mechanism, or through the code it can see. Code is never made more visible so that a test can call it
+- Stack rules give the modifiers and the mechanisms that enforce this
+
 ### Functional Core, Imperative Shell
 
 - Separate decisions from I/O: do not make business decisions while reading from DB/files/network — read the data first, then decide on the data already read

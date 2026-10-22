@@ -20,6 +20,7 @@ mechanism is added.
 | NAMESPACE | File-scoped namespaces only | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`) + warnings-as-errors | Enforced |
 | ASYNC | No blocking on async code; no async without await | VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers`); CS1998 as error | Enforced |
 | DEFERRED | A LINQ query is deferred: no side effects inside a query, enumerate once, exceptions surface at enumeration | `.editorconfig` sets `dotnet_diagnostic.CA1851.severity = warning`, which `TreatWarningsAsErrors` turns into a build error | Enforced for multiple enumeration — side effects inside a query and the placement of `try` have no analyzer and stay AUDIT |
+| VISIBILITY | Types and members are visible only as widely as their callers; every declaration writes its modifier | `.editorconfig` sets `CA1515` and `IDE0040` to warning, which `TreatWarningsAsErrors` turns into build errors; the application csproj grants the test project `InternalsVisibleTo` | Enforced for a `public` type in an application and for an omitted modifier — a `public` member of an `internal` type and the visibility of test methods stay AUDIT |
 | VAR | Type inference usage | `.editorconfig` suggestions only | AUDIT |
 | STRING | Explicit `StringComparison` | — | AUDIT |
 | ERROR | Error handling | — | AUDIT |
@@ -52,11 +53,13 @@ mechanism is added.
 
 | Scope | Mechanism |
 |---|---|
+| A specific declaration (type or member) | `[SuppressMessage("<Category>", "<ID>", Justification = "<reason>")]` on the declaration. The `Justification` is the reason |
 | A specific line | `#pragma warning disable <ID>` followed by `restore`. Reason comment required |
 | A specific file/folder | `.editorconfig` section with `dotnet_diagnostic.<ID>.severity = none`. Reason comment required |
 | A whole project | Add the ID to `<NoWarn>` in that csproj. Reason comment required |
 
-- The reason comment states why this warning is acceptable here as a current constraint ("for now" or "fix later" is not a reason)
+- A diagnostic reported on a declaration is suppressed on that declaration, so the suppression stays attached to it when code around it moves
+- The reason (the comment, or the `Justification`) states why this warning is acceptable here as a current constraint ("for now" or "fix later" is not a reason)
 
 ## UNUSED: Code the Change Stopped Reaching
 
@@ -95,6 +98,36 @@ announces itself.
 ## NAMESPACE: Namespaces
 
 - **File-scoped namespaces only** (`namespace X;`) — enforced via `.editorconfig` + warnings-as-errors
+
+## VISIBILITY: Accessibility Modifiers
+
+The principle is Minimal Visibility in `standard.md`. Its .NET form:
+
+- **No type in an application is `public`.** Nothing outside an application assembly calls into it, so its types are `internal` or narrower. CA1515 makes a `public` type in an `Exe` or `WinExe` project a build error. The one type a framework forces `public` is the WinUI 3 `App` (XAML entry points below)
+- **Every declaration writes its modifier.** The visibility is a decision written on the declaration, never the language default left unstated. IDE0040 (`dotnet_style_require_accessibility_modifiers = for_non_interface_members`) makes an omitted modifier a build error
+- **A member of an `internal` type is declared `internal` or narrower.** `public` on it reaches no further than `internal` does, and claims that it does. `public` is written only where the caller that reaches the member requires it:
+
+| Caller | What requires `public` |
+|---|---|
+| The C# language | An implicit interface implementation, and an override of a `public` member |
+| `ConfigurationBinder` | It binds only `public` properties, and it skips a non-public property without an error — the setting silently keeps its default |
+| The WPF XAML loader | It creates what XAML instantiates — the window `StartupUri` names, for one — through `Activator.CreateInstance`, which finds only a `public` parameterless constructor. An `internal` one builds, then fails at startup with `MissingMethodException` |
+
+- **Never widen a framework's reach to avoid `public`.** `BinderOptions.BindNonPublicProperties` and its equivalents open every non-public member of the type to the framework, not only the ones it is meant to set
+
+### Tests
+
+- **The application csproj grants the test project access** with `<InternalsVisibleTo Include="<App>.Tests" />`. The test project reaches `internal` code through it; an application type is never made `public` for a test
+- **Test classes are `public`.** xUnit requires it (xUnit1000)
+- **Test methods are `internal`.** The test runner, their only caller, finds them by reflection. `private` is reported by IDE0051 (UNUSED), and `public` claims callers that do not exist. An `internal` method also accepts an `internal` type as a `[Theory]` parameter, where a `public` method fails with CS0051
+
+### XAML entry points
+
+The XAML compiler generates the other half of `App` and of each window, and the two halves must declare the same modifier (CS0262).
+
+- **WPF:** `x:ClassModifier="internal"` on the root element of `App.xaml` and of each window's XAML makes the generated half `internal`, matching `internal sealed partial class` in the code-behind
+- **WinUI 3:** a window's generated half carries no modifier, so `internal sealed partial class` in the code-behind decides it. `App` is the one `public` type: the XAML compiler generates `public partial class App` in `XamlTypeInfo.g.cs` and supports no `x:ClassModifier`. The template suppresses CA1515 on `App` with `[SuppressMessage]` naming that reason
+- **Never stop the type-information generation to make `App` `internal`.** The flag that removes it (`NoTypeInfoCodeGen`) also removes the provider through which WinUI 3 resolves the application's own types in XAML
 
 ## VAR: Type Inference
 

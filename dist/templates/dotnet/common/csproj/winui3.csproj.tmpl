@@ -17,4 +17,10 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The test project reaches internal code through this grant; no type is made
+         public for a test (docs/rules/dotnet.md, VISIBILITY) -->
+    <InternalsVisibleTo Include="{{APP_NAME}}.Tests" />
+  </ItemGroup>
+
 </Project>
