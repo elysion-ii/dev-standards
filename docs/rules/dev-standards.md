@@ -11,7 +11,7 @@ wins.
 
 ## Language
 
-- Maintenance documents (`docs/`, `AGENTS.md`, `README.md`) and the distributed rules (`dist/rules/`) are written in **English** (public repository)
+- Maintenance documents (`docs/`, `AGENTS.md`, `README.md`), the distributed rules (`dist/rules/`), the scaffold mappings (`dist/templates/<stack>/mapping.md`), and the published skills (`skills/`) are written in **English** (public repository)
 - Localized template variants (`dist/templates/dotnet/ja/`, ...) are deliberately in their target language — they are exempt, per the parity invariant in `docs/specs/dev-standards.md`
 
 ## No Private References
@@ -26,6 +26,14 @@ wins.
 - `dist/rules/` files carry **no front matter and no in-file marker** — they are distributed byte-identical, and consuming repositories detect local edits by matching against this repository's tag history. Do not add either
 - Templates use literal `{{TOKEN}}` placeholders. Token names are part of the consumption interface: renaming or removing one is a MAJOR change
 - Each stack's `dist/templates/<stack>/en/` and `ja/` are variants of the same content and must stay in parity: a change to one is applied to the other in the same commit
+- **Every template and rule file is registered in the stack's mapping**: a file added, renamed, or removed under `dist/templates/` or `dist/rules/` changes `dist/templates/<stack>/mapping.md` in the same commit — a row naming its target and retrofit class, or an entry under **Not generated**. Run the mapping coverage check in `docs/guides/release.md` before committing such a change
+- **A new mechanism inside an existing scaffold file gets a marker row**: a new or changed block in a template that already exists (a build-script step, a required `Directory.Build.props` entry, a hook entry) reaches existing repositories only through retrofit's **Mechanism markers** in the stack's mapping — add or update the marker row in the same commit
+- **The mapping's structure is part of the interface**: a change to its sections, columns, placeholders, or retrofit classes that a tool written for the current structure cannot read increments its `Mapping format` number, is a MAJOR change, and updates the `MAPPING_FORMAT` the published skills state in the same commit
+
+## Published skills (`skills/`)
+
+- The published skills hold procedure only — what to clone, ask, write, and confirm. Rule text stays in `dist/rules/`, and target paths and mechanism markers stay in the stack's mapping: a skill never carries its own copy of either
+- The published skills are written in the Claude Code skill format, and `README.md` says so. A change that adds a dependency on another harness-specific feature updates `README.md`'s adaptation notes in the same commit
 
 ## Changing this repository
 
@@ -59,4 +67,4 @@ Where a new rule goes, and when a new distributed rule file is created. Rational
 
 ## Releases
 
-- Tags are the consumption interface. Any change to distributed content (`dist/`) is not consumable until tagged — follow `docs/guides/release.md`. Changes outside distributed content need no tag
+- Tags are the consumption interface. Any change to distributed content (`dist/`) or to the published skills (`skills/`) is not consumable until tagged — follow `docs/guides/release.md`. Changes outside both need no tag

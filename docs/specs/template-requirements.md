@@ -38,6 +38,7 @@ the mechanism may differ, the guarantee may not.
 | `dist/rules/<stack>.md` | The stack rule file, opening with an enforcement matrix |
 | `dist/templates/<stack>/common/` | Scaffold files identical across natural-language variants |
 | `dist/templates/<stack>/en/`, `ja/` | Natural-language variants, in parity (invariant in `docs/specs/dev-standards.md`) |
+| `dist/templates/<stack>/mapping.md` | The scaffold mapping: target path → source for every generated file, the retrofit class of each, the files deliberately not generated, and the mechanism markers (`docs/specs/dev-standards.md` Scaffold mapping) |
 
 The agent hook templates under `dist/templates/shared/` are consumed as-is by every
 stack — never fork them into a stack directory. The generic `AGENTS.md` in the same
@@ -60,8 +61,10 @@ marked **release-check obligation**. Beyond the marked cells, one class of behav
 is always the scaffolding implementation's: where a generated file lands (the root
 `CLAUDE.md`, `.claude/settings.json`, ...) and which variant or app-type template is
 selected — realization cells name the template sources; target paths and selection
-live in the scaffolding implementation. With that understood, everything unmarked is
-verifiable against `dist/`.
+live in the stack's scaffold mapping (`dist/templates/<stack>/mapping.md`, specified in
+`docs/specs/dev-standards.md` Scaffold mapping), which every scaffolding implementation
+reads from the tag it applies. With that understood, everything unmarked is verifiable
+against `dist/`.
 
 ## 1. Routing and rule distribution
 
@@ -170,6 +173,7 @@ What `dist/rules/<stack>.md` itself must contain.
 
 Confirm every item before releasing a new stack template set:
 
+- [ ] Scaffold mapping: `dist/templates/<stack>/mapping.md` names every template and rule file the stack uses (or lists it as not generated) and carries a marker row for each template-carried mechanism; the mapping coverage check in `docs/guides/release.md` prints nothing
 - [ ] R1–R2: `AGENTS.md` router variant (en/ja) with `CLAUDE.md` one-line import
 - [ ] R3: Commands table filled with the stack's real format / format check / build / test commands
 - [ ] R4: distribution list covers `standard.md`, `documentation.md`, `git.md`, `cli.md`, `db.md`, `<stack>.md`
