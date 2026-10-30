@@ -32,7 +32,7 @@ checks them.
 | EXITCODES | 0 success / 1 runtime error / 2 usage error | — | AUDIT |
 | ERRORMSG | `app: <message>` on stderr, with a `--help` hint on usage errors | — | AUDIT |
 | CONFIG | Precedence: options > environment variables > config file > built-in defaults | — | AUDIT |
-| COMPAT | Avoid incompatible changes; a warranted rename replaces the old name outright | — | AUDIT |
+| COMPAT | Avoid incompatible changes; a rename that is made replaces the old name outright | — | AUDIT |
 
 ## SYNTAX: Command Structure
 
@@ -59,6 +59,7 @@ app --verbose build --output dist/ src/
 - Every option MUST have a long form (`--name`)
 - Long-form values are accepted both as `--output file.txt` and `--output=file.txt`
 - Option names use lowercase letters and hyphens only (e.g., `--dry-run`) — no underscores, no uppercase
+- Options take only the `--name` and `-x` forms; no other prefix (e.g., Windows-style `/silent`) is accepted
 
 ### Short forms only for frequent options
 
@@ -78,7 +79,7 @@ app build -- --strange-filename
 ## RESERVED: Reserved Options
 
 The table below is a name reservation, not an implementation demand: **when the feature
-exists, it uses this name and short form**. Only `--version`/`-V` is mandatory.
+exists, it uses this name and short form**. Only the version option is mandatory, in both forms: `--version` and `-V`.
 
 | Long form | Short | Behavior | Implementation |
 |---|---|---|---|
@@ -128,7 +129,7 @@ one:
 ## HELP: Help Output
 
 This section applies when `--help` is implemented (RESERVED: recommended, not
-mandatory).
+mandatory), except Behavior without arguments, which applies to every CLI.
 
 ### Per-level `--help`
 
@@ -152,7 +153,7 @@ The `--help` output contains:
 
 ### Behavior without arguments
 
-- When running with no arguments has no meaningful behavior, print a brief usage and exit with code 2
+- When running with no arguments has no meaningful behavior, print a brief usage and exit with code 2. A GUI application that opens its window when started without arguments has meaningful behavior
 - Not the full help: only the `Usage:` line plus, when `--help` is implemented, a "see `--help`" pointer
 
 ## STREAMS: Standard Output and Standard Error
@@ -171,7 +172,8 @@ Callers (shell scripts, schedulers, automated orchestrators) branch strictly on 
 | 1 | Runtime error (the operation failed) |
 | 2 | Usage error (invalid option or argument) |
 
-- When codes 3 and above are used for application-specific error classes, document them in the help or the documentation
+- 0 means the operation did everything asked. An outcome that did less (e.g., completed with skipped items) never exits 0: it exits 1, or a code 3 or above
+- Codes 3 and above, when used, are documented in the help or the documentation
 
 ## ERRORMSG: Error Messages
 
@@ -183,7 +185,7 @@ app: unknown option '--outpt'
 Try 'app --help' for more information.
 ```
 
-- Where possible, suggest the correct candidate (`did you mean '--output'?`)
+- Suggesting the existing name an input most likely meant (`did you mean '--output'?`) is recommended; an error without a suggestion is not a violation
 
 ## CONFIG: Configuration and Environment Variables
 
@@ -200,7 +202,7 @@ Precedence, strongest first:
 ## COMPAT: Compatibility
 
 - Avoid breaking changes to published option names, subcommand names, and exit-code semantics.
-- When a rename is warranted, replace the old name outright without backward-compatibility aliases. Compatibility aliases expand the test surface and clutter `--help` documentation.
+- A rename that is made replaces the old name outright, without backward-compatibility aliases. Compatibility aliases expand the test surface and clutter `--help` documentation.
 - To guarantee machine-readable stability, provide `--format json`; plain-text terminal output provides no stability guarantees.
 
 ## Checklist

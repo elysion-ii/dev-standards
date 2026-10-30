@@ -79,6 +79,7 @@ Inside a function, the form that leaves less machinery to read is used. Across f
 Every layer adds behavior.
 
 - **No pass-through methods**: a method is pass-through when its callers would get the same result by calling what it calls, with the same arguments. Logging, metrics, or tracing added to it do not change that — they belong in the layer that does the work or in a mechanism that spans layers
+- An adapter is not pass-through: a method that implements an interface the code depends on, so that a test can substitute the implementation, adds that substitution point
 - Logic extracted into a new service is called directly by **all** its callers
 - No wrapper method stays behind on the original class
 
@@ -123,7 +124,7 @@ Applies to every write to durable state — a database, files, a message sent to
 
 ### Synchronous vs Asynchronous
 
-- Async is for I/O-bound work (network, database, files); CPU-bound and pure logic stay synchronous
+- I/O-bound work (network, database, files) is async wherever the platform offers an asynchronous API; CPU-bound and pure logic stay synchronous
 - Async propagates end-to-end: never block on async code (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`)
 - No method is marked async without asynchronous work to await
 - Stack rules refine this per stack and take precedence

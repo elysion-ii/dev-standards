@@ -33,10 +33,10 @@ Rules in `docs/rules/` are organized into three tiers:
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules.
 
-- **Rule Scope**: Every change must strictly comply with every rule file under `docs/rules/` and the application specification under `docs/specs/`. `cli.md` and `db.md` apply only while the condition each states at its top holds for the application.
+- **Rule Scope**: which rule files and specification every change complies with, and when `cli.md` and `db.md` apply, is stated in `docs/rules/standard.md` (How to use these rules).
 - **Loading Rules**: Read this file and every file under `docs/rules/` before writing code (including when transitioning from a plan to implementation).
 - **Completion Gate (AUDIT)**: Before reporting an implementation task as complete, pass the AUDIT gate in `docs/rules/standard.md`.
-- **File Ownership**: Rules managed by dev-standards (core rules, and distributed stack rules) are read-only; repository-authored rules (application rules, and local stack rules) are edited in this repository.
+- **File Ownership**: rules managed by dev-standards (core rules, and distributed stack rules) are copies of its pinned tag; repository-authored rules (application rules, and local stack rules) are maintained in this repository.
 
 ## Commands
 

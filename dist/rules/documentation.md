@@ -14,7 +14,7 @@ operation must strictly follow these rules. Do not classify, name, or place docu
 
 ## Document responsibilities
 
-- `AGENTS.md` holds facts, commands, the Applications table, and reading instructions only — no rule text.
+- `AGENTS.md` holds facts, commands, the Applications table, and reading instructions only — no rule text. A sentence that points to where a requirement is stated ("pass the AUDIT gate at the end of `standard.md`") is a reading instruction; a sentence that states a requirement itself ("always run the tests before committing") is rule text.
 - `docs/rules/` holds development and change rules that cannot be enforced mechanically.
 - `docs/specs/` states behavior a system must exhibit, observable from outside it.
 - `docs/adr/` records an adopted decision, its reasoning, consequences, rejected alternatives, and revisit conditions.
@@ -34,7 +34,21 @@ Applies to all documents across the repository:
 - **Each item stands alone**: state the requirement and its reason within the item itself. Never justify a requirement by invoking another rule or by analogy.
 - **Write contracts, not admonitions**: state required and prohibited behavior as a contract a human and an agent verify the same way. Never write reassurance, scolding, or commentary about the act of writing.
 - **One item, one verdict**: each bullet takes the form `**headword**: applicable condition + required action + reason where needed`, and resolves to a single pass or fail. Never chain multiple requirements, exceptions, and reasons into one sentence.
-- **Criteria must be checkable**: state what to remove, what to include, and what condition ends an obligation. Never instruct with subjective adjectives alone ("simple", "readable", "clean").
+- **Criteria must be checkable**: state what to remove, what to include, and what condition ends an obligation. Never instruct with subjective adjectives alone (e.g., "simple", "short", "readable", "clean").
+
+### Requirement text
+
+Applies to every text that states a requirement — rule files, specifications, acceptance criteria. Two readers who apply a requirement to the same case reach the same verdict without supplying a judgment of their own.
+
+- **Boundary terms are defined by a test**: a term that decides whether a requirement applies (a layer, a "decision", "behavior", "the environment") is defined by an observable test in the text, never left to the reader's sense of the word.
+- **Requirements are stated as requirements**: an obligation is never carried only by a rationale or consequence clause ("so ...", "which means ...").
+- **Lists say what they are**: a list whose completeness changes a verdict — what a requirement applies to, or what satisfies it — is marked as examples ("e.g.") or as the complete set ("only", "one of").
+- **Conditions run both ways**: a permission granted under a condition also states what holds outside the condition, and every later reference to the permission repeats its condition.
+- **Scope follows the hazard**: a requirement is scoped by the property that creates the hazard it prevents (where a value goes), not by a property incidental to it (where the value came from).
+- **One strength per requirement**: a requirement's lead sentence and its items state the same strength, and "default" in the sense of a strength (what holds unless someone decides otherwise) appears only together with who may deviate and how. The default of a configuration value — what the application uses when the setting is missing — is unaffected.
+- **The property, not a proxy**: a requirement states the property it protects, and the property is the checkable criterion. A measurable proxy (e.g., a line count, the presence of a keyword) follows the property only as an example of meeting it, because a proxy can be met while the property is violated. A number is the criterion only when it is the property itself (a system limit, a version), never when it stands in for a quality.
+- **Overlaps are resolved in the text**: where two requirements govern the same artifact, at least one of them states how the two combine.
+- **Outside facts are located**: a requirement whose verdict depends on a fact held elsewhere (what a framework requires, what a language can declare) names where that fact is recorded, or states what applies where it does not exist.
 
 ## Directory layout
 
@@ -153,7 +167,7 @@ Do not invent other values. Optional fields: `last-reviewed`, `topics`,
 
 - Lowercase kebab-case describing the content: `database-migration.md`, `authentication-flow.md`.
 - **Application identifiers are exempt**: `<App>.md` files and `<App>/` directories use the identifier verbatim, exactly as declared in the `AGENTS.md` Applications table (see Application scope).
-- Never content-free names: `memo.md`, `temp.md`, `note1.md`, `misc.md`.
+- Never content-free names (e.g., `memo.md`, `temp.md`, `note1.md`, `misc.md`): a name that does not say what the document is about.
 - No sequential numbering for general documents (`0001-`) — chronology belongs in `git log`.
 - **ADRs are the exception**, following the community convention: `NNNN-description.md` with a 4-digit zero-padded number. Numbers are immutable IDs allocated append-only: next = highest existing number across `docs/adr/` **and** `docs/adr/archive/` + 1. Never renumber and never fill gaps.
 - Infrastructure directories are lowercase (`docs/`, `adr/`, `guides/`); code directories follow the language convention.
@@ -166,6 +180,8 @@ investigations: active → closed → archive/investigations
 adr:            adr/ → adr/archive/
 plans:          docs/plans/ → docs/archive/plans/ (or delete)
 ```
+
+A document moves only along these arrows, one stage at a time; an investigation that is finished but still worth reading goes to `closed/`, never straight to the archive. A document is retired — and leaves the normal reference path — when it is no longer valid: replaced, or describing a state the system is no longer in.
 
 ## Archive vs delete
 

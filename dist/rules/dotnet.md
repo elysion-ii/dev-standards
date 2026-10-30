@@ -20,7 +20,7 @@ mechanism is added.
 | NAMESPACE | File-scoped namespaces only | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`) + warnings-as-errors | Enforced |
 | ASYNC | No blocking on async code; no async without asynchronous work to await | VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers`); CS1998 as error | Enforced for a method with no `await` — awaiting an already-completed task (`Task.FromResult`) stays AUDIT |
 | DEFERRED | A LINQ query is deferred: no side effects inside a query, enumerate once, exceptions surface at enumeration | `.editorconfig` sets `dotnet_diagnostic.CA1851.severity = warning`, which `TreatWarningsAsErrors` turns into a build error | Enforced for multiple enumeration — side effects inside a query and the placement of `try` have no analyzer and stay AUDIT |
-| VISIBILITY | Types and members are visible only as widely as their callers; every declaration writes its modifier | `.editorconfig` sets `CA1515` and `IDE0040` to warning, which `TreatWarningsAsErrors` turns into build errors; the application csproj grants the test project `InternalsVisibleTo` | Enforced for a `public` type in an application and for an omitted modifier — a `public` member of an `internal` type and the visibility of test methods stay AUDIT |
+| VISIBILITY | Types and members are visible only as widely as their callers; every declaration except an interface member writes its modifier | `.editorconfig` sets `CA1515` and `IDE0040` to warning, which `TreatWarningsAsErrors` turns into build errors; the application csproj grants the test project `InternalsVisibleTo` | Enforced for a `public` type in an application and for an omitted modifier — a `public` member of an `internal` type and the visibility of test methods stay AUDIT |
 | VAR | Type inference usage | `.editorconfig` suggestions only | AUDIT |
 | STRING | Explicit `StringComparison` | — | AUDIT |
 | ERROR | Error handling | — | AUDIT |
@@ -55,10 +55,11 @@ mechanism is added.
 |---|---|
 | A specific declaration (type or member) | `[SuppressMessage("<Category>", "<ID>", Justification = "<reason>")]` on the declaration. The `Justification` is the reason |
 | A specific line | `#pragma warning disable <ID>` followed by `restore`. Reason comment required |
-| A specific file/folder | `.editorconfig` section with `dotnet_diagnostic.<ID>.severity = none`. Reason comment required |
+| A specific file/folder | `.editorconfig` section with `dotnet_diagnostic.<ID>.severity = none`, whose glob matches files of one project only. Reason comment required |
 | A whole project | Add the ID to `<NoWarn>` in that csproj. Reason comment required |
 
-- A diagnostic reported on a declaration is suppressed on that declaration, so the suppression stays attached to it when code around it moves
+- The table lists every permitted scope: a suppression wider than one project (e.g., a repository-wide `.editorconfig` severity of `none`) is never used
+- A diagnostic reported on a declaration is suppressed on that declaration, so the suppression stays attached to it when code around it moves. Code the project does not author (e.g., a generator's output that is regenerated) cannot keep an attribute, so its diagnostics are suppressed by file or folder
 - The reason (the comment, or the `Justification`) states why this warning is acceptable here as a current constraint ("for now" or "fix later" is not a reason)
 
 ## UNUSED: Code the Change Stopped Reaching
@@ -78,7 +79,7 @@ the diagnostics that can see the part of that requirement a compiler can decide:
 
 ## ASYNC: Asynchronous Code
 
-Refines the core's Synchronous vs Asynchronous section for .NET:
+Refines the core's Synchronous vs Asynchronous section for .NET; the core bullets this section does not restate apply unchanged. .NET offers asynchronous APIs for network, database, and most file I/O (e.g., `File.ReadAllTextAsync`), so that I/O is async:
 
 - **Never block on async code** (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`) — enforced by the VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers` in `Directory.Build.props`)
 - **Do not mark a method async when it has no asynchronous work to await** — CS1998 makes a method with no `await` an error under warnings-as-errors; a method that awaits only `Task.FromResult` passes CS1998 and is checked in AUDIT
@@ -104,7 +105,7 @@ announces itself.
 The principle is Minimal Visibility in `standard.md`. Its .NET form:
 
 - **No type in an application is `public`.** Nothing outside an application assembly calls into it, so its types are `internal` or narrower. CA1515 makes a `public` type in an `Exe` or `WinExe` project a build error. The one type a framework forces `public` is the WinUI 3 `App` (XAML entry points below)
-- **Every declaration writes its modifier.** The visibility is a decision written on the declaration, never the language default left unstated. IDE0040 (`dotnet_style_require_accessibility_modifiers = for_non_interface_members`) makes an omitted modifier a build error
+- **Every declaration except an interface member writes its modifier.** The visibility is a decision written on the declaration, never the language default left unstated. IDE0040 (`dotnet_style_require_accessibility_modifiers = for_non_interface_members`) makes an omitted modifier a build error
 - **A member of an `internal` type is declared `internal` or narrower.** `public` on it reaches no further than `internal` does, and claims that it does. `public` is written only where the caller that reaches the member requires it:
 
 | Caller | What requires `public` |
@@ -153,7 +154,7 @@ which semantics were meant. Naming it settles that where the code is written.
 
 ## CANCEL: Cancellation Token Propagation
 
-- Every async method that performs potentially long I/O (DB, file, network, external process) MUST accept `CancellationToken ct = default` and pass it to every cancellable await — including static helpers and feature-internal classes, not only service entry points
+- Every async method that performs I/O (DB, file, network, external process) MUST accept `CancellationToken ct = default` and pass it to every cancellable await — including static helpers and feature-internal classes, not only service entry points
 - This applies even when no caller currently supplies a real token
 - Do NOT pass `CancellationToken.None` where a `ct` variable is in scope
 - Rationale: the project's `docs/adr/0001-cancellation-token-plumbing.md` (scaffolded into every project)
@@ -201,12 +202,12 @@ When I/O targets may be network paths, perform all file reads/writes in local `%
 
 - **Input**: Copy source files from network to `%TEMP%` before processing
 - **Output**: Create artifacts in `%TEMP%`, then `File.Copy` / `File.Move` to the final destination
-- **Naming**: Flat under `Path.GetTempPath()` as `{FeatureName}_{Guid.NewGuid():N}.{ext}`
+- **Naming**: Flat under `Path.GetTempPath()` as `{FeatureName}_{Guid.NewGuid():N}.{ext}`. Every cleanup below deletes only files matching this application's own pattern, never by sweeping `%TEMP%`, which holds other programs' files
 - **Cleanup**: Always delete in `finally`. Deletion failure is best-effort (log and continue)
-- **Recleanup of leftover files**: Don't rely on the `finally` deletion alone — a killed process or crash can skip it, so retry cleanup elsewhere too
+- **Recleanup of leftover files**: a killed process or crash skips `finally`, so leftovers are also deleted at a point that runs even after a run was killed — never only in `finally`
   - **Default policy: delete leftover files older than 24 hours.** An application whose run interval makes 24 the wrong number picks its own limit and states the value and the reason in its application rules file
   - **Desktop apps**: On next startup, retry deleting leftover temp files past that age
-  - **Console/long-running apps**: On startup, or at a suitable point within the processing loop (start, end, etc. — whatever fits the app's structure), retry the same way
+  - **Console/long-running apps**: On startup, or at a point in the processing loop that every iteration reaches outside `finally` (e.g., the start of each iteration), retry the same way
 
 ## CONSTANTS: Constants
 

@@ -38,14 +38,14 @@ Rules for this repository follow the three-tier model:
 
 **Precedence on conflict**: Application rules (`docs/rules/dev-standards.md`) > Core rules.
 
-- **Spec-First**: Any change altering repository structure or the distribution contract requires updating `docs/specs/dev-standards.md` before or alongside the change.
-- **Completion Gate (AUDIT)**: Before reporting a change as complete, pass the AUDIT gate at the end of `dist/rules/standard.md`. Because this repository has no build or test gates, verify every applicable rule as an AUDIT item.
+- **Spec-First**: stated for this repository in `docs/rules/dev-standards.md` (Changing this repository).
+- **Completion Gate (AUDIT)**: pass the AUDIT gate at the end of `dist/rules/standard.md`. This repository has no build or test gates, so AUDIT step 4 has no command to run.
 
 ## Commands
 
 There are no build, format, or test commands. The one mechanical check is the mapping
-coverage check in `docs/guides/release.md` — run it whenever a file under
-`dist/templates/` or `dist/rules/` is added, renamed, or removed. Releases are git
+coverage check in `docs/guides/release.md`; when it runs is stated in
+`docs/rules/dev-standards.md` (Distributed content). Releases are git
 tags — the procedure is `docs/guides/release.md`; the versioning criteria are in
 `docs/specs/dev-standards.md`.
 

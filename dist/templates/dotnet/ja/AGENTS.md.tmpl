@@ -30,10 +30,10 @@
 
 **競合時の優先順位**: アプリルール > スタックルール > coreルール
 
-- **規則の適用範囲**: すべての変更は `docs/rules/` 配下のすべての規則ファイルと `docs/specs/{{APP_NAME}}.md` に厳格に従う。`cli.md` と `db.md` は、各ファイルの冒頭に書かれた条件が {{APP_NAME}} に当てはまる間だけ適用する
+- **規則の適用範囲**: 変更が従う規則ファイルと仕様、および `cli.md`・`db.md` が適用される条件は、`docs/rules/standard.md` の How to use these rules 節に記載されている。{{APP_NAME}} の仕様は `docs/specs/{{APP_NAME}}.md` である
 - **規則の読み込み**: コードを書き始める前(計画から実装へ移行する時点を含む)に、本ファイルと `docs/rules/` 配下のすべてのファイルを読むこと
 - **完了ゲート(AUDIT)**: 実装タスクの完了を報告する前に、`docs/rules/standard.md` 末尾のAUDITゲートを通過すること
-- **ファイルの編集権限**: dev-standards が管理する `docs/rules/` 配下の規則ファイルは読み取り専用である。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` に書くこと
+- **ファイルの編集権限**: dev-standards が管理する `docs/rules/` 配下の規則ファイルは、固定したタグからの複製である。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` で管理している
 
 ## コマンド
 

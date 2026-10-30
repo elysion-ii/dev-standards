@@ -15,9 +15,13 @@ The extent of Git operations is decided by the user, never assumed by the agent.
 
 Stop strictly at the agreed stage and report. Never proceed beyond the agreed stage autonomously; unpushed or unmerged branches are valid resting states.
 
+- **What counts as agreement**: the user names a stage, or gives an instruction that maps to exactly one stage. An instruction that maps to more than one (e.g., "finish this") is confirmed with the user before the first Git write operation.
+- **Agreed once per task**: the agreement covers every Git operation of the task it was made for; a new task needs a new agreement.
+- **What counts as a write**: a Git write operation is any operation from the stages above — staging, committing, pushing, opening or merging a PR, deleting a branch. Fetching and creating a local branch are not.
+
 ## Operation Language
 
-Write all Git-related text in English: commit messages, branch names, PR titles and descriptions, tags, and release notes. This prevents shell encoding issues, garbled terminal output, and cross-environment inconsistencies.
+Write all Git-related text in English: commit messages, branch names, PR titles and descriptions, tag names and tag messages, and release notes. This prevents shell encoding issues, garbled terminal output, and cross-environment inconsistencies.
 
 ## Commit Format
 
@@ -26,8 +30,8 @@ Write all Git-related text in English: commit messages, branch names, PR titles 
 
 ## Branches
 
-- Treat the default branch as protected, whether or not the repository actually enforces it: never commit on it. Create a branch first, from the default branch's current state. Work on the default branch only when the user explicitly asks for it
-- Branch names are kebab-case and describe the change; a type prefix mirroring the commit type (`feat/`, `fix/`, `docs/`, `chore/`, ...) is recommended, not required
+- Treat the default branch as protected, whether or not the repository actually enforces it: never commit on it. Create a branch first, from the remote default branch's latest state (fetch before branching; a local default branch behind the remote is not its current state). Work on the default branch only when the user explicitly asks for it
+- Branch names are kebab-case and name the change, at least by the area it changes (e.g., `login-screen`); a type prefix mirroring the commit type (`feat/`, `fix/`, `docs/`, `chore/`, ...) is recommended, not required
 - A branch carries as many commits as the work needs — one PR does not mean one commit
 - Delete branches per Branch Cleanup below once their PR is merged
 
