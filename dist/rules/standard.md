@@ -56,6 +56,14 @@ A declaration's visibility tells the reader who calls it. A declaration visible 
 - Keep I/O in a thin shell that orchestrates: fetch → decide (pure) → write
 - Time, randomness, and environment values are inputs too: pass them as arguments; introduce clock abstractions or DI only when argument-passing is not enough
 
+### Declared Mutation
+
+A call changes only what its name and signature show it changes, and state changes only where something has to change it. A change neither the name nor the signature shows is found only by reading the body, and a value that anything could have changed has to be traced before it can be trusted.
+
+- **Arguments change only when declared**: a function changes an object it receives only when its name or signature declares that change (e.g., a name stating that it sorts or fills its argument, a parameter the language marks as modified). Every other result leaves through the return value. A function named for computing one value that also rewrites an argument hands its caller a change the caller neither asked for nor can see.
+- **Fixed unless something must change it**: a field, a variable, and an object's state are declared unchangeable once set, unless code that runs after they are set has to change them. Changeable state can be changed by any code that reaches it, so a reader has to rule out all of that code before trusting the value.
+- **A framework that writes is a writer**: a framework that sets values on an object after creating it (a UI binding, an object-relational mapper, a deserializer) is code that has to change that object, and the state it sets stays changeable. A framework that sets values only while creating the object changes nothing afterwards, and the state stays fixed.
+
 ### Declarative Where It Removes Machinery
 
 Choose between declarative pipelines (LINQ, map/filter) and imperative loops based on which form minimizes cognitive load:
@@ -104,6 +112,7 @@ Code must read as though the current implementation were the only one that ever 
 ### Enforce Invariants in Code
 
 - Prefer compile-time impossibility over runtime checks: where practical, express the rule in types (stage-specific interface return types for call order, required constructor arguments, narrowed parameter types) so violations do not compile
+- A narrowed type checks its rule wherever an instance is created or changed, so every instance that exists is valid and code that receives one does not check the rule again. A narrowed type that can hold an invalid value only renames the unchecked value
 - When a rule can be broken silently (wrong call order, configuration after startup, out-of-range values), make the code fail fast with a clear message instead of relying on documentation
 - The error message should state the rule itself
 
