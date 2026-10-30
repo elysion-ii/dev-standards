@@ -39,6 +39,7 @@ Write all Git-related text in English: commit messages, branch names, PR titles 
 
 - Landing a branch on the default branch always goes through a PR; never merge a branch locally
 - Give every PR a clear title and a description of what changed and why
+- Before opening a PR, and again after every later push to it, run every end-to-end test command `AGENTS.md` names; each exits 0 (`testing.md` When Tests Run)
 - Before relying on a PR's diff, composing a merge message, or merging, confirm the PR still reflects the intended change — re-check with `gh pr view` if commits were pushed after opening
 
 ## Merge Strategy

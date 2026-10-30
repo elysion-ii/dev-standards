@@ -26,7 +26,7 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 Rules in `docs/rules/` are organized into three tiers:
 - **Application rules**: `docs/rules/{{APP_NAME}}.md` (this repository's own rules and overrides)
 - **Stack rules**: `docs/rules/dotnet.md` (.NET stack rules, managed by dev-standards)
-- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, and the conditional core files `cli.md` and `db.md`; managed by dev-standards)
+- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`; managed by dev-standards)
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules.
 
@@ -43,6 +43,7 @@ Rules in `docs/rules/` are organized into three tiers:
 | Format check (must pass before completion) | `dotnet format {{APP_NAME}}.slnx --verify-no-changes` |
 | Build | `dotnet build {{APP_NAME}}/{{APP_NAME}}.csproj -c Release` |
 | Test | `dotnet test {{APP_NAME}}.Tests/{{APP_NAME}}.Tests.csproj` |
+| End-to-end test | none yet (`docs/rules/testing.md`, Test Layers) |
 | Full build (format gate → tests → publish) | `build/Menu.bat` (interactive) or `powershell -ExecutionPolicy Bypass -File build/Build.ps1` |
 | Installer | `powershell -ExecutionPolicy Bypass -File build/Installer.ps1` |
 
@@ -72,7 +73,7 @@ Before creating, changing, moving, renaming, archiving, or deleting any document
 when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
 in this repository) first; it defines placement, naming, and front matter.
 
-- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `cli.md`, `db.md` + `dotnet.md` (managed by dev-standards) and `{{APP_NAME}}.md` (application rules)
+- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `testing.md`, `cli.md`, `db.md` + `dotnet.md` (managed by dev-standards) and `{{APP_NAME}}.md` (application rules)
 - `docs/specs/{{APP_NAME}}.md` — the {{APP_NAME}} specification: what it does
 - `docs/adr/` — Architecture Decision Records; retired ADRs move to `docs/adr/archive/`
 - `docs/plans/` and `docs/archive/plans/` — working area for plans, gitignored (`docs/rules/documentation.md`, `docs/plans/`)

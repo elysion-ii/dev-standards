@@ -31,6 +31,7 @@ mechanism is added.
 | CONSTANTS | No magic numbers/strings | — | AUDIT |
 | COMMENTS | C# comment style | — | AUDIT |
 | TESTNAME | xUnit test naming | — | AUDIT |
+| REQCOV | Every requirement in `docs/specs/` is verified by a test, and no test names a missing requirement (`testing.md` Requirement Coverage) | `Build.ps1` fails when a requirement ID from a specification heading appears in no `.cs` file under a `*Tests` directory, and when a `[Trait("Requirement", ...)]` names an ID no specification states | Enforced for those two checks only — whether the test verifies the requirement, and whether an observable requirement has an end-to-end test, stay AUDIT |
 | VERSION | Single version definition + CHANGELOG release gate + clean displayed version | Installer script `#ifndef MyAppVersion → #error` guard; the installer build injects the version and gates on a CHANGELOG heading; `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false` | AUDIT — the gates cover only the installer path; "no `<Version>` in a csproj" has no guard, and a deleted `<Version>` in `Directory.Build.props` falls back to the SDK default (1.0.0) unguarded |
 | OUTPUT | Build outputs come only from the build scripts; never manual, never committed | Output directories are gitignored by the scaffold; `Build.ps1` gates publishing on the format check and the test suite | AUDIT — gitignore keeps outputs out of normal staging; it does not stop forced adds, manual additions, or hand-run publishing |
 | CONFIGFILE | Only the placeholder template of a configuration file is tracked; the file the application reads is never committed | `Build.ps1` derives the real name of every tracked `*.template.*` configuration file and fails when git tracks it; the scaffold gitignores `appsettings.json` | Enforced for the commit — deriving the shipped file and the installer's no-overwrite entry stay AUDIT items |
@@ -227,7 +228,13 @@ C# specifics:
 
 - Test method names use `Method_Scenario_ExpectedResult` (e.g. `Merge_EmptyInput_ReturnsEmpty`)
 - Underscore separation is the official convention; for this reason CA1707 is suppressed via `<NoWarn>` in the test project's csproj
-- Test row ordering and the other testing principles are in the `standard.md` Testing section
+- Test row ordering and the other testing principles are in `testing.md`
+
+## REQCOV: Requirement Coverage
+
+- **Test projects live in directories whose names end in `Tests`** (e.g., `<App>.Tests`, `<App>.E2ETests`); the build looks for requirement IDs there
+- **A test names a requirement with `[Trait("Requirement", "<ID>")]`** on the test method, or with a `//` comment on the line directly above the method or its first attribute. A method name cannot hold the ID, because a C# identifier cannot contain its hyphen. The trait is preferred: `dotnet test --filter "Requirement=<ID>"` then runs every test of one requirement
+- **`Build.ps1` checks the references**: it collects every requirement ID from the headings under `docs/specs/` and fails, naming the IDs, when an ID appears in no `.cs` file under a `*Tests` directory, or when a trait names an ID no specification states. The match is exact, so `ORD-10` does not count as a reference to `ORD-1`
 
 ## VERSION: Version Management
 

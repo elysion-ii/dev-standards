@@ -10,9 +10,9 @@ written, recorded, and deployed, and the shape of the queries the application se
 engine, and the data-access library are the stack's or the application's choice.
 
 Rules that bind every durable store and every input, databases included, are in
-`standard.md`: atomic and concurrency-safe writes (Writes That Hold Together), bound
-parameters (Values Never Become Code), and tests against a database the test run creates (Boundary
-Tests).
+`standard.md`: atomic and concurrency-safe writes (Writes That Hold Together) and bound
+parameters (Values Never Become Code). Tests against a database the test run builds from
+the repository's schema are in `testing.md` (Boundary Tests).
 
 ## Enforcement matrix
 

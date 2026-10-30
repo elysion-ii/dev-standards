@@ -100,6 +100,7 @@ Copied verbatim — no token replacement — into every generated repository.
 | `docs/rules/standard.md` | `dist/rules/standard.md` | managed rule |
 | `docs/rules/documentation.md` | `dist/rules/documentation.md` | managed rule |
 | `docs/rules/git.md` | `dist/rules/git.md` | managed rule |
+| `docs/rules/testing.md` | `dist/rules/testing.md` | managed rule |
 | `docs/rules/cli.md` | `dist/rules/cli.md` | managed rule |
 | `docs/rules/db.md` | `dist/rules/db.md` | managed rule |
 | `docs/rules/dotnet.md` | `dist/rules/dotnet.md` | managed rule |
@@ -136,6 +137,7 @@ the application's name.
 | `Directory.Build.props` | `IncludeSourceRevisionInInformationalVersion` property set to `false` | the template's version block (keeps `AssemblyInformationalVersion` equal to `<Version>` so the displayed version stays `AppName X.Y.Z` — see `standard.md` Version Display) |
 | `Directory.Build.props` | a `RemoveSymbolsFromPublish` target that drops every `.pdb` from `@(ResolvedFileToPublish)` | the template's target. The packaging step names no files, so without it the symbol files a native package ships beside its library are installed along with everything else (`dotnet.md` NATIVEDEP) |
 | `Directory.Build.props` | a `ForbidSelfExtractingPublish` target that errors when `IncludeNativeLibrariesForSelfExtract` or `IncludeAllContentForSelfExtract` is set | the template's guard target. Port it and leave the rest to it: from then on the project's own build reports any self-extracting publish it still configures, with the fix in the error text (`dotnet.md` NATIVEDEP) |
+| `build/Build.ps1` | a `Verifying requirement coverage...` block failing when a requirement ID from a `docs/specs/` heading appears in no `.cs` file under a `*Tests` directory, or when a `[Trait("Requirement", ...)]` names an ID no specification states | the template's block. **Staged:** before enabling it, run the block's check alone and report the IDs it lists; add the missing references (or, for a specification without IDs, leave it to `documentation.md` Requirement IDs, Older specifications), then port the block. Where the test projects are not top-level `*Tests` directories, adjust only the directory selection (`dotnet.md` REQCOV) |
 | `build/Installer.ps1` | reads the version from `Directory.Build.props` and passes `/DMyAppVersion` to ISCC | the version-read + CHANGELOG-gate blocks (after the ISCC existence check), preserving project-specific `/D` arguments |
 | `build/Setup_{{APP_NAME}}.iss` | `#ifndef MyAppVersion` guard and **no** `#define MyAppVersion` | the guard block from `Setup.iss.tmpl`; delete the local `#define` |
 | `build/Setup_{{APP_NAME}}.iss` | the `[Files]` section ships the whole publish directory (wildcard `Source`), not a named executable | the `[Files]` block from `Setup.iss.tmpl`, keeping project-specific entries such as a user-config file installed with `onlyifdoesntexist` (`dotnet.md` NATIVEDEP) |

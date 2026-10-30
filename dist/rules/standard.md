@@ -10,7 +10,7 @@ Applications table lists.
 Rules in `docs/rules/` form three tiers:
 - **Application rules**: `docs/rules/<App>.md`
 - **Stack rules**: `dotnet.md`, `typescript.md`, `python.md`, ...
-- **Core rules**: `standard.md`, `documentation.md`, `git.md`, and the conditional core files `cli.md` and `db.md`
+- **Core rules**: `standard.md`, `documentation.md`, `git.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules. `AGENTS.md` provides routing and commands only.
 
@@ -178,37 +178,6 @@ var count = 0; var sum = 0m; var max = decimal.MinValue;
 
 ---
 
-## Testing
-
-### Environment Independence
-
-- Tests never read what is outside the test run's control — anything it does not set up itself, apart from the tools the repository's setup instructions install (e.g., the culture/locale, the current time, the timezone, environment variables, files neither the test nor the repository provides, pre-existing database contents, network availability) — even where the outcome happens not to vary with it today
-- A read through a library or platform call counts as a read. A scratch directory the platform provides, and a service the test run starts itself and reaches locally, are under the test run's control
-- Where the code under test uses culture or time, the test sets them explicitly
-
-### Self-Sufficient Test Data
-
-- Each test creates the minimal data it needs (e.g., through test data builders with sensible defaults)
-- No test depends on data something other than the test can change (e.g., a shared fixture database, data prepared by hand) — shared mutable test data rots. A read-only file committed beside the test is the test's own data
-
-### Table-Driven Tests
-
-- A function whose spec is "input → output" is tested as a specification table (a parameterized test), not as near-identical test methods
-- Rows run null/none → empty → minimal → main cases → boundaries
-- Input values are self-describing, so the table reads as documentation
-
-### Tests Accompany the Change
-
-- **Decisions are tested**: a change that adds a decision, or changes its outcome for some input (its condition, a threshold, a value it uses), includes tests that pin the new outcome. Behavior no test observes breaks in the next change without any gate failing.
-- **Defects are reproduced first**: a defect fix includes a test that fails without the fix and passes with it, so the defect cannot return unnoticed.
-
-### Boundary Tests
-
-- **Test the boundary itself**: code that crosses the program's boundary (a database query, a file format another system reads, a network protocol) is tested through that boundary with data the test creates (e.g., a database the test run creates and migrates, a file the test writes and parses back). A test of only the logic behind it leaves the query or the format unverified.
-- **No third-party services**: tests never call a service the project does not run, free sandboxes included — its availability, limits, and answers are outside the test's control. The test substitutes it behind the interface the code depends on.
-
----
-
 ## Specifications
 
 - **Spec-first**: a change that needs behavior the specification lacks (`docs/specs/...`, listed in the `AGENTS.md` Applications table) updates the specification before implementing — never retro-fitted afterwards. What a specification contains is defined in `documentation.md`
@@ -328,10 +297,10 @@ until AUDIT passes.
 1. **Reload the rules**: re-read the root `AGENTS.md` and every nested `AGENTS.md` covering a touched directory, every file under `docs/rules/`, and the specification under `docs/specs/` of each touched application. A file read in full earlier in the same session and unchanged since needs no re-reading.
 2. **Identify target files**: Git changes decide which files are targets, not which lines. With no input, the targets are all uncommitted changes (`git status --porcelain`: modified, added, untracked); with a file path, that file; with a folder path, every file in it. The entire content of every target file is verified: a pre-existing violation in a touched file weighs the same as a new one, and no target file is sampled or skipped.
 3. **Verify the change against rules and specifications**:
-   - **Core rules, in every target file**: zero violations of `standard.md`, `documentation.md`, and each conditional core file (`cli.md`, `db.md`) whose condition holds for the application after the change.
+   - **Core rules, in every target file**: zero violations of `standard.md`, `documentation.md`, `testing.md`, and each conditional core file (`cli.md`, `db.md`) whose condition holds for the application after the change.
    - **Git operations, in the change itself**: zero violations of `git.md`. Its object is the change's commit split, commit messages, branch name, and pull request, never a file's content.
    - **Stack rules, in every target file**: zero violations of every rule its enforcement matrix marks **AUDIT**, and of every Enforced rule whose mechanism the repository lacks.
    - **Application rules, in every target file**: zero violations of `docs/rules/<App>.md` and any other repository-authored rules under `docs/rules/`.
    - **Specification**: implemented behavior matches the application specification under `docs/specs/` exactly. A needed specification change is committed before or with the implementation, never afterwards.
-4. **Run mechanical gates**: run the commands defined in `AGENTS.md`; each must execute and exit 0 — the formatter in check mode, a zero-warning build, and the full test suite.
+4. **Run mechanical gates**: run the commands defined in `AGENTS.md`; each must execute and exit 0 — the formatter in check mode, a zero-warning build, and the unit and boundary tests. The end-to-end tests run before the pull request instead (`testing.md` When Tests Run).
 5. **Fix and report**: fix every violation found and re-run from step 2. Report completion only when clean, stating the files checked, the violations found and fixed (file / line / rule) or "no violations", the gate results with exit codes, and anything deliberately left unresolved.

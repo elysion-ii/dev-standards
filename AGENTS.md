@@ -14,7 +14,7 @@ repository's router — facts and reading instructions; it holds no rule text.
 | Path | Content |
 |------|---------|
 | `dist/` | **Everything distributed** — nothing outside it is copied into consuming repositories |
-| `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `cli.md`, `db.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
+| `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `testing.md`, `cli.md`, `db.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
 | `dist/templates/` | Scaffold templates with literal `{{TOKEN}}` placeholders |
 | `dist/templates/dotnet/mapping.md` | The .NET scaffold mapping: template → generated path, retrofit classes, mechanism markers — the single source both published skills read |
 | `dist/tools/` | Opt-in tools, one directory each with its `README.md`, copied verbatim into a consuming repository only when it adopts the tool |
@@ -34,7 +34,7 @@ repository content itself takes the application slot:
 
 Rules for this repository follow the three-tier model:
 - **Application rules**: `docs/rules/dev-standards.md` (repository-specific rules and overrides)
-- **Core rules**: `dist/rules/` (this repository's own product doubles as its core standards: `standard.md`, `documentation.md`, `git.md`, and the conditional core files `cli.md` and `db.md`)
+- **Core rules**: `dist/rules/` (this repository's own product doubles as its core standards: `standard.md`, `documentation.md`, `git.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`)
 - **Specifications**: `docs/specs/dev-standards.md` (contract) and `docs/specs/template-requirements.md` (template requirements)
 
 **Precedence on conflict**: Application rules (`docs/rules/dev-standards.md`) > Core rules.
