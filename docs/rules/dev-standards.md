@@ -11,7 +11,7 @@ wins.
 
 ## Language
 
-- Maintenance documents (`docs/`, `AGENTS.md`, `README.md`), the distributed rules (`dist/rules/`), the scaffold mappings (`dist/templates/<stack>/mapping.md`), and the published skills (`skills/`) are written in **English** (public repository)
+- Maintenance documents (`docs/`, `AGENTS.md`, `README.md`), the distributed rules (`dist/rules/`), the scaffold mappings (`dist/templates/<stack>/mapping.md`), the opt-in tools (`dist/tools/`), and the published skills (`skills/`) are written in **English** (public repository)
 - Localized template variants (`dist/templates/dotnet/ja/`, ...) are deliberately in their target language — they are exempt, per the parity invariant in `docs/specs/dev-standards.md`
 
 ## No Private References
@@ -26,7 +26,8 @@ wins.
 - `dist/rules/` files carry **no front matter and no in-file marker** — they are distributed byte-identical, and consuming repositories detect local edits by matching against this repository's tag history. Do not add either
 - Templates use literal `{{TOKEN}}` placeholders. Token names are part of the consumption interface: renaming or removing one is a MAJOR change
 - Each stack's `dist/templates/<stack>/en/` and `ja/` are variants of the same content and must stay in parity: a change to one is applied to the other in the same commit
-- **Every template and rule file is registered in the stack's mapping**: a file added, renamed, or removed under `dist/templates/` or `dist/rules/` changes `dist/templates/<stack>/mapping.md` in the same commit — a row naming its target and retrofit class, or an entry under **Not generated**. Run the mapping coverage check in `docs/guides/release.md` before committing such a change
+- **Every template, rule, and tool file is registered in the stack's mapping**: a file added, renamed, or removed under `dist/templates/`, `dist/rules/`, or `dist/tools/` changes `dist/templates/<stack>/mapping.md` in the same commit — a row naming its target and retrofit class, or an entry under **Not generated**. Run the mapping coverage check in `docs/guides/release.md` before committing such a change
+- **A tool is self-contained and documented**: everything a tool under `dist/tools/<tool>/` needs at run time is in its directory or named as a prerequisite in its `README.md`, and the README states which files to copy where, how to run the tool, and what it produces. A change to the tool's behavior updates the README in the same commit
 - **A new mechanism inside an existing scaffold file gets a marker row**: a new or changed block in a template that already exists (a build-script step, a required `Directory.Build.props` entry, a hook entry) reaches existing repositories only through retrofit's **Mechanism markers** in the stack's mapping — add or update the marker row in the same commit
 - **The mapping's structure is part of the interface**: a change to its sections, columns, placeholders, or retrofit classes that a tool written for the current structure cannot read increments its `Mapping format` number, is a MAJOR change, and updates the `MAPPING_FORMAT` the published skills state in the same commit
 

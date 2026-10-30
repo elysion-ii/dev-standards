@@ -1,0 +1,6 @@
+{
+  "databases": [
+    { "name": "AppDatabase", "server": "", "authentication": "SqlServer", "user": "", "password": "" },
+    { "name": "ReferencedDatabase", "server": "", "authentication": "Windows", "user": "", "password": "" }
+  ]
+}

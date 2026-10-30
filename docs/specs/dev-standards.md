@@ -11,9 +11,9 @@ change that alters this contract updates this document before (or with) the chan
 
 ## Purpose
 
-Single source of shared engineering rules and project scaffold templates, consumed by
-scaffolding and retrofit tooling that clones this repository at a pinned tag — and the
-publisher of skills that implement that tooling for the .NET template set.
+Single source of shared engineering rules, project scaffold templates, and opt-in tools,
+consumed by scaffolding and retrofit tooling that clones this repository at a pinned
+tag — and the publisher of skills that implement that tooling for the .NET template set.
 
 ## Scope
 
@@ -29,6 +29,8 @@ repository is `docs/rules/dev-standards.md`; how to *release* is
   target state from the same mapping
 - Agent harnesses (Claude Code, Codex, Antigravity): read the distributed files inside
   consuming repositories, not this repository directly
+- Developers of a consuming repository: copy an opt-in tool from `dist/tools/` at a
+  tag into their repository when they adopt it, as the tool's README directs
 
 This repository publishes one implementation of the scaffolding and retrofit tooling
 for the .NET template set, as agent skills under `skills/` (see **Published skills**).
@@ -51,6 +53,8 @@ repository's own maintenance files is that single path prefix.
 | `dist/templates/dotnet/common/` | Language-independent scaffold files |
 | `dist/templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
 | `dist/templates/<stack>/mapping.md` | The stack's scaffold mapping (see **Scaffold mapping**); `dist/templates/dotnet/mapping.md` for .NET |
+| `dist/tools/<tool>/` | One directory per opt-in tool: files a consuming repository copies only when it needs the tool, and a `README.md` stating the tool's prerequisites, which files to copy where, how to run it, and what it produces |
+| `dist/tools/sqlserver/` | Schema export of SQL Server databases into SQL database projects, from which a database with the same structure and settings can be built |
 | `skills/` | The published skills (see **Published skills**) — outside `dist/`, because they are installed in a user's agent harness, never copied into a consuming repository |
 | `docs/` | Documents about this repository itself |
 
@@ -68,6 +72,10 @@ repository's own maintenance files is that single path prefix.
 - Every generated repository receives the pair `docs/rules/<App>.md` ↔
   `docs/specs/<App>.md` (same identifier, declared in its `AGENTS.md` Applications
   table) and an `AGENTS.md` router that holds no rule text
+- `dist/tools/<tool>/` files are copied verbatim — no token replacement — into a
+  consuming repository only when that repository adopts the tool, to the place the
+  tool's README names. Scaffolding and retrofit do not generate them: each stack's
+  mapping lists them under **Not generated**
 - No skill is copied into a consuming repository (`docs/adr/0002-retire-distributed-skills.md`).
   The published skills under `skills/` are tooling a user installs, not distributed
   content
@@ -131,7 +139,8 @@ repository's own maintenance files is that single path prefix.
   changed or removed token names, a moved or renamed mapping file, a changed mapping
   format (its format number increments)
 - **MINOR**: new content — new rules, new stack rule files, new templates (with their
-  new mapping rows), new mechanism markers, new capabilities of a published skill
+  new mapping rows), new mechanism markers, new tools and new capabilities of a tool,
+  new capabilities of a published skill
 - **PATCH**: fixes and wording corrections, in distributed content and in the published
   skills alike
 - A change under `dist/` or `skills/` is consumable only once tagged. Changes outside
@@ -144,9 +153,9 @@ repository's own maintenance files is that single path prefix.
 - Core rule files never contradict each other: each subject is stated in exactly one
   core file
 - Distributed bytes at a tag never change after the tag is published
-- Every file under `dist/templates/` and `dist/rules/` is named by a stack's mapping
-  file, either as a source or as deliberately not generated. The coverage check in
-  `docs/guides/release.md` confirms it
+- Every file under `dist/templates/`, `dist/rules/`, and `dist/tools/` is named by a
+  stack's mapping file, either as a source or as deliberately not generated. The
+  coverage check in `docs/guides/release.md` confirms it
 
 ## Out of scope
 

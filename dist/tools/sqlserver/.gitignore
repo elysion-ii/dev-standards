@@ -1,0 +1,4 @@
+# Export-Schema.ps1 work area; an interrupted run may leave it behind
+.export-work/
+# Each developer's servers and credentials, created from export-schema.template.json
+export-schema.json

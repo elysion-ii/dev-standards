@@ -53,6 +53,16 @@ the `allowed-tools` front matter, and replace each mention of `AskUserQuestion` 
 the `Write`, `Edit`, and `Bash` tools) with that harness's own way of asking the user
 and of editing files and running commands. The procedure itself is harness-neutral.
 
+## Tools
+
+Opt-in tools under [`dist/tools/`](dist/tools/), copied into a repository only when it
+needs them. Each directory's README states the prerequisites, what to copy where, how to
+run the tool, and what it produces. Take them from a tag, as everything else.
+
+| Tool | What it does |
+|---|---|
+| [`dist/tools/sqlserver/`](dist/tools/sqlserver/README.md) | Exports SQL Server database schemas into SQL database projects, from which a database with the same structure and settings can be built |
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

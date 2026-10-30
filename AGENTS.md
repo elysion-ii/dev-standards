@@ -17,6 +17,7 @@ repository's router — facts and reading instructions; it holds no rule text.
 | `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `cli.md`, `db.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
 | `dist/templates/` | Scaffold templates with literal `{{TOKEN}}` placeholders |
 | `dist/templates/dotnet/mapping.md` | The .NET scaffold mapping: template → generated path, retrofit classes, mechanism markers — the single source both published skills read |
+| `dist/tools/` | Opt-in tools, one directory each with its `README.md`, copied verbatim into a consuming repository only when it adopts the tool |
 | `skills/` | Published skills (`init-dotnet-app`, `retrofit-dotnet-app`), installed by users in their own harness, never copied into consuming repositories |
 | `docs/` | Documents about this repository itself (rules for editing it, ADRs, guides) |
 

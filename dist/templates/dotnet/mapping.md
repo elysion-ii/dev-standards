@@ -112,6 +112,11 @@ Files under `dist/` that the .NET template set deliberately does not generate.
 |---|---|
 | `dist/templates/shared/AGENTS.md` | the generic router for repositories without a stack template set; the .NET set ships its own router variants |
 | `dist/templates/dotnet/mapping.md` | this file — read by tooling, never generated |
+| `dist/tools/sqlserver/README.md` | opt-in tool: a repository copies the tool's files when it adopts the tool, as this README directs |
+| `dist/tools/sqlserver/Export-Schema.ps1` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
+| `dist/tools/sqlserver/Export-Schema.bat` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
+| `dist/tools/sqlserver/export-schema.template.json` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
+| `dist/tools/sqlserver/.gitignore` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
 
 ## Mechanism markers
 

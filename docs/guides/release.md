@@ -38,14 +38,14 @@ whether a release is due.
 ## Mapping coverage check
 
 Confirms the invariant in `docs/specs/dev-standards.md`: every file under
-`dist/templates/` and `dist/rules/` is named by a stack's mapping file
+`dist/templates/`, `dist/rules/`, and `dist/tools/` is named by a stack's mapping file
 (`dist/templates/<stack>/mapping.md`) as a source or as deliberately not generated, and
 every `dist/` path a mapping names exists for every value of its placeholders. Run it
 from the repository root in a POSIX shell (Git Bash on Windows). It prints one line per
 problem and nothing when the mappings are complete:
 
 ```bash
-find dist/templates dist/rules -type f | sort | while read -r f; do
+find dist/templates dist/rules dist/tools -type f | sort | while read -r f; do
   lang=$(printf '%s' "$f" | sed -E 's#/(en|ja)/#/{lang}/#')
   ilang=$(printf '%s' "$f" | sed -E 's#/(en|ja)/#/{ilang}/#')
   type=$(printf '%s' "$f" | sed -E 's#/csproj/(console|wpf|winui3|win32)\.#/csproj/{type}.#')
