@@ -117,6 +117,9 @@ Files under `dist/` that the .NET template set deliberately does not generate.
 | `dist/tools/sqlserver/Export-Schema.bat` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
 | `dist/tools/sqlserver/export-schema.template.json` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
 | `dist/tools/sqlserver/.gitignore` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
+| `dist/tools/sqlserver/Setup-SqlServerHost.ps1` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
+| `dist/tools/sqlserver/Start-TestSqlServer.ps1` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
+| `dist/tools/sqlserver/Stop-TestSqlServer.ps1` | opt-in tool (see `dist/tools/sqlserver/README.md`) |
 
 ## Mechanism markers
 

@@ -1,10 +1,17 @@
-# SQL Server schema export
+# SQL Server schema export and disposable test servers
 
-Exports the schema of SQL Server databases into SQL database projects inside a
-repository, so that a database with the same structure and the same settings can be
-built anywhere from the repository alone (for example, a disposable test database).
-Re-running the export refreshes the projects from the source databases; the diff in
-version control shows what changed on the server.
+Two parts that build on each other:
+
+- **Schema export** (`Export-Schema`): exports the schema of SQL Server databases into SQL
+  database projects inside a repository. Re-running it refreshes the projects from the
+  source databases; the diff in version control shows what changed on the server.
+- **Disposable test server** (`Start-TestSqlServer` / `Stop-TestSqlServer`): builds those
+  projects into a new, empty SQL Server running in a container, with the same SQL Server
+  version, collation, and database settings as the source, on any developer machine and
+  from the repository alone. One server per run, removed when done.
+
+The tool is a foundation: how a repository's tests use the server (fixtures, test data,
+UI automation) is the repository's own design. See **Using the server from tests**.
 
 ## Prerequisites
 
@@ -19,6 +26,9 @@ version control shows what changed on the server.
 
   Commit the manifest, so every developer runs the same `sqlpackage` version.
 - Network access to the source servers, and to NuGet for the first build of a project
+- For the test server only: WSL 2 (`wsl --install --no-distribution` as an administrator
+  once per machine) and network access to download Ubuntu and the SQL Server image on
+  first use. Docker Desktop is **not** used
 
 ## Files
 
@@ -32,6 +42,9 @@ example `Database/`). The projects are written beside the files.
 | `export-schema.template.json` | yes | The databases to export, with placeholder connection values |
 | `.gitignore` | yes | Keeps the local configuration and the work area out of version control |
 | `export-schema.json` | **no** | Each developer's copy of the template with real servers and, optionally, credentials |
+| `Setup-SqlServerHost.ps1` | yes | Creates the WSL distribution that hosts the test servers and installs Docker Engine in it |
+| `Start-TestSqlServer.ps1` | yes | Starts a test server and builds every project beside it into it |
+| `Stop-TestSqlServer.ps1` | yes | Removes a test server, or all of them |
 
 ## Setup
 
@@ -113,3 +126,56 @@ Edits go into `<database>.sqlproj`, which every later export keeps.
 
 Unresolved references inside stored procedures are build warnings, not errors; they can
 stay when the referenced database is outside the repository's concern.
+
+## Disposable test server
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File Start-TestSqlServer.ps1 [-Name <container>] [-OutputFile <file>]
+powershell -NoProfile -ExecutionPolicy Bypass -File Stop-TestSqlServer.ps1 [-Name <container>]
+```
+
+`Start-TestSqlServer.ps1`:
+
+1. Builds every `<database>/<database>.sqlproj` beside the script. A project that fails to
+   build stops the run before any container exists
+2. Creates the WSL distribution `sqlserver-test` with `Setup-SqlServerHost.ps1` when it
+   does not exist yet (about a minute and a half on first use). The distribution is
+   dedicated to test servers; `wsl --unregister sqlserver-test` removes everything
+3. Starts a container from the SQL Server image matching the projects' target platform
+   (`DSP` in `DatabaseOptions.props`: 2017, 2019, 2022, or 2025), with the projects' collation
+   as the server collation — so temporary tables compare like on the source server — and a
+   random `sa` password. All projects must agree on both, or the run stops
+4. Publishes the projects in dependency order (a project's `ProjectReference`s first) as
+   new, empty databases
+5. Prints the server (`<address>,<port>`), user, password, and databases. `-OutputFile`
+   also writes them as JSON (`container`, `distro`, `server`, `user`, `password`,
+   `databases`) for a calling program
+
+A failed run removes the container it started. `Stop-TestSqlServer.ps1 -Name <container>`
+removes one server; without `-Name` it removes every server the script started.
+
+Things the scripts handle that a caller should know about:
+
+- **Address**: Windows reaches the container through the WSL distribution's IP address,
+  not `localhost`, so always use the printed server
+- **Lifetime**: WSL stops a distribution no process uses, and the containers with it. The
+  start script leaves a hidden process waiting on the container, so the server lives
+  until it is removed
+- **Data**: the databases are empty. Whatever a check or a test needs, it inserts itself
+
+For a manual check, point the application's connection setting at the printed server and
+remove the server afterwards.
+
+## Using the server from tests
+
+A typical test fixture:
+
+1. Runs `Start-TestSqlServer.ps1 -OutputFile <temp file>` once for the test run, reads the
+   JSON, and deletes the file
+2. Inserts the rows each test needs, and anything the application needs to start, through
+   the same path a real installation gets it where one exists
+3. Runs the tests against the server
+4. Runs `Stop-TestSqlServer.ps1 -Name <container>` when the run ends
+
+Run tests that start a server one at a time per solution, as they share the WSL
+distribution's resources.

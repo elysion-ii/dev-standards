@@ -61,7 +61,7 @@ run the tool, and what it produces. Take them from a tag, as everything else.
 
 | Tool | What it does |
 |---|---|
-| [`dist/tools/sqlserver/`](dist/tools/sqlserver/README.md) | Exports SQL Server database schemas into SQL database projects, from which a database with the same structure and settings can be built |
+| [`dist/tools/sqlserver/`](dist/tools/sqlserver/README.md) | Exports SQL Server database schemas into SQL database projects, and builds them into disposable SQL Server test servers (WSL + Docker Engine) |
 
 ## License
 

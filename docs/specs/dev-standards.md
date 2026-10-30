@@ -54,7 +54,7 @@ repository's own maintenance files is that single path prefix.
 | `dist/templates/dotnet/en/`, `ja/` | Language variants in parity: AGENTS.md, README, ADR-0001, Setup.iss, app-rules and spec skeletons |
 | `dist/templates/<stack>/mapping.md` | The stack's scaffold mapping (see **Scaffold mapping**); `dist/templates/dotnet/mapping.md` for .NET |
 | `dist/tools/<tool>/` | One directory per opt-in tool: files a consuming repository copies only when it needs the tool, and a `README.md` stating the tool's prerequisites, which files to copy where, how to run it, and what it produces |
-| `dist/tools/sqlserver/` | Schema export of SQL Server databases into SQL database projects, from which a database with the same structure and settings can be built |
+| `dist/tools/sqlserver/` | Schema export of SQL Server databases into SQL database projects, and disposable SQL Server test servers built from those projects in a dedicated WSL distribution running Docker Engine |
 | `skills/` | The published skills (see **Published skills**) — outside `dist/`, because they are installed in a user's agent harness, never copied into a consuming repository |
 | `docs/` | Documents about this repository itself |
 
