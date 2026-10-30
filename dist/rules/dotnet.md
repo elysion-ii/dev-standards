@@ -18,7 +18,7 @@ mechanism is added.
 | ANALYZERS | Static analysis, warnings are errors | `Directory.Build.props`: `AnalysisLevel=latest-recommended`, `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors` | Enforced |
 | UNUSED | A member, parameter, or local the change stopped reaching is removed rather than left behind | `.editorconfig` sets `IDE0051`, `IDE0052`, and `IDE0060` to warning, which `TreatWarningsAsErrors` turns into build errors; the compiler reports an unused local as CS0168/CS0219 without any configuration | Enforced for what an analyzer can see — code still referenced but dead, and a name that outlived its replacement, stay AUDIT |
 | NAMESPACE | File-scoped namespaces only | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`) + warnings-as-errors | Enforced |
-| ASYNC | No blocking on async code; no async without await | VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers`); CS1998 as error | Enforced |
+| ASYNC | No blocking on async code; no async without asynchronous work to await | VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers`); CS1998 as error | Enforced for a method with no `await` — awaiting an already-completed task (`Task.FromResult`) stays AUDIT |
 | DEFERRED | A LINQ query is deferred: no side effects inside a query, enumerate once, exceptions surface at enumeration | `.editorconfig` sets `dotnet_diagnostic.CA1851.severity = warning`, which `TreatWarningsAsErrors` turns into a build error | Enforced for multiple enumeration — side effects inside a query and the placement of `try` have no analyzer and stay AUDIT |
 | VISIBILITY | Types and members are visible only as widely as their callers; every declaration writes its modifier | `.editorconfig` sets `CA1515` and `IDE0040` to warning, which `TreatWarningsAsErrors` turns into build errors; the application csproj grants the test project `InternalsVisibleTo` | Enforced for a `public` type in an application and for an omitted modifier — a `public` member of an `internal` type and the visibility of test methods stay AUDIT |
 | VAR | Type inference usage | `.editorconfig` suggestions only | AUDIT |
@@ -81,7 +81,7 @@ the diagnostics that can see the part of that requirement a compiler can decide:
 Refines the core's Synchronous vs Asynchronous section for .NET:
 
 - **Never block on async code** (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`) — enforced by the VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers` in `Directory.Build.props`)
-- **Do not mark a method async when nothing in it awaits** — CS1998 is an error under warnings-as-errors
+- **Do not mark a method async when it has no asynchronous work to await** — CS1998 makes a method with no `await` an error under warnings-as-errors; a method that awaits only `Task.FromResult` passes CS1998 and is checked in AUDIT
 - When a suppression is genuinely justified (e.g., a synchronous entry point mandated by a framework), follow the ANALYZERS suppression tiers with a reason comment
 
 ## DEFERRED: Deferred Execution (LINQ)

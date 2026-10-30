@@ -32,7 +32,7 @@ Rules in `docs/rules/` are organized into three tiers:
 
 - Structure code in layers with distinct responsibilities (e.g., UI → business logic → infrastructure)
 - Keep the UI layer thin: event handlers delegate to logic, they do not contain it
-- What the UI shows is decision logic too: a color, whether a control is enabled or visible, and which message appears are decided outside the UI layer, where a test reaches the decision without rendering anything
+- What the UI shows is decision logic too: a choice among alternatives — a color, whether a control is enabled or visible, which message appears — made from data or from an operation's outcome is made in code a test reaches without rendering anything (e.g., a view model, a value converter). A value that never differs involves no choice
 
 ### Dependency Direction
 
@@ -47,22 +47,22 @@ A declaration's visibility tells the reader who calls it. A declaration visible 
 - **The declaration states the reach it has**: a member is never declared wider than its containing type lets it reach, unless a framework that calls the member requires the wider declaration. A modifier that claims more than the member gets misstates who can call it
 - **A framework that calls code is a caller**: a test runner, a serializer, a UI binding, and code a tool generates reach code by their own rules, and the visibility they require is the visibility the code needs. Configuring a framework to reach past the visibility it reads by default is not narrower — it opens every member of that visibility to the framework, not only the ones meant for it
 - **Tests never widen visibility**: a test reaches code it cannot see through the stack's test-access mechanism, or through the code it can see. Code is never made more visible so that a test can call it
-- Stack rules give the modifiers and the mechanisms that enforce this
+- Stack rules give the modifiers, the mechanisms that enforce this, and which frameworks require a wider declaration
 
 ### Functional Core, Imperative Shell
 
 - Separate decisions from I/O: do not make business decisions while reading from DB/files/network — read the data first, then decide on the data already read
 - Decision logic takes data as arguments and returns results (pure functions), so it can be tested without infrastructure
 - Keep I/O in a thin shell that orchestrates: fetch → decide (pure) → write
-- Time, randomness, and environment values are inputs too: pass them as arguments; introduce clock abstractions or DI only when argument-passing is not enough
+- Time, randomness, and environment values are inputs too: pass them as arguments; introduce clock abstractions or DI only where one argument cannot carry the value — the code reads it more than once or after the call starts (e.g., measuring a duration), or a framework calls the code with a fixed signature
 
 ### Declared Mutation
 
 A call changes only what its name and signature show it changes, and state changes only where something has to change it. A change neither the name nor the signature shows is found only by reading the body, and a value that anything could have changed has to be traced before it can be trusted.
 
-- **Arguments change only when declared**: a function changes an object it receives only when its name or signature declares that change (e.g., a name stating that it sorts or fills its argument, a parameter the language marks as modified). Every other result leaves through the return value. A function named for computing one value that also rewrites an argument hands its caller a change the caller neither asked for nor can see.
-- **Fixed unless something must change it**: a field, a variable, and an object's state are declared unchangeable once set, unless code that runs after they are set has to change them. Changeable state can be changed by any code that reaches it, so a reader has to rule out all of that code before trusting the value.
-- **A framework that writes is a writer**: a framework that sets values on an object after creating it (a UI binding, an object-relational mapper, a deserializer) is code that has to change that object, and the state it sets stays changeable. A framework that sets values only while creating the object changes nothing afterwards, and the state stays fixed.
+- **Arguments change only when declared**: a function changes an object it receives only when its name or signature states that change — the name says what happens to the argument (sorting it, filling it), or the language marks the parameter as modified. A name for a different effect (save, calculate) declares nothing about the arguments. Every other result leaves through the return value, because a change the caller cannot see from the call is a change the caller never accounts for.
+- **Fixed unless something must change it**: where the language offers a form for it, a variable or field that nothing assigns after initialization is declared unassignable, and an object whose state nothing changes after construction is declared unchangeable. The two are judged separately: a field that always refers to the same list is unassignable even while the list's contents change. Changeable state can be changed by any code that reaches it, so a reader has to rule out all of that code before trusting the value.
+- **A framework that writes is a writer**: a framework that can set an object's values only after creating it (a UI binding, an object-relational mapper) has to change that object, and the state it sets stays changeable. A framework that offers a way to set them while creating the object (e.g., a deserializer that fills a constructor) is configured to use it, whether or not that is its default, and the state stays fixed.
 
 ### Declarative Where It Removes Machinery
 
@@ -84,7 +84,7 @@ Choose between declarative pipelines (LINQ, map/filter) and imperative loops bas
 
 Every layer must add behavior. A layer that only forwards to another is prohibited:
 
-- Do not create pass-through delegation methods that just call another service with the same arguments
+- Do not create pass-through methods: a method is pass-through when its callers would get the same result by calling what it calls, with the same arguments. Logging, metrics, or tracing added to it do not change that — they belong in the layer that does the work or in a mechanism that spans layers
 - When extracting shared logic into a new service, update **all** callers to use the new service directly
 - Do not leave wrapper methods on the original class
 
@@ -95,24 +95,23 @@ Every layer must add behavior. A layer that only forwards to another is prohibit
 
 ### Change as Addition
 
-Adding a variation must not require editing existing code:
-
-- Prefer structures where adding a variation (new screen, format, identifier) means adding a new unit plus a registration, not editing branches across existing code
+- **One branch point per set of variations**: code branches on a set of variations (screens, formats, identifiers) in one place only — one branch, or a registration of units. Adding a variation then changes that one place or adds a unit; a second place branching on the same set is the one missed when the next variation is added
 
 ### Leave No Vestiges
 
 Code must read as though the current implementation were the only one that ever existed. Never preserve superseded code or transitional artifacts in the working tree.
 
 - **Delete replaced code completely**: remove superseded implementations, unreachable fields/parameters/branches, obsolete feature flags, and temporary wrapper methods.
-- **Avoid relational naming**: never name symbols after their predecessor (`_old`, `_new`, `V2`, `Legacy`, `Ex`). The replacement assumes the canonical name directly.
+- **Avoid relational naming**: never name symbols after their predecessor (`_old`, `_new`, `V2`, `Legacy`, `Ex`). The replacement assumes the canonical name directly. A version that is part of a published interface's name (an API path, a package's major version) names that interface, not a predecessor.
 - **Rely on Git history**: past implementations belong in Git history, never as commented-out code, dead branches, or duplicate classes in the working tree.
-- **External compatibility exception**: preserve superseded shapes only for unmodifiable external dependents (published APIs, wire protocols, stored data schemas). When all callers exist within the repository, update the callers instead of preserving compatibility wrappers.
-- **Document retained compatibility paths**: when preserving a path for external compatibility, explicitly document which external dependent requires it and what condition ends the obligation.
+- **External compatibility exception**: preserve a superseded shape only while a dependent the same change cannot update — any code outside the repository — still uses it (e.g., through a published API, a wire protocol, stored data). Callers within the repository are updated in the change that supersedes the shape, never kept on a compatibility wrapper.
+- **Document retained compatibility paths**: when preserving a path for external compatibility, a comment at the retained path names the external dependent that requires it and the condition that ends the obligation.
 
 ### Enforce Invariants in Code
 
 - Prefer compile-time impossibility over runtime checks: where practical, express the rule in types (stage-specific interface return types for call order, required constructor arguments, narrowed parameter types) so violations do not compile
-- A narrowed type checks its rule wherever an instance is created or changed, so every instance that exists is valid and code that receives one does not check the rule again. A narrowed type that can hold an invalid value only renames the unchecked value
+- A narrowed type checks its rule wherever an instance is created or changed, so every instance that exists is valid. A narrowed type that can hold an invalid value — through an unchecked constructor, a setter, or a default the language creates — only renames the unchecked value
+- Code that receives a narrowed type does not check its rule again, by a branch or by an assertion: no instance can fail it
 - When a rule can be broken silently (wrong call order, configuration after startup, out-of-range values), make the code fail fast with a clear message instead of relying on documentation
 - The error message should state the rule itself
 
@@ -133,7 +132,7 @@ Applies to every write to durable state — a database, files, a message sent to
 
 - Use async for I/O-bound work (network, DB, file access); keep CPU-bound and pure logic synchronous
 - Async propagates end-to-end: never block on async code (`.Result`, `.Wait()`, `GetAwaiter().GetResult()`)
-- Do not mark a method async when nothing in it awaits
+- Do not mark a method async when it has no asynchronous work to await
 - Stack rules refine this per stack; they take precedence
 
 ---
@@ -146,10 +145,10 @@ Comments are generally unnecessary. Prefer clear naming, explicit types, and sel
 
 Write comments only when code cannot express the necessary context by itself. A valid comment explains **why the current shape, condition, guard, or order is required now**.
 
-A justified comment must be concise (1–2 lines at most):
+A justified comment states one constraint — one fact the code must satisfy — and its reason, and nothing more, at the code the constraint shapes. Each exception to a constraint counts as a constraint of its own; two constraints that shape different code are two comments, each at its own code:
 - **Enforce with code first**: do not write comments for constraints that types or fail-fast assertions can enforce mechanically.
 - **Cite decisions**: when an ADR exists, cite its path alongside a 1-line summary conclusion.
-- **Offload document-sized context**: context exceeding 1–2 lines belongs in an ADR or `docs/references/`, leaving only a 1-line conclusion and a file path in the code comment.
+- **Offload the rest**: anything beyond one constraint and its reason — how a mechanism works, several constraints that shape the same code — belongs in an ADR or `docs/references/`, leaving only a 1-line conclusion and a file path in the code comment.
 
 Before writing a comment, verify:
 - Can a clearer name, extracted function, type, or test express this? If yes, do that instead.
@@ -199,7 +198,7 @@ If the current code is clear without a comment, write no comment. If the reason 
 | What was changed or removed | Git history / ChangeLog / Release notes |
 | Why code was changed | Git commit message / PR description |
 | Why something is prohibited | ADR (`docs/adr/`), plus a brief current reason at the usage site if needed |
-| Context needing more than 1–2 lines to explain | ADR (`docs/adr/`) or `docs/references/`, with a one-line conclusion + path comment at the site |
+| Context beyond one constraint and its reason | ADR (`docs/adr/`) or `docs/references/`, with a one-line conclusion + path comment at the site |
 | Implementation decisions | ADR (`docs/adr/`) or Docs (`docs/`) |
 | Author's work process (review fixes, what was aligned with) | Nowhere in code — that is what PR / commit history is for |
 
@@ -209,13 +208,13 @@ If the current code is clear without a comment, write no comment. If the reason 
 
 ### Environment Independence
 
-- Tests must not depend on the execution environment: OS culture/locale, timezone, machine state, pre-existing database contents, or network availability
-- When behavior depends on culture or time, pin them explicitly inside the test
+- Tests never read what the test run does not set up itself, apart from the tools the repository's setup instructions install — e.g., the culture/locale, the current time, the timezone, environment variables, files neither the test nor the repository provides, pre-existing database contents, network availability — even where the outcome happens not to vary with it today
+- When the code under test uses culture or time, the test sets them explicitly
 
 ### Self-Sufficient Test Data
 
 - Each test creates the minimal data it needs (e.g., via test data builders with sensible defaults)
-- Do not depend on shared fixture databases or data prepared outside the test — shared mutable test data rots; per-test data keeps tests independent
+- Do not depend on data that something other than the test can change (e.g., a shared fixture database, data prepared by hand) — shared mutable test data rots. A read-only file committed beside the test is the test's own data
 
 ### Table-Driven Tests
 
@@ -225,13 +224,13 @@ If the current code is clear without a comment, write no comment. If the reason 
 
 ### Tests Accompany the Change
 
-- **Decisions are tested**: a change that adds or changes decision logic includes tests that pin the new behavior. Behavior no test observes is free to break in the next change without any gate failing.
+- **Decisions are tested**: a change that adds a decision, or changes the outcome of one for some input (its condition, a threshold, a value it uses), includes tests that pin the new outcome. Behavior no test observes is free to break in the next change without any gate failing.
 - **Defects are reproduced first**: a defect fix includes a test that fails without the fix and passes with it. That test is what stops the same defect from returning.
 
 ### Boundary Tests
 
 - **Test the boundary itself**: code that crosses the program's boundary (a database query, a file format another system reads, a network protocol) is tested through that boundary, with data the test creates (e.g., a database the test run creates and migrates, a file the test writes and parses back). A test of the logic behind the boundary leaves the query or the format unverified.
-- **No third-party services**: tests never call a service the project does not run, such as one that charges per call, limits the call rate, or answers nondeterministically. The test substitutes it behind the interface the code depends on.
+- **No third-party services**: tests never call a service the project does not run, free sandboxes included — its availability, limits, and answers are outside the test's control. The test substitutes it behind the interface the code depends on.
 
 ---
 
@@ -252,7 +251,7 @@ after it is built on a guess.
 - `<AppName>` is the application's own name, spelled as the application spells it — the GUI and the CLI print the identical string
 - GUI applications display it somewhere always reachable in the UI (title bar, about screen, footer)
 - CLI applications provide `--version` / `-V`; the concrete requirements are in `cli.md`
-- The default format is the bare product version — no build hash, build date, or other metadata
+- The version is the bare product version — no build hash, build date, or other metadata
 - The displayed value comes from the project's single version definition (see the stack rule's version-management rules), never from a hardcoded string
 
 ---
@@ -265,9 +264,15 @@ language model's. Values an operator sets to configure the application are
 Configuration Values below.
 
 - **Validate at the boundary**: input is checked against its expected shape and range where it enters the program, and only checked data travels inward. A check repeated at each use site is missing from at least one of them.
-- **Canonicalize, then validate**: a deterministic canonicalization that the input's specification defines (e.g., trimming surrounding whitespace, unifying line endings, Unicode normalization) is applied before the check. Guessing what an invalid value was meant to be is not canonicalization.
-- **Reject, never repair**: input that fails the check is rejected — the whole input, or only the failing items when the input is a set of independent items — and the rejection states what was wrong. Beyond canonicalization, input is never altered into something that passes: unlike a configuration value, input has no known-good value to fall back on, and a repaired input produces a result nobody submitted.
-- **Input never becomes code**: input is never concatenated into text that something executes or interprets (SQL, a shell command, HTML, a query language) — it is passed through the mechanism that keeps it data (e.g., bound query parameters, an argument array, encoding by the rendering layer). Concatenated input can rewrite the command it was placed in.
+- **Canonicalize, then validate**: the canonicalizations the specification of the input's format defines (e.g., trimming surrounding whitespace, unifying line endings, Unicode normalization), and the removal of variants it permits (e.g., thousands separators), are applied before the check, and no others. Guessing what an invalid value was meant to be is not canonicalization.
+- **Reject, never repair**: input that fails the check is rejected — the whole input, or only the failing items when the input is a set of independent items — and the rejection states what was wrong. Beyond those canonicalizations, input is never altered into something that passes: unlike a configuration value, input has no known-good value to fall back on, and a repaired input produces a result nobody submitted.
+
+---
+
+## Values Never Become Code
+
+- **Passed as data**: a value not written in the code itself — input, a configuration value, a stored value — is never concatenated into text that something executes or interprets (SQL, a shell command, HTML, a query language). It is passed through the mechanism that keeps it data (e.g., bound query parameters, an argument array, encoding by the rendering layer). A concatenated value can rewrite the command it was placed in, whichever source it came from.
+- **Chosen where no mechanism exists**: where the text has no data mechanism for the position (e.g., a table or column name in SQL), the value selects one of a fixed set of alternatives written in the code, and a value matching none is rejected.
 
 ---
 
@@ -280,7 +285,7 @@ files, environment variables, and any other external store.
 - **Required values fail fast**: a value no default can stand in for (a credential, the address of the only database the application uses) is checked once at startup, and the application stops with a message naming the missing value before doing any work. Discovering it on the first operation that needs it hides the cause behind an unrelated failure
 - **The target environment is configuration**: which database, service address, or directory the application works against is a configuration value, never a constant in code. A target fixed in code ties the build to one environment, so the build that is tested is not the build that runs in production
 - **Validate on read**: replace or clamp invalid values while the configuration is being loaded, so no later code has to defend against them. The valid range belongs to the value's definition, not to checks scattered across its use sites
-- **Report every substitution once**, naming the value, what was rejected, and the default applied. A silent fallback hides operator mistakes and turns a typo into an invisible change of behavior
+- **Report every substitution once** in the application's log, naming the value, why the external value was not used (missing, unparsable, or out of range), and the default applied. A silent fallback hides operator mistakes and turns a typo into an invisible change of behavior
 - **Externalizing a value is a choice**: a value nobody adjusts in the field stays a named constant in code (see the stack rule's constants rule). Making it configurable adds the obligations above
 - This does not relax Enforce Invariants in Code — that rule governs values the program itself produces, where a violation is a defect and must fail fast. An external value is operator input: the program keeps running on a known-good value and reports what it rejected
 - Precedence between sources, for applications that expose a command line, is in `cli.md` (CONFIG)
@@ -301,6 +306,7 @@ settings, deployment descriptors, workflow definitions, and the like.
 ## Failure Reporting
 
 - **Unattended failures reach a person**: a process that runs with nobody watching (a scheduled job, a service, a background task) reports a failure where a person sees it without going to look (e.g., a notification, a monitored event log, an exit code the scheduler alerts on). A failure recorded only in a log file is found when someone notices the missing result.
+- **Attended failures reach the user**: an operation a user started that fails tells that user it failed and what they can do next. An operation that ends silently, or a failure that terminates the application, leaves the user believing the operation succeeded or unable to tell what was lost.
 
 ---
 

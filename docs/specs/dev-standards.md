@@ -41,7 +41,7 @@ repository's own maintenance files is that single path prefix.
 | Path | Must contain |
 |------|--------------|
 | `dist/` | The entire consumption interface — nothing outside it is distributed |
-| `dist/rules/standard.md` | The stack-agnostic core: design principles (including atomic, re-runnable, and concurrency-safe writes, and stored time), comment philosophy, testing principles, the spec-first principle, external-input handling, configuration-value handling, failure reporting, procedure-design principles, and the AUDIT procedure |
+| `dist/rules/standard.md` | The stack-agnostic core: design principles (including atomic, re-runnable, and concurrency-safe writes, and stored time), comment philosophy, testing principles, the spec-first principle, external-input handling, keeping values out of executed text, configuration-value handling, failure reporting, procedure-design principles, and the AUDIT procedure |
 | `dist/rules/documentation.md` | Task-specific rule file for documentation work: document responsibility, classification, placement, naming, front matter, specification content and structure, and document lifecycle |
 | `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
 | `dist/rules/cli.md` | Conditional core file for applications that expose a command-line interface: option and subcommand naming and syntax, help, output streams, exit codes, configuration precedence, and version output. Stack-agnostic; starts with an enforcement matrix like the stack rule files |

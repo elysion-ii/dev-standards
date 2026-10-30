@@ -107,7 +107,7 @@ one:
 ## VERSIONOUT: Version Output
 
 - `--version` prints a single line: the application's name, a space, and the product version — `MyApp 1.22.3`. When the command name differs from the application name, the application name is printed — the same name a GUI would display (Version Display in `standard.md`)
-- Default format is the bare product version only: no build hash, build date, commit id, or other metadata
+- The version is the bare product version only: no build hash, build date, commit id, or other metadata
 - The value comes from the project's single version definition (see the stack rule's version-management rules, e.g., `dotnet.md` VERSION), never from a hardcoded string
 - This is the CLI shape of the Version Display rule in `standard.md`; GUI display requirements are stated there
 
