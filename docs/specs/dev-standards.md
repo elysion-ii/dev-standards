@@ -26,7 +26,9 @@ repository is `docs/rules/dev-standards.md`; how to *release* is
 - Scaffolding tooling: generates a new repository from `dist/templates/` and
   distributes `dist/rules/`, as the stack's scaffold mapping directs
 - Retrofit tooling: brings an existing repository up to a newer tag, deriving the
-  target state from the same mapping
+  target state from the same mapping, and audits the repository's existing code, tests,
+  and documents against the rules of that tag. A violation is fixed only where the user
+  approves; every other violation is reported as deferred
 - Agent harnesses (Claude Code, Codex, Antigravity): read the distributed files inside
   consuming repositories, not this repository directly
 - Developers of a consuming repository: copy an opt-in tool from `dist/tools/` at a
@@ -103,7 +105,7 @@ repository's own maintenance files is that single path prefix.
 
 - `skills/init-dotnet-app/` (scaffold a new .NET repository) and
   `skills/retrofit-dotnet-app/` (converge an existing .NET repository onto the newest
-  tag) are agent skills written in the Claude Code skill format (`SKILL.md` with
+  tag, and audit its existing code against that tag's rules) are agent skills written in the Claude Code skill format (`SKILL.md` with
   `allowed-tools` front matter, questions through the `AskUserQuestion` tool). Another
   harness uses them after adapting those harness-specific parts
 - A user obtains them by copying the skill directories from a tag of this repository

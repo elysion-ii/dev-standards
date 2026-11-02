@@ -38,7 +38,7 @@ generated**).
   | managed rule | a rule file distributed verbatim, never edited in the repository |
   | mechanism | configuration, build scripts, harness settings, and the router |
   | authored pair | the application rules file and the specification, written by the repository |
-  | substance | the application's own code and content — retrofit never diffs or overwrites it |
+  | substance | the application's own code and content — retrofit never diffs it against a template or overwrites it from one; it audits it against the rules of the tag and changes it only where the user approves |
 
 ## Always generated
 

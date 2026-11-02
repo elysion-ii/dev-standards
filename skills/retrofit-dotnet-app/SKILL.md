@@ -1,6 +1,6 @@
 ---
 name: retrofit-dotnet-app
-description: Converge an existing .NET repository onto the current dev-standards tag. Clones the tag, derives the target state from the scaffold mapping in that tag (dist/templates/dotnet/mapping.md, the same mapping init-dotnet-app generates from), diffs it against the working tree, and closes the gap interactively — missing scaffolding is added, stale dev-standards-managed rules are updated, template-carried mechanisms (format gate, static analysis, version single-sourcing, hooks) are ported into existing files, and anything that cannot be attributed to either the template or the project is resolved by asking, in batched question rounds like init-dotnet-app. Risky gates are staged (measure → report → enable); existing files are never overwritten without approval. Run from the project's repo root; network required. Use when the user says "retrofit this project", "apply the new gates to this project", or "bring this old project up to the current template".
+description: Converge an existing .NET repository onto the current dev-standards tag. Clones the tag, derives the target state from the scaffold mapping in that tag (dist/templates/dotnet/mapping.md, the same mapping init-dotnet-app generates from), diffs it against the working tree, and closes the gap interactively — missing scaffolding is added, stale dev-standards-managed rules are updated, template-carried mechanisms (format gate, static analysis, version single-sourcing, hooks) are ported into existing files, and anything that cannot be attributed to either the template or the project is resolved by asking, in batched question rounds like init-dotnet-app. Risky gates are staged (measure → report → enable); existing files are never overwritten without approval. Finally the existing code, tests, and documents are audited against the tag's rules, and the violations the user approves are fixed. Run from the project's repo root; network required. Use when the user says "retrofit this project", "apply the new gates to this project", or "bring this old project up to the current template".
 allowed-tools: AskUserQuestion, Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -19,6 +19,11 @@ state and the working tree:
   when the attribution is unclear, **ask**. Never guess, and never rely on a memorized
   list of historical artifacts: the user supplies that knowledge through the question
   rounds.
+
+Converged scaffolding is half of the goal. The rules the run brings in bind the project's
+existing code as well, so the run ends with an audit of the whole repository against
+them (Phase 7): every violation is either fixed with the user's approval or reported as
+deferred, and none goes unmentioned.
 
 ```
 STANDARDS_REPO = https://github.com/elysion-ii/dev-standards.git
@@ -95,7 +100,7 @@ nothing to ask is skipped. Never silently resolve an item that was marked for as
    directory.
 
    `<STD>` below is this clone (`./.dev-standards`). If the clone fails, STOP and report —
-   never retrofit from memory. The clone is untracked and nothing ignores it, so Phase 7
+   never retrofit from memory. The clone is untracked and nothing ignores it, so Phase 8
    deletes it; if the run stops early, delete it at the abort point. The final report names
    the resolved tag, so the run states which version it converged onto.
 
@@ -115,16 +120,17 @@ nothing to ask is skipped. Never silently resolve an item that was marked for as
    `<STD>/dist/templates/` and `<STD>/dist/rules/` is either on the target list, listed
    under **Not generated** in `MAPPING`, or consciously excluded by the scope rule below.
 
-4. **Partition the target list by scope.** Retrofit converges *scaffolding*, never the
-   application's substance. Every row of `MAPPING` carries its **Retrofit class**; the
-   class decides the reconcile action:
+4. **Partition the target list by scope.** Phases 3–6 converge *scaffolding*; the
+   application's substance is never diffed against a template or overwritten from one.
+   Every row of `MAPPING` carries its **Retrofit class**; the class decides the reconcile
+   action:
 
    | Class | Reconcile action |
    |---|---|
    | managed rule | byte-sync (Phase 3.1) |
    | mechanism | port (Phase 3.1) |
    | authored pair | ensure-exists (Phase 5) |
-   | substance | **out of scope — never diffed, never overwritten** |
+   | substance | **no template diff, no overwrite** — audited against the rules in Phase 7, changed only where the user approves |
 
 ## Phase 3: Diff and classify
 
@@ -166,8 +172,9 @@ to distribute — that is exactly what the question is for.
 ### 3.3 Present and ask
 
 Present the full reconciliation plan as a table — path / state / planned action — with
-out-of-scope substance listed once as excluded. Then run **Question Round 2** for every
-*ask* item. Do not start Phase 4 while any item is unresolved.
+substance listed once as excluded from the template diff (Phase 7 audits it). Then run
+**Question Round 2** for every *ask* item. Do not start Phase 4 while any item is
+unresolved.
 
 ## Phase 4: Converge scaffolding
 
@@ -249,7 +256,45 @@ Judgment work — each step reads its governing rule file first, asks when debat
      `docs/rules/dotnet.md`) and leave the gate for a re-run after the user decides.
 3. **Tests.** `dotnet test` — existing tests still pass.
 
-## Phase 7: Report
+## Phase 7: Audit existing code
+
+Phases 3–6 converge scaffolding. This phase brings the repository's own code, tests, and
+documents into conformance with the rules of `<STANDARDS_TAG>`, applied from
+`docs/rules/` as Phases 4–5 left it. This skill restates none of those rules: the audit
+is the AUDIT procedure at the end of `docs/rules/standard.md`, run over the whole
+repository instead of over the files a change touched.
+
+1. **Load the rules.** Run AUDIT step 1: re-read the root `AGENTS.md` (and any nested
+   one), every file under `docs/rules/`, and `docs/specs/<APP>.md`. Confirmation: every
+   file was read in full, and each conditional core file whose condition is false for
+   `<APP>` is named as skipped together with the fact about `<APP>` that makes it false.
+
+2. **Audit every tracked file.** The target set is every file `git ls-files` lists plus
+   the files this run added — not only the files this run changed — excluding binary
+   files and the dev-standards-managed rule files (class *managed rule*, never edited in
+   the repository). Check every line of each target per AUDIT step 3; take the target
+   set folder by folder, and do not sample. Record each violation with an ID (`V1`,
+   `V2`, ...): file and line, the rule it breaks (rule file and section or matrix ID),
+   what breaks it, the proposed fix, and the fix's reach — *local* (the fix stays inside
+   the file), *cross-cutting* (callers or other files change with it), or *needs a
+   specification change* (spec-first, `standard.md` Specifications). Confirmation: every
+   target file appears in the audit record, with its violation IDs or "no violations".
+
+3. **Question Round 3** (skipped when step 2 recorded no violation). Present the
+   violations as a table grouped by rule, then ask **fix now** or **defer** for each
+   violation, or for each group of violations that share a rule and a fix. Recommend
+   *fix now* for local fixes. For a violation that needs a specification change, the
+   option states that fixing it starts with that change. Do not start step 4 while any
+   violation is undecided.
+
+4. **Fix the approved violations.** Each fix is an implementation change subject to the
+   same rules as any other: a needed specification change comes first, and the tests the
+   rules require to accompany a change come with it. Confirmation: the Phase 6 checks
+   pass again — the format check exits 0, the build adds no warning to what Phase 6
+   measured, and the tests exit 0 — and step 2 re-run over the files the fixes touched
+   records no violation except the deferred ones.
+
+## Phase 8: Report
 
 First run `git reset` (index only — the working tree is untouched): some steps stage as
 a side effect while Write/Edit steps do not, and the commit split below — not incidental
@@ -264,12 +309,18 @@ Report:
   carries, anything awaiting a decision
 - Verification results with exit codes (format verify, build, tests, installer if run)
 - Gate status: enabled, or the warning table awaiting decisions
+- Audit outcomes: the number of files audited, the conditional core files skipped and
+  why, and the violation table with each violation's final outcome (fixed / deferred).
+  Deferred violations are listed in full — they are the rules the repository does not
+  yet meet
 - Proposed commit split (do not commit until the user confirms):
   1. Mechanism introduction (config, props, build scripts, installer, merge settings)
   2. Rule consolidation (`AGENTS.md`, `CLAUDE.md`, `docs/rules/` + `docs/specs/`,
      legacy-store removals and retirements)
   3. Mechanical bulk changes only (the `dotnet format` diff)
   4. Documentation placement (moves, renames, reference rewrites, front matter)
+  5. Conformance fixes from Phase 7, one commit per rule or per group of violations
+     the user approved together
 
 Delete the clone:
 

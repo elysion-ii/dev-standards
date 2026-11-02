@@ -18,7 +18,7 @@ Two agent skills apply the .NET template set:
 | Skill | What it does |
 |---|---|
 | [`skills/init-dotnet-app/`](skills/init-dotnet-app/SKILL.md) | Scaffolds a new .NET application repository in the current (empty, freshly cloned) directory |
-| [`skills/retrofit-dotnet-app/`](skills/retrofit-dotnet-app/SKILL.md) | Converges an existing .NET repository onto the newest tag, interactively |
+| [`skills/retrofit-dotnet-app/`](skills/retrofit-dotnet-app/SKILL.md) | Converges an existing .NET repository onto the newest tag, interactively, and audits its existing code against that tag's rules |
 
 At run time each skill clones the newest tag of this repository and reads the templates,
 the rules, and the scaffold mapping
