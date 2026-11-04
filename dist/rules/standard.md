@@ -10,7 +10,7 @@ Applications table lists.
 Rules in `docs/rules/` form three tiers:
 - **Application rules**: `docs/rules/<App>.md`
 - **Stack rules**: `dotnet.md`, `typescript.md`, `python.md`, ...
-- **Core rules**: `standard.md`, `documentation.md`, `git.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`
+- **Core rules**: `standard.md`, `documentation.md`, `git.md`, `specs.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules. `AGENTS.md` provides routing and commands only.
 
@@ -180,7 +180,7 @@ var count = 0; var sum = 0m; var max = decimal.MinValue;
 
 ## Specifications
 
-- **Spec-first**: a change that needs behavior the specification lacks (`docs/specs/...`, listed in the `AGENTS.md` Applications table) updates the specification before implementing — never retro-fitted afterwards. What a specification contains is defined in `documentation.md`
+- **Spec-first**: a change that needs behavior the specification lacks (`docs/specs/...`, listed in the `AGENTS.md` Applications table) updates the specification before implementing — never retro-fitted afterwards. What a specification contains is defined in `documentation.md`; what it states about each decision of the application, and where each answer comes from, in `specs.md`
 
 ---
 
@@ -221,13 +221,13 @@ language model's. Values an operator sets are Configuration Values below.
 Applies to every value an operator sets to configure the application — configuration
 files, environment variables, and any other external store.
 
-- **Every configurable value has a built-in default in code**, used whenever the external value is missing, unparsable, or out of range. Such a value never fails startup
-- **Required values fail fast**: a value no default can stand in for (a credential, the address of the only database the application uses) is checked once at startup, and the application stops with a message naming it before doing any work — not on the first operation that needs it, behind an unrelated failure
-- **The target environment is configuration**: which database, service address, or directory the application works against is never a constant in code. A target fixed in code makes the build that is tested differ from the build that runs in production
-- **Validate on read**: invalid values are replaced or clamped while the configuration loads, so no later code defends against them
+- **A default only where it is correct everywhere**: a configurable value has a built-in default in code — a constant, or a rule the application resolves at run time (e.g., a folder under the current user's profile) — only when, with the setting empty, that default is the correct value at every installation. The default is used whenever the external value is missing, unparsable, or out of range, and such a value never fails startup
+- **Required values fail fast**: a value whose correct value depends on a choice made for each installation (e.g., a credential, the address of the database, the folder an operator chose for output) has no default. It is checked once at startup, and when it is missing, unparsable, or out of range the application stops with a message naming it before doing any work — not on the first operation that needs it, behind an unrelated failure
+- **The target environment is configuration**: which database, service address, or directory the application works against is never a constant in code. A target fixed in code makes the build that is tested differ from the build that runs in production. A target that a rule resolved at run time makes correct at every installation is a default (the first item); every other target is a required value
+- **Validate on read**: while the configuration loads, an invalid value that has a default is replaced or clamped, and an invalid required value stops startup (Required values fail fast), so no later code defends against them
 - **Report every substitution once** in the application's log, naming the value, why the external value was not used (missing, unparsable, or out of range), and the default applied. A silent fallback turns an operator's typo into an invisible change of behavior
 - **Externalizing a value is a choice**: a value nobody adjusts in the field stays a named constant in code (the stack rule's constants rule). Making it configurable adds the obligations above
-- This does not relax Enforce Invariants in Code, which governs values the program itself produces: there a violation is a defect and fails fast, while an operator's value falls back to a known-good one and is reported
+- This does not relax Enforce Invariants in Code, which governs values the program itself produces: there a violation is a defect and fails fast, while an operator's value falls back to its default and is reported, or stops startup when it has none
 - Precedence between sources, for applications that expose a command line, is in `cli.md` (CONFIG)
 
 ### Configuration Files in the Repository
@@ -297,7 +297,7 @@ until AUDIT passes.
 1. **Reload the rules**: re-read the root `AGENTS.md` and every nested `AGENTS.md` covering a touched directory, every file under `docs/rules/`, and the specification under `docs/specs/` of each touched application. A file read in full earlier in the same session and unchanged since needs no re-reading.
 2. **Identify target files**: Git changes decide which files are targets, not which lines. With no input, the targets are all uncommitted changes (`git status --porcelain`: modified, added, untracked); with a file path, that file; with a folder path, every file in it. The entire content of every target file is verified: a pre-existing violation in a touched file weighs the same as a new one, and no target file is sampled or skipped.
 3. **Verify the change against rules and specifications**:
-   - **Core rules, in every target file**: zero violations of `standard.md`, `documentation.md`, `testing.md`, and each conditional core file (`cli.md`, `db.md`) whose condition holds for the application after the change.
+   - **Core rules, in every target file**: zero violations of `standard.md`, `documentation.md`, `specs.md`, `testing.md`, and each conditional core file (`cli.md`, `db.md`) whose condition holds for the application after the change.
    - **Git operations, in the change itself**: zero violations of `git.md`. Its object is the change's commit split, commit messages, branch name, and pull request, never a file's content.
    - **Stack rules, in every target file**: zero violations of every rule its enforcement matrix marks **AUDIT**, and of every Enforced rule whose mechanism the repository lacks.
    - **Application rules, in every target file**: zero violations of `docs/rules/<App>.md` and any other repository-authored rules under `docs/rules/`.

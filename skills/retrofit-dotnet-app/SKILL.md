@@ -1,6 +1,6 @@
 ---
 name: retrofit-dotnet-app
-description: Converge an existing .NET repository onto the current dev-standards tag. Clones the tag, derives the target state from the scaffold mapping in that tag (dist/templates/dotnet/mapping.md, the same mapping init-dotnet-app generates from), diffs it against the working tree, and closes the gap interactively — missing scaffolding is added, stale dev-standards-managed rules are updated, template-carried mechanisms (format gate, static analysis, version single-sourcing, hooks) are ported into existing files, and anything that cannot be attributed to either the template or the project is resolved by asking, in batched question rounds like init-dotnet-app. Risky gates are staged (measure → report → enable); existing files are never overwritten without approval. Finally the existing code, tests, and documents are audited against the tag's rules, and the violations the user approves are fixed. Run from the project's repo root; network required. Use when the user says "retrofit this project", "apply the new gates to this project", or "bring this old project up to the current template".
+description: Converge an existing .NET repository onto the current dev-standards tag. Clones the tag, derives the target state from the scaffold mapping in that tag (dist/templates/dotnet/mapping.md, the same mapping init-dotnet-app generates from), diffs it against the working tree, and closes the gap interactively — missing scaffolding is added, stale dev-standards-managed rules are updated, template-carried mechanisms (format gate, static analysis, version single-sourcing, hooks) are ported into existing files, and anything that cannot be attributed to either the template or the project is resolved by asking, in batched question rounds like init-dotnet-app. Risky gates are staged (measure → report → enable); existing files are never overwritten without approval. Finally the existing code, tests, and documents are audited against the tag's rules, and the violations the user approves are fixed; when the specification does not meet the tag's specs.md, the report names the specify-app skill as the next step. Run from the project's repo root; network required. Use when the user says "retrofit this project", "apply the new gates to this project", or "bring this old project up to the current template".
 allowed-tools: AskUserQuestion, Read, Write, Edit, Glob, Grep, Bash
 ---
 
@@ -217,6 +217,14 @@ Judgment work — each step reads its governing rule file first, asks when debat
    backfilled incrementally by future changes, never as a retrofit precondition. If a
    specification already exists under another name, pair it in the Applications table
    instead (rename to the `<APP>` identifier with `git mv`, after asking).
+   Then judge whether the specification meets `docs/rules/specs.md` for every decision
+   of `<APP>` — every question that applies to every decision answered by a requirement
+   or recorded in the application's ledgers (`specs.md`, Questions and Ledgers). One
+   decision with an applicable question neither answered nor recorded settles that it
+   does not; a skeleton does not. Retrofit does not write the specification from the
+   code itself: when it does not meet `specs.md`, the report names `specify-app` as the
+   next step. Confirmation: the judgment is recorded, with the decision and question
+   that settled a negative one.
 
 3. **Docs tree → `documentation.md`.** Read the distributed `documentation.md`, then
    converge: `adr/` → `docs/adr/` (`git mv`; both existing → ask how to merge), ADR
@@ -313,6 +321,10 @@ Report:
   why, and the violation table with each violation's final outcome (fixed / deferred).
   Deferred violations are listed in full — they are the rules the repository does not
   yet meet
+- Specification: whether `docs/specs/<APP>.md` meets `docs/rules/specs.md` for every
+  decision (Phase 5 step 2). When it does not, the next step: run the `specify-app`
+  skill, published beside this one, from the repository root after this run's changes
+  are committed
 - Proposed commit split (do not commit until the user confirms):
   1. Mechanism introduction (config, props, build scripts, installer, merge settings)
   2. Rule consolidation (`AGENTS.md`, `CLAUDE.md`, `docs/rules/` + `docs/specs/`,

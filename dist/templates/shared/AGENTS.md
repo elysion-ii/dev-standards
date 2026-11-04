@@ -29,7 +29,7 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 Rules in `docs/rules/` are organized into three tiers:
 - **Application rules**: `docs/rules/<APP>.md` (repository- and application-specific rules)
 - **Stack rules**: Technology-stack rules (`docs/rules/<STACK>.md`; <CHOOSE: managed by dev-standards | repository-authored>)
-- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`; managed by dev-standards)
+- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `specs.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`; managed by dev-standards)
 
 **Precedence on conflict**: Application rules > Stack rules > Core rules.
 
@@ -60,5 +60,5 @@ Before creating, changing, moving, renaming, archiving, or deleting any document
 when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
 in this repository) first; it defines placement, naming, and front matter.
 
-- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `testing.md`, `cli.md`, `db.md`, stack rules (managed by dev-standards or repository-authored), and the application rules files
+- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `specs.md`, `testing.md`, `cli.md`, `db.md`, stack rules (managed by dev-standards or repository-authored), and the application rules files
 - `docs/specs/` — application specifications

@@ -100,6 +100,7 @@ Copied verbatim — no token replacement — into every generated repository.
 | `docs/rules/standard.md` | `dist/rules/standard.md` | managed rule |
 | `docs/rules/documentation.md` | `dist/rules/documentation.md` | managed rule |
 | `docs/rules/git.md` | `dist/rules/git.md` | managed rule |
+| `docs/rules/specs.md` | `dist/rules/specs.md` | managed rule |
 | `docs/rules/testing.md` | `dist/rules/testing.md` | managed rule |
 | `docs/rules/cli.md` | `dist/rules/cli.md` | managed rule |
 | `docs/rules/db.md` | `dist/rules/db.md` | managed rule |

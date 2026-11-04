@@ -52,7 +52,7 @@ wins.
 Where a new rule goes, and when a new distributed rule file is created. Rationale:
 `docs/adr/0003-grow-rules-by-applicability-and-samples.md`.
 
-- **Placement by applicability**: a rule goes to the narrowest file whose readers it binds without exception — the core (`standard.md`, or `documentation.md`/`git.md`/`testing.md` by subject) when it binds every application; a conditional core file when it binds only applications with a property such as exposing a command line or using a database; a stack rule file when its statement needs a stack's toolchain; the consuming repository's own rules when it needs a platform, a product, or that repository's layout. A rule placed wider than its readers is skipped where it does not fit; a rule placed narrower goes unread where it does
+- **Placement by applicability**: a rule goes to the narrowest file whose readers it binds without exception — the core (`standard.md`, or `documentation.md`/`git.md`/`specs.md`/`testing.md` by subject) when it binds every application; a conditional core file when it binds only applications with a property such as exposing a command line or using a database; a stack rule file when its statement needs a stack's toolchain; the consuming repository's own rules when it needs a platform, a product, or that repository's layout. A rule placed wider than its readers is skipped where it does not fit; a rule placed narrower goes unread where it does
 - **Principle versus mechanism**: a rule that spans layers is split — the property goes to the core or the conditional core file, and the mechanism that satisfies it goes to the stack rule file or the template set. A mechanism stated in the core binds every stack to one toolchain
 - **A conditional core file states its condition first**: the file's opening names the condition under which it applies, as a fact about the application that its code settles (it exposes a command line; it reads or writes a database). A condition phrased as relevance to a task turns skipping the file into a judgment, and a skipped rule goes unapplied
 - **A conditional core file carries only what its condition requires**: a rule that also binds applications without the property stays in the core. A core principle moved into a conditional file goes unread by every application the condition excludes
@@ -62,9 +62,10 @@ Where a new rule goes, and when a new distributed rule file is created. Rational
 - **The same rule in two stack rule files moves to the core**: when two stack rule files state the same property, the property moves to the core and each stack rule file keeps only its mechanism. Two copies of one rule drift apart at the next edit
 - **A new distributed rule file reaches every list that names the distributed files**: the specification's Required structure and Distribution contract, `docs/specs/template-requirements.md` R4, the router templates, and `documentation.md`'s description of `docs/rules/`. A file missing from a list is not copied, or not read, by whatever follows that list
 
-## Testing (overrides `dist/rules/testing.md` and `dist/rules/documentation.md` Requirement IDs)
+## Testing and specifications (overrides `dist/rules/testing.md`, `dist/rules/specs.md`, and `dist/rules/documentation.md` Requirement IDs)
 
 - This repository is not an application and has no test code: `testing.md` and `documentation.md` Requirement IDs do not apply to its own content, and its specifications (`docs/specs/`) carry no requirement IDs. Both bind the consuming repositories in full
+- This repository makes no decisions at run time: `specs.md` does not apply to its own specifications, and it binds the consuming repositories in full
 - A distributed script is checked by running it, and the commit that changes the script states how it was run
 
 ## Git

@@ -13,7 +13,9 @@ change that alters this contract updates this document before (or with) the chan
 
 Single source of shared engineering rules, project scaffold templates, and opt-in tools,
 consumed by scaffolding and retrofit tooling that clones this repository at a pinned
-tag — and the publisher of skills that implement that tooling for the .NET template set.
+tag — and the publisher of skills that implement that tooling for the .NET template set,
+and of a stack-agnostic skill that writes an application's specification from its
+implementation.
 
 ## Scope
 
@@ -35,7 +37,8 @@ repository is `docs/rules/dev-standards.md`; how to *release* is
   tag into their repository when they adopt it, as the tool's README directs
 
 This repository publishes one implementation of the scaffolding and retrofit tooling
-for the .NET template set, as agent skills under `skills/` (see **Published skills**).
+for the .NET template set, and a stack-agnostic skill that writes a specification from
+an existing implementation, as agent skills under `skills/` (see **Published skills**).
 
 ## Required structure
 
@@ -48,6 +51,7 @@ repository's own maintenance files is that single path prefix.
 | `dist/rules/standard.md` | The stack-agnostic core: design principles (including atomic, re-runnable, and concurrency-safe writes, and stored time), comment philosophy, the spec-first principle, external-input handling, keeping values out of executed text, configuration-value handling, failure reporting, procedure-design principles, and the AUDIT procedure |
 | `dist/rules/documentation.md` | Task-specific rule file for documentation work: document responsibility, classification, placement, naming, front matter, specification content and structure, and document lifecycle |
 | `dist/rules/git.md` | Task-specific rule file for Git write operations: commit, branch, and PR rules, merge strategy, and the generic `gh pr merge` procedure |
+| `dist/rules/specs.md` | Task-specific rule file for specifications: what a specification states about each decision of the application (the questions it answers), where each answer comes from, and how an existing implementation's behavior that no answer confirms is classified, handled, and recorded in ledgers beside the specification |
 | `dist/rules/testing.md` | Task-specific rule file for tests: the test layers (unit, boundary, end-to-end) and which an application has, environment independence, test data, table-driven and boundary tests, end-to-end tests, requirement coverage, and when each layer runs |
 | `dist/rules/cli.md` | Conditional core file for applications that expose a command-line interface: option and subcommand naming and syntax, help, output streams, exit codes, configuration precedence, and version output. Stack-agnostic; starts with an enforcement matrix like the stack rule files |
 | `dist/rules/db.md` | Conditional core file for applications that read or write a database: schema ownership, schema constraints, migrations, deployment of schema changes, and query shape. Stack-agnostic; starts with an enforcement matrix like the stack rule files |
@@ -103,20 +107,30 @@ repository's own maintenance files is that single path prefix.
 
 ## Published skills
 
-- `skills/init-dotnet-app/` (scaffold a new .NET repository) and
+- `skills/init-dotnet-app/` (scaffold a new .NET repository),
   `skills/retrofit-dotnet-app/` (converge an existing .NET repository onto the newest
-  tag, and audit its existing code against that tag's rules) are agent skills written in the Claude Code skill format (`SKILL.md` with
-  `allowed-tools` front matter, questions through the `AskUserQuestion` tool). Another
-  harness uses them after adapting those harness-specific parts
+  tag, and audit its existing code against that tag's rules), and
+  `skills/specify-app/` (write the specification of an existing application, on any
+  stack, from its implementation to the criteria of `specs.md`) are agent skills
+  written in the Claude Code skill format (`SKILL.md` with `allowed-tools` front
+  matter, questions through the `AskUserQuestion` tool). Another harness uses them
+  after adapting those harness-specific parts
 - A user obtains them by copying the skill directories from a tag of this repository
   into their harness's skills directory. Untagged `main` is not a source, as for every
   other consumable
-- At run time each skill clones the newest tag of this repository and reads the stack's
-  mapping file from that clone; it carries no mapping of its own. A skill written for a
-  different mapping format stops and tells the user to obtain the skills again from the
-  tag it resolved
+- At run time `init-dotnet-app` and `retrofit-dotnet-app` clone the newest tag of this
+  repository and read the stack's mapping file from that clone; they carry no mapping of
+  their own. A skill written for a different mapping format stops and tells the user to
+  obtain the skills again from the tag it resolved
+- `specify-app` clones nothing: it applies the rules the repository already holds under
+  `docs/rules/`, because the specification it writes is checked against those rules by
+  every later AUDIT of the repository. A repository whose `docs/rules/` lacks `specs.md`
+  is brought onto a tag that has it first, and the skill stops until then
+- `retrofit-dotnet-app` names `specify-app` as the next step when the application's
+  specification does not meet `specs.md` for every decision of the application
 - Only procedures that are event-driven and hold no standing rule text are published as
-  skills (`docs/adr/0004-publish-scaffolding-skills.md`). Rule text stays in
+  skills (`docs/adr/0004-publish-scaffolding-skills.md`,
+  `docs/adr/0005-specification-criteria-and-specify-app.md`). Rule text stays in
   `dist/rules/`
 
 ## Placement model (what consumers end up with)
