@@ -34,9 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- BannedSymbols.txt lists the APIs only a cross-cutting concern's entry point
-         may use; a use anywhere else is RS0030, a build error (see
-         docs/rules/dotnet.md, SHAREDINFRA). -->
+    <!-- BannedSymbols.txt lists the APIs no code may call; every use is RS0030, a
+         build error (see docs/rules/dotnet.md, ANALYZERS). -->
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.*" PrivateAssets="all" />
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt" />
   </ItemGroup>
