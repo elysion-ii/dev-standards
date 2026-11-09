@@ -48,6 +48,7 @@ generated**).
 | `.gitattributes` | `dist/templates/dotnet/common/gitattributes.tmpl` | mechanism |
 | `.editorconfig` | `dist/templates/dotnet/common/editorconfig.tmpl` | mechanism |
 | `Directory.Build.props` | `dist/templates/dotnet/common/Directory.Build.props.tmpl` | mechanism |
+| `BannedSymbols.txt` | `dist/templates/dotnet/common/BannedSymbols.txt.tmpl` | mechanism |
 | `{{APP_NAME}}.slnx` | `dist/templates/dotnet/common/solution.slnx.tmpl` | substance |
 | `AGENTS.md` | `dist/templates/dotnet/{lang}/AGENTS.md.tmpl` | mechanism |
 | `CLAUDE.md` | `dist/templates/dotnet/common/CLAUDE.md.tmpl` | mechanism |
@@ -135,6 +136,8 @@ the application's name.
 | `build/Build.ps1` | a `dotnet format` verification call before `dotnet test` | the `Verifying code format...` block of `Build.ps1.tmpl` (`{{APP_NAME}}` → the application's name) |
 | `build/Build.ps1` | a `Verifying configuration files...` block failing when git tracks the real name derived from a tracked `*.template.*` file | the template's block. Where the project carries a placeholder under another name (`*.sample.*`, `*.example.*`), rename it to `<name>.template.<ext>` and update the build-script and installer references. Where the real file is **tracked**, `git rm --cached` it in the same commit and report it prominently — it may carry credentials, and they stay in history (`dotnet.md` CONFIGFILE) |
 | `Directory.Build.props` | `Microsoft.VisualStudio.Threading.Analyzers` PackageReference | the template's VSTHRD block. **Special rules:** never add `<TreatWarningsAsErrors>` here — it is enabled only after the build has been measured warning-free. Add `<Nullable>`/`<ImplicitUsings>` (and remove them from csprojs) only if **every** csproj already sets them; otherwise leave per-csproj and report — enabling Nullable on legacy code is separate work |
+| `Directory.Build.props` | `Microsoft.CodeAnalysis.BannedApiAnalyzers` PackageReference and an `AdditionalFiles` item naming `BannedSymbols.txt` | the template's BannedApiAnalyzers block. **Staged:** before porting it into a build that already treats warnings as errors, build with the block once and report every RS0030 it raises — existing uses of the APIs `BannedSymbols.txt` bans; port the block once those uses are replaced (`dotnet.md` SHAREDINFRA, FILEPATH) |
+| `BannedSymbols.txt` | every entry of the template's list is present | add missing entries; never remove existing ones — the repository's own entries ban what its entry points wrap (`dotnet.md` SHAREDINFRA) |
 | `Directory.Build.props` | `IncludeSourceRevisionInInformationalVersion` property set to `false` | the template's version block (keeps `AssemblyInformationalVersion` equal to `<Version>` so the displayed version stays `AppName X.Y.Z` — see `standard.md` Version Display) |
 | `Directory.Build.props` | a `RemoveSymbolsFromPublish` target that drops every `.pdb` from `@(ResolvedFileToPublish)` | the template's target. The packaging step names no files, so without it the symbol files a native package ships beside its library are installed along with everything else (`dotnet.md` NATIVEDEP) |
 | `Directory.Build.props` | a `ForbidSelfExtractingPublish` target that errors when `IncludeNativeLibrariesForSelfExtract` or `IncludeAllContentForSelfExtract` is set | the template's guard target. Port it and leave the rest to it: from then on the project's own build reports any self-extracting publish it still configures, with the fix in the error text (`dotnet.md` NATIVEDEP) |
@@ -145,5 +148,6 @@ the application's name.
 | `.claude/settings.local.json` | permissions.allow ⊇ the template's entries | add missing entries; never remove existing ones |
 | `.claude/settings.json`, `.codex/hooks.json` | the shared templates' session-start and pre-commit hook entries | merge the missing hook entries; never remove existing ones |
 | `AGENTS.md` | router shape: facts, commands, Applications table, read/AUDIT instructions, **no rule text** | reshape per `{lang}/AGENTS.md.tmpl` when rule text is consolidated (rule text found here is consolidation input, not a deletion target) |
+| `AGENTS.md` | a Shared Infrastructure section with a Concern / Entry point table | the section from `{lang}/AGENTS.md.tmpl`, with one row for each cross-cutting concern's entry point the code already has (`standard.md` One Home per Piece of Knowledge); the "none yet" row only where the code has none. A concern the code reaches from more than one place is reported, not listed |
 | `CLAUDE.md` | contains exactly `@AGENTS.md` | rewrite after rule text is consolidated |
 | `.editorconfig`, `.gitignore`, `.gitattributes` | byte-equal or a recognizable superset of the template | equal/superset: skip; otherwise *ask* with the diff |

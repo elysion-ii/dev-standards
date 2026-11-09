@@ -21,11 +21,12 @@ mechanism is added.
 | ASYNC | No blocking on async code; no async without asynchronous work to await | VSTHRD analyzers (`Microsoft.VisualStudio.Threading.Analyzers`); CS1998 as error | Enforced for a method with no `await` — awaiting an already-completed task (`Task.FromResult`) stays AUDIT |
 | DEFERRED | A LINQ query is deferred: no side effects inside a query, enumerate once, exceptions surface at enumeration | `.editorconfig` sets `dotnet_diagnostic.CA1851.severity = warning`, which `TreatWarningsAsErrors` turns into a build error | Enforced for multiple enumeration — side effects inside a query and the placement of `try` have no analyzer and stay AUDIT |
 | VISIBILITY | Types and members are visible only as widely as their callers; every declaration except an interface member writes its modifier | `.editorconfig` sets `CA1515` and `IDE0040` to warning, which `TreatWarningsAsErrors` turns into build errors; the application csproj grants the test project `InternalsVisibleTo` | Enforced for a `public` type in an application and for an omitted modifier — a `public` member of an `internal` type and the visibility of test methods stay AUDIT |
+| SHAREDINFRA | Code outside a cross-cutting concern's entry point never uses an API the entry point wraps | `Microsoft.CodeAnalysis.BannedApiAnalyzers` in `Directory.Build.props` reads `BannedSymbols.txt`; RS0030 + warnings-as-errors | Enforced for the APIs `BannedSymbols.txt` lists — whether the list holds every API an entry point wraps, and duplicated knowledge other than an API call, stay AUDIT |
 | VAR | Type inference usage | `.editorconfig` suggestions only | AUDIT |
 | STRING | Explicit `StringComparison` | — | AUDIT |
 | ERROR | Error handling | — | AUDIT |
 | CANCEL | CancellationToken plumbing | — | AUDIT |
-| FILEPATH | Paths relative to the executable | — | AUDIT |
+| FILEPATH | Paths relative to the executable | `BannedSymbols.txt` bans `Directory.GetCurrentDirectory()` and `Environment.CurrentDirectory` (SHAREDINFRA) | Enforced for those two APIs — bare relative paths stay AUDIT |
 | LOGGING | Log location, rotation, retention, language | — | AUDIT |
 | TEMPWORK | File operations via `%TEMP%` | — | AUDIT |
 | CONSTANTS | No magic numbers/strings | — | AUDIT |
@@ -132,6 +133,16 @@ The XAML compiler generates the other half of `App` and of each window, and the 
 - **WinUI 3:** a window's generated half carries no modifier, so `internal sealed partial class` in the code-behind decides it. `App` is the one `public` type: the XAML compiler generates `public partial class App` in `XamlTypeInfo.g.cs` and supports no `x:ClassModifier`. The template suppresses CA1515 on `App` with `[SuppressMessage]` naming that reason
 - **Never stop the type-information generation to make `App` `internal`.** The flag that removes it (`NoTypeInfoCodeGen`) also removes the provider through which WinUI 3 resolves the application's own types in XAML
 
+## SHAREDINFRA: Entry Points of Cross-Cutting Infrastructure
+
+The principle is One Home per Piece of Knowledge in `standard.md`. `Microsoft.CodeAnalysis.BannedApiAnalyzers` reports every use of an API listed in `BannedSymbols.txt` at the repository root as RS0030, which `TreatWarningsAsErrors` turns into a build error. The error carries the message written beside the API, so the build itself names the entry point to use.
+
+- **An entry point bans what it wraps**: the change that writes an entry point adds the platform and library APIs the entry point wraps to `BannedSymbols.txt`, each with a message naming the entry point (e.g., `T:Microsoft.Data.SqlClient.SqlConnection;Open connections through <entry point>`). An API the entry point wraps and the list omits stays reachable from every file
+- **The entry point's folder is the only exemption**: an `.editorconfig` section whose glob matches the entry point's folder sets `dotnet_diagnostic.RS0030.severity = none`, with a reason comment naming the concern — the file/folder scope of the ANALYZERS table. Code outside that folder that needs the API calls the entry point instead
+- **Line format**: a documentation comment ID (`T:` a type, `M:` a method, `P:` a property), `;`, and the message. A line starting with `//` is a comment
+- **The scaffold's entries ban what FILEPATH prohibits**: `Directory.GetCurrentDirectory()` and `Environment.CurrentDirectory` are banned with no exemption
+- **Each entry point has a row in the Shared Infrastructure table of `AGENTS.md`**, where Search before writing in `standard.md` starts
+
 ## VAR: Type Inference
 
 - **Use `var`** for `new` expressions and other obvious types
@@ -172,7 +183,7 @@ which semantics were meant. Naming it settles that where the code is written.
 ## FILEPATH: File Paths
 
 - **Anchor every path to the executable's own location** — the application's files sit beside the executable, never wherever it happened to be started from. In .NET that anchor is `AppContext.BaseDirectory`
-- **Do NOT use `Directory.GetCurrentDirectory()` or bare relative paths** — both resolve against the working directory, which changes with how the application is launched (shell, shortcut, scheduled task, another process)
+- **Do NOT use `Directory.GetCurrentDirectory()` or bare relative paths** — both resolve against the working directory, which changes with how the application is launched (shell, shortcut, scheduled task, another process). `BannedSymbols.txt` makes `Directory.GetCurrentDirectory()` and `Environment.CurrentDirectory` build errors (SHAREDINFRA)
 
 ## LOGGING: Log Output and Retention
 

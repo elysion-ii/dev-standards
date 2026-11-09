@@ -83,6 +83,16 @@ Every layer adds behavior.
 - Logic extracted into a new service is called directly by **all** its callers
 - No wrapper method stays behind on the original class
 
+### One Home per Piece of Knowledge
+
+Knowledge written in two places — a business rule, a calculation, a mechanism — is changed in one place and left stale in the other. Code that only looks alike is the opposite case: merged, a change made for one meaning breaks the other.
+
+- **Search before writing**: before a function, type, or constant is added, the repository is searched for code that already holds the same knowledge, starting from the entry points `AGENTS.md` lists. Code found is used instead of written again; where it does not fit the new caller as it stands, it is changed to fit within Shared Algorithm, Local Data. A pass-through method holds no knowledge of its own, so finding one is no reason to call it or keep it (No Lasagna Code)
+- **One entry point per cross-cutting concern**: a concern whose mechanism is the same wherever the application uses it — logging, reading configuration, database connections and transactions, resolving the application's own paths, and the client of each external system — has one entry point in the application. An external system's client is such a concern even while one feature calls it: the system's address, authentication, and failure handling change for the system's reasons, not the feature's. Code outside the entry point reaches the concern only through it, never through the platform or library API the entry point wraps. The entry point carries the mechanism; what each caller logs, reads, or queries stays at the caller. The entry point sits with its callers: inside the one domain that calls it, or in code shared across domains once more than one domain does
+- **Domain knowledge is shared inside its domain**: knowledge that one domain (a feature, one area of the business) uses is shared within that domain. It moves to code shared across domains when a second domain needs the same knowledge, never in advance — the timing Minimal Visibility gives to visibility
+- **Same knowledge, not same shape**: two pieces of code hold the same knowledge when one reason would change both — a law, one contract, a decision with one owner — and different knowledge when separate reasons would change them, however alike they read (e.g., a statutory interest rate two features apply follows one law; the rounding two customers' contracts each specify follows two contracts). A second copy of the same knowledge is merged when it appears, because the two copies cannot be changed apart. Different knowledge stays apart even where the code is identical today. A merge that needs flags or parameters to tell its callers apart is not made (Shared Algorithm, Local Data)
+- Stack rules name the mechanism that keeps code off the APIs an entry point wraps
+
 ### Shared Algorithm, Local Data
 
 - Deduplication extracts only the algorithm (the steps identical everywhere); each call site keeps its own data (queries, mappings, registrations)
@@ -298,6 +308,7 @@ until AUDIT passes.
 2. **Identify target files**: Git changes decide which files are targets, not which lines. With no input, the targets are all uncommitted changes (`git status --porcelain`: modified, added, untracked); with a file path, that file; with a folder path, every file in it. The entire content of every target file is verified: a pre-existing violation in a touched file weighs the same as a new one, and no target file is sampled or skipped.
 3. **Verify the change against rules and specifications**:
    - **Core rules, in every target file**: zero violations of `standard.md`, `documentation.md`, `specs.md`, `testing.md`, and each conditional core file (`cli.md`, `db.md`) whose condition holds for the application after the change.
+   - **Duplicated knowledge, across the repository**: every function, type, and constant the change adds is checked against the whole repository, not only the target files, for code that already holds the same knowledge (One Home per Piece of Knowledge). A duplicate found is a violation in the target file that added it.
    - **Git operations, in the change itself**: zero violations of `git.md`. Its object is the change's commit split, commit messages, branch name, and pull request, never a file's content.
    - **Stack rules, in every target file**: zero violations of every rule its enforcement matrix marks **AUDIT**, and of every Enforced rule whose mechanism the repository lacks.
    - **Application rules, in every target file**: zero violations of `docs/rules/<App>.md` and any other repository-authored rules under `docs/rules/`.

@@ -48,6 +48,14 @@ Rules in `docs/rules/` are organized into three tiers:
 | Test | `<TEST COMMAND>` |
 | End-to-end test | `<END-TO-END TEST COMMAND>` (none until the first end-to-end test; `docs/rules/testing.md`, Test Layers) |
 
+## Shared Infrastructure
+
+The entry point of each cross-cutting concern (`docs/rules/standard.md` One Home per Piece of Knowledge). <ONE ROW PER ENTRY POINT; KEEP THE "none yet" ROW UNTIL THE FIRST ONE IS WRITTEN.>
+
+| Concern | Entry point |
+|---|---|
+| none yet | — |
+
 ## Directory Layout
 
 <DESCRIBE THE TOP-LEVEL DIRECTORIES AND WHAT BELONGS IN EACH.>

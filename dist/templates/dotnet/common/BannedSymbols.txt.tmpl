@@ -1,0 +1,8 @@
+// APIs no code may use outside the folder an .editorconfig section exempts. Every other
+// use is RS0030, a build error (see docs/rules/dotnet.md, SHAREDINFRA).
+// Each line: <documentation comment ID>;<message naming what to use instead>
+
+// FILEPATH: both resolve against the working directory, which changes with how the
+// application is launched
+M:System.IO.Directory.GetCurrentDirectory;Anchor paths to AppContext.BaseDirectory (see docs/rules/dotnet.md, FILEPATH)
+P:System.Environment.CurrentDirectory;Anchor paths to AppContext.BaseDirectory (see docs/rules/dotnet.md, FILEPATH)
