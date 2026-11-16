@@ -13,7 +13,7 @@ internal static partial class Program
     [STAThread]
     private static int Main()
     {
-        // "AppName X.Y.Z" in the window caption (docs/rules/standard.md, Version Display)
+        // The name and version in the window caption, in the repository's one notation (docs/rules/standard.md, Version Display)
         var version = Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
             .InformationalVersion

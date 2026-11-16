@@ -203,8 +203,9 @@ var count = 0; var sum = 0m; var max = decimal.MinValue;
 
 The first thing to establish about a reported problem is which build produced it.
 
-- Every application exposes the version it was built with as `<AppName> X.Y.Z` (e.g., `MyApp 1.22.3`)
-- `<AppName>` is the application's own name as it spells it; the GUI and the CLI print the identical string
+- Every application exposes the version it was built with, together with the application's own name as it spells it
+- **One notation per repository**: every place where an application of the repository shows its version — its GUI, its CLI `--version`, its log lines — writes the name and the version in the same notation (e.g., `MyApp 1.22.3`). Which notation is the repository's choice. Version strings that tools produce or read — tags, changelog headings, installer wizards, file names — follow those tools' conventions and are outside this rule
+- **The notation has one home**: where more than one place shows the version, the code that builds the notation sits in one place and every place uses it (One Home per Piece of Knowledge)
 - The version is the bare product version — no build hash, build date, or other metadata
 - A GUI displays it somewhere always reachable (title bar, about screen, footer)
 - A CLI provides `--version` / `-V`; the concrete requirements are in `cli.md`

@@ -9,7 +9,7 @@ internal sealed partial class MainWindow : Window
     {
         InitializeComponent();
 
-        // "AppName X.Y.Z" in the title bar (docs/rules/standard.md, Version Display)
+        // The name and version in the title bar, in the repository's one notation (docs/rules/standard.md, Version Display)
         var version = Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
             .InformationalVersion
