@@ -317,6 +317,9 @@ Report:
   carries, anything awaiting a decision
 - Verification results with exit codes (format verify, build, tests, installer if run)
 - Gate status: enabled, or the warning table awaiting decisions
+- Every report a row of `MAPPING` asks for (a special rule that says to report), each
+  with the action it leaves to the user and when that action is due — some, such as a
+  step every existing clone takes, are due only after this run's changes are committed
 - Audit outcomes: the number of files audited, the conditional core files skipped and
   why, and the violation table with each violation's final outcome (fixed / deferred).
   Deferred violations are listed in full — they are the rules the repository does not

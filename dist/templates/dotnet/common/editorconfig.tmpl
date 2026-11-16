@@ -4,6 +4,9 @@ root = true
 
 [*]
 charset = utf-8
+# Equals eol= on the * line of .gitattributes: Git checks files out with that line
+# ending, and dotnet format reports every line ending that differs from this one
+end_of_line = lf
 indent_style = space
 indent_size = 4
 insert_final_newline = true
@@ -19,6 +22,10 @@ indent_size = 2
 [*.md]
 # Trailing double-space is a hard line break in Markdown
 trim_trailing_whitespace = false
+
+# Windows-specific scripts: the same list carries eol=crlf in .gitattributes
+[*.{bat,cmd,ps1}]
+end_of_line = crlf
 
 [*.cs]
 # NAMESPACE: file-scoped namespaces only
