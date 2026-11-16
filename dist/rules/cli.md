@@ -25,7 +25,7 @@ checks them.
 | SYNTAX | `app [global-options] <command> [command-options] [arguments]` | — | AUDIT |
 | OPTIONS | Long form for every option; short forms only for frequent options | — | AUDIT |
 | RESERVED | `--version`/`-V` is mandatory; `--help`/`-h`, `-v`, `-q` are reserved names | — | AUDIT — scaffolds may seed the implementation; nothing guards its removal |
-| VERSIONOUT | `--version` prints the name and version in the repository's one notation, the version a whitespace-separated word — bare version, no build metadata | The stack's version-management rules keep the source value clean (e.g., `dotnet.md` VERSION) | AUDIT |
+| VERSIONOUT | `--version` prints what `standard.md` Version Display states; this file adds nothing to the output | The stack's version-management rules keep the source value clean (e.g., `dotnet.md` VERSION) | AUDIT |
 | SUBCOMMANDS | Subcommand structure, naming, and cross-command consistency | — | AUDIT |
 | HELP | Help content and per-level `--help` | — | AUDIT |
 | STREAMS | Results to stdout; logs, progress, warnings, and errors to stderr | — | AUDIT |
@@ -107,11 +107,7 @@ one:
 
 ## VERSIONOUT: Version Output
 
-- `--version` prints a single line: the application's name and the product version in the repository's one notation (Version Display in `standard.md`) — e.g., `MyApp 1.22.3`. When the command name differs from the application name, the application name is printed — the same name a GUI would display
-- **The version is a word of its own**: whitespace or an end of the line separates the version from the rest of the line, so a script takes it out by splitting the line on whitespace — `MyApp ver 1.22.3`, never `MyApp ver.1.22.3`
-- The version is the bare product version only: no build hash, build date, commit id, or other metadata
-- The value comes from the project's single version definition (see the stack rule's version-management rules, e.g., `dotnet.md` VERSION), never from a hardcoded string
-- This is the CLI shape of the Version Display rule in `standard.md`; GUI display requirements are stated there
+- This file fixes how the version is asked for (`--version` / `-V`, RESERVED), not what is printed: what `--version` prints is stated by Version Display in `standard.md`
 
 ## SUBCOMMANDS: Subcommands
 
@@ -211,7 +207,7 @@ Precedence, strongest first:
 Before publishing a new CLI, confirm:
 
 - [ ] `--version` / `-V` works (and `--help` / `-h`, when implemented)
-- [ ] `--version` prints the name and version in the repository's one notation, the version a whitespace-separated word with no build metadata
+- [ ] `--version` prints what `standard.md` Version Display states
 - [ ] Every option has a long form
 - [ ] Everything after `--` is treated as arguments
 - [ ] `--help`, when implemented, works under each subcommand

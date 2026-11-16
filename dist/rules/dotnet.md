@@ -241,9 +241,9 @@ C# specifics:
 ## VERSION: Version Management
 
 - **The version is defined ONLY in the `<Version>` tag of `Directory.Build.props`.** Never add `<Version>` to a csproj or `#define MyAppVersion` to the installer script — duplicate definitions are how versions drift out of sync. The EXE inherits it via MSBuild; the installer build injects it (the `.iss` fails with `#error` when it is not injected)
-- **Version bump**: update `<Version>`, add a `## [x.y.z]` heading and entry to `CHANGELOG.md` if it exists, and include both in the **same commit**. Building the installer without the changelog heading fails at the gate
+- **Version bump**: update `<Version>`, add a `## [<Version>]` heading (the `<Version>` value as written) and entry to `CHANGELOG.md` if it exists, and include both in the **same commit**. Building the installer without the changelog heading fails at the gate
 - **The installer build is the release packaging step** — it carries the CHANGELOG gate; the EXE that `Build.ps1` publishes is a build output the installer wraps, not a release
-- Semantic Versioning (MAJOR.MINOR.PATCH); during development `0.x.x` (release as `1.0.0`); MAJOR: incompatible changes, MINOR: new features, PATCH: bug fixes and small changes
+- How the version is written — how many components, for one — is the repository's choice (e.g., `1.2.3`, `1.2.3.4`). Its leading components keep their Semantic Versioning meaning: the first rises for incompatible changes, the second for new features, the third for bug fixes and small changes; during development the first is `0`, and the first release sets it to `1`
 - **Displayed version** (Version Display in `standard.md`, VERSIONOUT in `cli.md`): read `AssemblyInformationalVersionAttribute` — it equals `<Version>` because `Directory.Build.props` sets `IncludeSourceRevisionInInformationalVersion=false`, which stops the SDK from appending `+<git sha>`. Never remove that property: without it the displayed version carries the commit hash, which Version Display forbids
 
 ## OUTPUT: Build Outputs
