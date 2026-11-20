@@ -62,6 +62,38 @@ Where a new rule goes, and when a new distributed rule file is created. Rational
 - **The same rule in two stack rule files moves to the core**: when two stack rule files state the same property, the property moves to the core and each stack rule file keeps only its mechanism. Two copies of one rule drift apart at the next edit
 - **A new distributed rule file reaches every list that names the distributed files**: the specification's Required structure and Distribution contract, `docs/specs/template-requirements.md` R4, the router templates, and `documentation.md`'s description of `docs/rules/`. A file missing from a list is not copied, or not read, by whatever follows that list
 
+## Rule selection criteria
+
+What qualifies to enter a distributed rule file (`dist/rules/`), before choosing where it goes:
+
+- **Current best practice is the default**: a distributed rule adopts the established current best practice of its subject, except for prose, code comments, and document placement (`documentation.md` and `standard.md` Code Comments), where dev-standards states conventions of its own
+- **Opinionated conventions require an engineering advantage and a stated reason**: a rule that departs from or narrows general practice is added only when it provides a concrete engineering advantage (e.g., preventing a real class of defect, operational failure, or review blind spot), and the rule text states that advantage directly
+- **Preferences without engineering advantage stay out**: a choice whose alternatives carry no clear engineering superiority (e.g., arbitrary default numbers, fixed filenames where multiple layouts work equally well, stylistic conventions with no defect-prevention benefit) is never written as a rule
+- **Application-specific choices stay in specifications or application rules**: decisions that vary by product, audience, or deployment (e.g., log storage paths, log or comment language, retention periods, exact version display formatting) belong in each application's specification or application rules file, never in shared or stack rule files
+- **Template tooling stays out of distributed rules**: concrete build scripts, installer scripts, custom template build targets, and scaffold-generated file paths (e.g., a specific build script name, installer directives, a scaffolded ADR path) belong in template comments, never named or described in `dist/rules/`. Every distributed rule must stand on its own in a repository that did not use the scaffold templates
+
+## Authoring distributed rules
+
+How rules under `dist/rules/` are written, in addition to `documentation.md` (`Writing` and `Requirement text`):
+
+- **Stack-agnostic files state ideals only**: universal and conditional shared rule files state what property to protect, its applicability boundary, and its reason — never stack, library, API, or template names outside illustrative `e.g.` examples. Common mechanisms appear only as `e.g.`, never as mandatory means
+- **Stack rule files state means and stack constraints only**: stack rule files state how that stack satisfies the ideals in the shared rule files (referencing the shared rule rather than restating it) plus constraints unique to that stack's toolchain. Never duplicate a shared ideal in a stack rule file
+- **Scope by hazard**: place each rule in the narrowest file covering every application exposed to the hazard it prevents (`documentation.md` Requirement text). A hazard that can occur in any application (e.g., untrusted type-polymorphic deserialization, working-directory-dependent application paths) belongs in `standard.md`, never hidden inside a conditional file that skips unaffected application categories
+- **Never add per-rule override clauses**: `standard.md` establishes the three-tier precedence (application rules override stack and shared/core rules) uniformly across every distributed rule; never add "unless overridden in application rules" to an individual rule, because stating it on one rule implies other rules cannot be overridden (the only exception is a rule that defines a concrete opt-in condition of its own, such as shipping debug symbols for field diagnostics)
+- **Enforcement matrix honesty**: in stack rule files, mark a rule `Enforced` only when a mechanical gate enforces the entire rule; any rule with partial mechanical enforcement or manual checks stays `AUDIT` with the enforced and manual parts distinguished (refining New rule → matrix row above)
+
+## Verifying rule changes
+
+Required checks before completing a change to distributed rules (`dist/rules/` or a staging rule directory):
+
+- **Fresh-reader comprehension verification**: any change that adds a rule, moves a rule across files, or alters a rule's meaning or applicability — every edit except pure typo or formatting fixes — is verified by fresh, blank-slate readers (e.g., separate read-only sessions that read only the consuming-application rule bundle, never the conversation history, plan documents, or diff). Test the scenarios whose bundles include the changed files (all scenarios when a change spans multiple core or conditional files), and repeat with new fresh readers after each edit until a full pass reports zero in-scope defects
+- **Pass criterion and defect boundary**:
+  - **Pass**: every fresh reader can accurately state what each rule wants to protect (its purpose) without misreading
+  - **In-scope defects (must fix)**: (1) a rule whose purpose cannot be determined, (2) a rule whose purpose admits two conflicting readings that change the goal, (3) a contradiction within a file or across files in the bundle, (4) a broken cross-reference to a nonexistent file, heading, or rule ID, and (5) any violation of Rule selection criteria or Authoring distributed rules above
+  - **Out of scope (do not fix)**: open implementation means intentionally left to stack rules, application rules, or specifications ("I understand what to protect, but it does not specify which library or path to use"). Never make rule prose convoluted to silence out-of-scope remarks
+- **Mechanical checks before completion**: confirm that every edited distributed rule file is English-only, uses LF line endings with a trailing LF, carries no YAML front matter and no `{{TOKEN}}` placeholders, contains no private references or template-tool names, has valid Markdown structure (e.g., a blank line before every `---` horizontal rule), resolves every cross-file heading reference, and keeps stack rule files in sync with their Enforcement Matrix
+- **Escalate policy conflicts instead of compromising in prose**: when verification uncovers a conflict or boundary ambiguity that cannot be resolved by wording alone without changing intent, stop and obtain a policy decision from the maintainer rather than inventing a prose compromise
+
 ## Testing and specifications (overrides `dist/rules/testing.md`, `dist/rules/specs.md`, and `dist/rules/documentation.md` Requirement IDs)
 
 - This repository is not an application and has no test code: `testing.md` and `documentation.md` Requirement IDs do not apply to its own content, and its specifications (`docs/specs/`) carry no requirement IDs. Both bind the consuming repositories in full
