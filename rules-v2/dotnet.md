@@ -1,8 +1,8 @@
 # .NET Standards
 
 Stack rule file specifying the .NET means and .NET-specific rules that satisfy the
-shared standards under `docs/rules/`. Client packaging, desktop XAML, and local logging
-means live separately in `dotnet-client.md` (when `dotnet-client.md` is present and applies).
+shared standards under `docs/rules/`. Client packaging and desktop XAML/UI means live
+separately in `dotnet-client.md` (when `dotnet-client.md` is present and applies).
 Concrete commands with solution and project names live in each repository's `AGENTS.md`.
 
 ## Enforcement Matrix
@@ -15,14 +15,13 @@ Where a repository lacks a listed mechanism, treat that entire rule as **AUDIT**
 the mechanism is added. Rows referencing conditional rule files (e.g., `configuration.md`,
 `db.md`, `file-exchange.md`, `values.md`, `remote-calls.md`, `security.md`, `cloud.md`,
 `web-api.md`) apply only when the referenced rule file is present in `docs/rules/` and
-its `Applies when` condition holds for the application (`FILEPATH` applies across all `.NET`
-applications and also satisfies `client.md` when present). Detailed build-script and
+its `Applies when` condition holds for the application. Detailed build-script and
 property notes live in the comments of the configuration and build files themselves.
 
 | ID | Rule | Mechanism | Check |
 |---|---|---|---|
 | FORMAT | Formatting follows `.editorconfig` (`standard.md` Build Hygiene and Static Analysis) | `.editorconfig`; `dotnet format --verify-no-changes` | AUDIT — `dotnet format --verify-no-changes` enforces style against `.editorconfig`; maintaining a single root `.editorconfig` without per-file deviations and running the formatter before completion stay AUDIT |
-| ANALYZERS | Recommended static analysis, warnings as errors, narrow suppressions, banned-API list (`standard.md` Build Hygiene and Static Analysis) | `Directory.Build.props` (`AnalysisLevel=latest-recommended`, `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors`, `Microsoft.CodeAnalysis.BannedApiAnalyzers` + `BannedSymbols.txt`) | AUDIT — gates enforce enabled diagnostics and `BannedSymbols.txt` (`RS0030`); keeping gates enabled, suppression scopes/reasons, and keeping `RS0030` unsuppressed stay AUDIT |
+| ANALYZERS | Recommended static analysis, warnings as errors, narrow suppressions, banned-API list, and dependency vulnerability auditing (`standard.md` Build Hygiene and Static Analysis) | `Directory.Build.props` (`AnalysisLevel=latest-recommended`, `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors`, `NuGetAudit`, `Microsoft.CodeAnalysis.BannedApiAnalyzers` + `BannedSymbols.txt`) | AUDIT — gates enforce enabled diagnostics, `NuGetAudit` advisory checks, and `BannedSymbols.txt` (`RS0030`); keeping gates enabled, suppression scopes/reasons, and keeping `RS0030` unsuppressed stay AUDIT |
 | UNUSED | Remove unreachable members, parameters, and locals (`standard.md` Leave No Vestiges) | `.editorconfig` (`IDE0051`, `IDE0052`, `IDE0060` as warning + `TreatWarningsAsErrors`); compiler `CS0168`/`CS0219` | AUDIT — compiler/analyzers catch dead locals/private members/unused parameters; dead branches and stale names stay AUDIT |
 | NAMESPACE | File-scoped namespaces and namespace matches folder (`standard.md` Code Organization) | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`, `IDE0130` as warning + `TreatWarningsAsErrors`) | Enforced |
 | ORG | One top-level type per `.cs` file matching filename (`standard.md` Code Organization) | — | AUDIT |
@@ -33,12 +32,13 @@ property notes live in the comments of the configuration and build files themsel
 | STRING | Explicit `StringComparison` on string methods | — | AUDIT |
 | CANCEL | Propagate `CancellationToken ct = default` through async I/O (`standard.md` Synchronous vs Asynchronous) | — | AUDIT |
 | CLOCK | Pass the current time as an argument; `TimeProvider` only where an argument cannot carry it (`standard.md` Functional Core, Imperative Shell) | — | AUDIT |
-| FILEPATH | Anchor application paths to `AppContext.BaseDirectory`, `Environment.GetFolderPath(...)`, or `Path.GetTempPath()` under `FILEEX` (satisfies `client.md` Application Path Anchoring when `client.md` is present and applies) | `Directory.Build.props` + `BannedSymbols.txt` banning `Directory.GetCurrentDirectory` and `Environment.CurrentDirectory` (`RS0030`) | AUDIT — `BannedSymbols.txt` enforces those two APIs; bare relative paths stay AUDIT |
+| FILEPATH | Anchor application paths to `AppContext.BaseDirectory`, `Environment.GetFolderPath(...)`, or `Path.GetTempPath()` under `FILEEX` (`standard.md` Application Path Anchoring) | `Directory.Build.props` + `BannedSymbols.txt` banning `Directory.GetCurrentDirectory` and `Environment.CurrentDirectory` (`RS0030`) | AUDIT — `BannedSymbols.txt` enforces those two APIs; bare relative paths stay AUDIT |
+| DESERIALIZE | Concrete-type deserialization via `System.Text.Json`; forbid `BinaryFormatter` and polymorphic type handling (`standard.md` Values Never Become Code) | — | AUDIT |
 | CONSTANTS | Application constants as `const` / `static readonly` in owning class (`standard.md` Named Constants) | — | AUDIT |
 | COMMENTS | Inline `//` comments; XML docs only on published libraries (`standard.md` Code Comments) | — | AUDIT |
 | TESTNAME | xUnit test naming `Method_Scenario_ExpectedResult` | — | AUDIT |
 | REQCOV | Tests name specification requirement IDs; no dangling trait IDs (`testing.md` Requirement Coverage) | — | AUDIT |
-| VERSION | Single `<Version>` in `Directory.Build.props` (`standard.md` Version Display) | `Directory.Build.props` | AUDIT |
+| VERSION | Single `<Version>` in `Directory.Build.props` and metadata-based version display (`standard.md` Version Display) | `Directory.Build.props` | AUDIT |
 | OUTPUT | Distributables produced only via build script; build outputs untracked (`standard.md` Build Hygiene and Static Analysis) | `.gitignore` | AUDIT — `.gitignore` does not stop forced adds or manual `dotnet publish` |
 | CONFIGFILE | Track placeholder template only; never track active config file (`configuration.md`, when present and applicable) | `.gitignore` | AUDIT — `.gitignore` does not stop forced adds of the active file |
 | SERIAL | Run build-state `dotnet` commands one at a time per solution | — | AUDIT |
@@ -46,7 +46,7 @@ property notes live in the comments of the configuration and build files themsel
 | FILEEX | .NET file-exchange and temp-staging means (`file-exchange.md`, when present and applicable) | — | AUDIT |
 | VALUES | .NET decimal, rounding, invariant formatting, and date/time types (`values.md`, when present and applicable) | — | AUDIT |
 | HTTP | .NET `HttpClient` reuse and timeout means (`remote-calls.md`, when present and applicable) | — | AUDIT |
-| SECURITY | .NET cryptographic RNG and safe deserialization (`security.md`, when present and applicable) | — | AUDIT |
+| SECURITY | .NET cryptographic RNG (`security.md`, when present and applicable) | — | AUDIT |
 | CLOUD | .NET SDK credential chains (`DefaultAzureCredential`) and scoped `BlobSasBuilder` / `GetPreSignedUrlRequest` builders (`cloud.md`, when present and applicable) | — | AUDIT |
 | WEBAPI | ASP.NET Core `AddProblemDetails`/`UseExceptionHandler`, `KestrelServerLimits`/request-size limits, and `AddRateLimiter` (`web-api.md`, when present and applicable) | — | AUDIT |
 
@@ -123,7 +123,7 @@ Implements `standard.md` (Minimal Visibility) in C#:
 
 ## VAR: Type Inference
 
-- **Use `var` when obvious**: use `var` for `new` expressions, explicit casts, and unambiguous right-hand types; write the explicit type whenever the return type is not clear from the expression.
+- **Use `var` when obvious**: use `var` for `new` expressions, explicit casts, and unambiguous right-hand types; write the explicit type whenever the return type is not clear from the expression so readers outside an IDE (e.g., during code review) do not misread types such as `Task<T>` or deferred sequences.
 
 ## STRING: String Comparison
 
@@ -133,7 +133,7 @@ Implements `standard.md` (Minimal Visibility) in C#:
 
 Implements `standard.md` (Synchronous vs Asynchronous) cancellation propagation:
 
-- **Accept and forward `CancellationToken ct = default`**: include `CancellationToken ct = default` on every async I/O method (including internal helpers and static utilities) even when current callers pass no token, and pass `ct` (never `CancellationToken.None`) to every cancellable await inside it (rationale: `docs/adr/0001-cancellation-token-plumbing.md`).
+- **Accept and forward `CancellationToken ct = default`**: include `CancellationToken ct = default` on every async I/O method (including internal helpers and static utilities) even when current callers pass no token, and pass `ct` (never `CancellationToken.None`) to every cancellable await inside it — retrofitting tokens later requires cross-layer signature changes across helpers and all their callers.
 - **Omit only on non-cancellable completion steps**: omit tokens solely on the non-cancellable completion steps defined in `standard.md` (Synchronous vs Asynchronous).
 
 ## CLOCK: Current Time
@@ -144,9 +144,15 @@ Implements `standard.md` (Functional Core, Imperative Shell — Pass ambient val
 
 ## FILEPATH: File Paths
 
-Applies across all `.NET` applications (and satisfies `client.md` Application Path Anchoring when `client.md` is present and applies):
+Implements `standard.md` (Application Path Anchoring) in .NET:
 
 - **Anchor application paths in code**: construct application-owned paths from `AppContext.BaseDirectory` or `Environment.GetFolderPath(...)` — or `Path.GetTempPath()` specifically for temporary staging files governed by `FILEEX` (when `file-exchange.md` is present and applies) — never from `Directory.GetCurrentDirectory()`, `Environment.CurrentDirectory` (blocked by `BannedSymbols.txt`), or bare relative strings. (User-supplied relative CLI arguments resolve intentionally against caller working directory.)
+
+## DESERIALIZE: Safe Deserialization
+
+Implements `standard.md` (Values Never Become Code — Forbid type-polymorphic deserialization of untrusted data) in .NET:
+
+- **Use concrete-type deserialization only**: deserialize untrusted JSON payloads solely via `System.Text.Json` into explicit static DTO types; across all formats, never use `BinaryFormatter`, `TypeNameHandling.All/Auto`, or other type-polymorphic deserializers.
 
 ## CONSTANTS: Constants
 
@@ -158,7 +164,7 @@ Implements `standard.md` (Named Constants) in C#:
 
 Implements `standard.md` (Code Comments) in C#:
 
-- **Inline comments vs XML docs**: use `//` inline comments (language per `standard.md` Code Comments); reserve XML documentation comments (`/// <summary>`) strictly for libraries published to callers outside the repository.
+- **Inline comments vs XML docs**: use `//` inline comments; reserve XML documentation comments (`/// <summary>`) strictly for libraries published to callers outside the repository.
 
 ## TESTNAME: xUnit Test Naming
 
@@ -174,7 +180,8 @@ Implements `testing.md` (Requirement Coverage) in .NET:
 
 Implements `standard.md` (Version Display) in .NET:
 
-- **Define `<Version>` solely in `Directory.Build.props`**: never put `<Version>` in individual `.csproj` files; format `<Version>` as an MSBuild-compatible numeric version string (e.g., `Major.Minor.Patch`).
+- **Define `<Version>` solely in `Directory.Build.props`**: keep `<Version>` out of individual `.csproj` files so every project and packaged artifact shares one version source; format `<Version>` as an MSBuild-compatible numeric version string (e.g., `Major.Minor.Patch`).
+- **Read displayed version from assembly metadata**: read `AssemblyInformationalVersionAttribute` rather than hardcoding a version string, failing fast if the version metadata is absent.
 
 ## OUTPUT: Build Outputs
 
@@ -182,9 +189,9 @@ Implements `standard.md` (Version Display) in .NET:
 
 ## CONFIGFILE: Configuration Files
 
-Applies when `configuration.md` is present and applies:
+Applies when `configuration.md` is present and applies (`configuration.md` Configuration Files in the Repository):
 
-- **Track `<name>.template.<ext>` (e.g., `appsettings.template.json`)**: keep the derived active file (e.g., `appsettings.json`) untracked in `.gitignore`, and derive any shipped default configuration file from the tracked template during build or packaging rather than from a local working-tree file.
+- **Track `<name>.template.<ext>` (e.g., `appsettings.template.json`)**: keep the active configuration file the application reads (e.g., `appsettings.json`) untracked in `.gitignore` so tracking only the placeholder template structurally prevents accidental commits or packaging of local developer endpoints and environment-specific settings.
 
 ## SERIAL: Sequential Command Execution
 
@@ -206,7 +213,7 @@ Applies when `file-exchange.md` is present and applies:
 
 - **Canonical path containment check**: normalize the base directory via `Path.GetFullPath(...)` (ensuring a single trailing `Path.DirectorySeparatorChar`) and the candidate path via `Path.GetFullPath(...)`, comparing with `StartsWith(..., StringComparison.OrdinalIgnoreCase)` on Windows (or `Ordinal` on case-sensitive filesystems).
 - **Explicit strict encodings**: instantiate explicit `Encoding` objects configured to throw on invalid bytes (e.g., `new UTF8Encoding(encoderShouldEmitUTF8Identifier: ..., throwOnInvalidBytes: true)`) on `StreamReader` / `StreamWriter` / `File` calls rather than omitting encoding.
-- **Stage network file transfers in `Path.GetTempPath()`**: create temporary files flat under `Path.GetTempPath()` named `{AppName}_{FeatureName}_{Guid.NewGuid():N}.{ext}`, delete matching files in `finally` (best-effort), and also prune this application's leftover matching files (`{AppName}_*`) older than 24 hours (unless overridden with reason in application rules) on startup and at processing-loop starts.
+- **Stage network file transfers in `Path.GetTempPath()`**: create temporary files under an application-owned subdirectory or naming prefix inside `Path.GetTempPath()` (e.g., `{AppName}/...` or `{AppName}_...`), delete matching files in `finally` (best-effort), and prune only this application's crash-orphaned files past its retention window at startup and processing-loop boundaries (`file-exchange.md` Network-Path Staging and Temporary Files).
 
 ## VALUES: Precision, Invariant Formatting, and Temporal Means
 
@@ -228,13 +235,12 @@ Applies when `remote-calls.md` is present and applies:
 Applies when `security.md` is present and applies:
 
 - **Cryptographic randomness**: generate tokens and unpredictable IDs with `System.Security.Cryptography.RandomNumberGenerator`, never `System.Random`.
-- **Safe serialization**: deserialize untrusted JSON payloads solely via `System.Text.Json` into concrete typed DTOs; across all formats, never use `BinaryFormatter`, `TypeNameHandling.All/Auto`, or other type-polymorphic deserializers.
 
 ## CLOUD: Cloud Storage and Identity Means
 
 Applies when `cloud.md` is present and applies (implements `cloud.md` Short-Lived and Managed Cloud Identities and Short-Lived Signed Transfer URLs):
 
-- **Use `DefaultAzureCredential` or provider workload-identity chains**: initialize cloud SDK clients with `DefaultAzureCredential` (or AWS `FallbackCredentialsFactory` / GCP `GoogleCredential.GetApplicationDefaultAsync`), avoiding static account keys, connection-string secrets, or `StorageSharedKeyCredential` in application code or config.
+- **Use `DefaultAzureCredential` or provider workload-identity chains**: initialize cloud SDK clients with `DefaultAzureCredential` (or AWS `FallbackCredentialsFactory` / GCP `GoogleCredential.GetApplicationDefaultAsync`), avoiding static account keys, connection-string secrets, or `StorageSharedKeyCredential` in application code or plaintext configuration; where an external integration constraint requires a static key (`cloud.md` Short-Lived and Managed Cloud Identities), load it from a platform secret store rather than source or plaintext configuration.
 - **Scope SAS and pre-signed URL builders cleanly**: construct direct-transfer URLs with `BlobSasBuilder` (signed with `UserDelegationKey` rather than shared key, narrow `BlobSasPermissions`, short `ExpiresOn`) or AWS `GetPreSignedUrlRequest` (narrow `HttpVerb` and `Expires`), avoiding `BlobContainerSasBuilder` container-wide tokens.
 
 ## WEBAPI: Web API Means

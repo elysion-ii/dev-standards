@@ -2,20 +2,16 @@
 
 **Applies when** the application is packaged, distributed to, and run directly on user or operator machines (e.g., desktop GUI applications, installed local utilities, packaged workstation tools). Does not apply to server-hosted web/API applications, remote container services, or scripts executed strictly from a developer source tree.
 
-Defines stack-agnostic ideals for resolving paths on end-user machines, minimizing and
-cleaning packaged footprints, handling
+Defines stack-agnostic ideals for minimizing and cleaning packaged footprints, handling
 running instances during update or removal, bounding local logs, and keeping scrollable UI
-lists responsive.
-
-## Application Path Anchoring
-
-- **Anchor application-owned paths explicitly**: resolve every application-owned file or directory (e.g., configuration, local data, logs, bundled assets) relative to the application's own executable directory or a platform-designated application-data directory — never relative to the process's current working directory, which varies by shortcut, scheduler, or parent process. (By contrast, user-supplied path arguments such as CLI inputs intentionally resolve against the caller's working directory.)
+lists responsive. Application path anchoring lives in `standard.md` (Application Path
+Anchoring).
 
 ## Packaging and Distributable Footprint
 
-- **Minimize distributable file count without runtime unpacking**: ship the smallest self-contained footprint the stack achieves cleanly (ideally a single executable), and exclude debug symbols from shipped packages unless the repository's application rules file explicitly requires shipping symbols for field crash diagnostics. Never use self-extracting bundles that unpack runtime or native files into shared temporary folders on launch without automatic cleanup; prefer removing unneeded native dependencies first, and ship unavoidable native libraries alongside the executable instead.
-- **Package the entire verified build output**: configure packaging to collect the entire verified build output directory rather than a manually maintained executable-only list, ensuring unavoidable side-by-side runtime dependencies are never dropped.
-- **Gate release packaging on single-sourced version and changelog**: derive the package version solely from the project's single version definition (`standard.md` Version Display), failing fast if missing, and fail release packaging whenever `CHANGELOG.md` exists without an entry matching that version.
+- **Avoid unneeded dependencies, runtime self-extraction, and debug symbols**: remove unneeded dependencies and exclude debug symbols from shipped packages unless the repository's application rules explicitly require shipping symbols for field crash diagnostics; never use self-extracting bundles that unpack runtime or native files into shared temporary folders on launch without automatic cleanup, shipping unavoidable native libraries alongside the executable instead.
+- **Include every runtime dependency from the verified build**: assemble packages directly from the verified build's complete runtime output rather than a manually maintained executable-only file list, so side-by-side runtime dependencies are never silently dropped.
+- **Derive package version from the single source**: derive the installer or package version solely from the project's single version definition (`standard.md` Version Display), failing packaging fast if missing rather than duplicating version numbers in packaging definitions.
 
 ## Installation, Update, and Removal
 
@@ -27,11 +23,9 @@ lists responsive.
 
 ## Logs on the Host Machine
 
-- **Predictable log location with writable fallback**: write logs inside an application-owned log directory beside the executable when writable, falling back automatically to an application-specific folder under the user's local application-data directory when installed under a read-only directory.
-- **Bounded rotation and automatic retention**: rotate log files on a regular cycle (e.g., daily) and automatically prune old logs to a bounded retention limit defined by the repository's stack or application rules so logs cannot grow without bound on unattended machines.
-- **Delete only application-owned log files**: match strictly this application's own log filename pattern during cleanup; never sweep shared directories.
+- **Bounded rotation and automatic retention**: when the application writes local log files (to a writable location defined by the specification), rotate them on a bounded cycle or size threshold and automatically prune old logs to a bounded retention limit defined by the specification or application rules so logs cannot grow without bound on unattended machines.
+- **Delete only application-owned log files**: match strictly this application's own log filename pattern or owned log subdirectory during cleanup; never sweep shared directories.
 - **Best-effort log cleanup**: log cleanup failures and continue; never abort application startup or primary operations because an old log could not be deleted.
-- **Log language**: write log entries in English unless the repository's application rules state otherwise.
 
 ## Leave No Debris on the Host Machine
 

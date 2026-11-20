@@ -10,11 +10,11 @@ Rules in `docs/rules/` form three tiers:
 
 - **Application rules**: repository- and application-specific rules and overrides, written in the repository's own files under `docs/rules/` and routed to from `AGENTS.md`
 - **Stack rules**: technology-stack means and constraints distributed for the repository's stack
-- **Shared rules**: `standard.md`, `documentation.md`, `specs.md`, `testing.md`, and any conditional shared rule files distributed to the repository
+- **Shared rules**: universal rules (`standard.md`, `documentation.md`, `specs.md`, `testing.md`), plus any conditional shared rule files distributed to the repository
 
 - **Precedence on conflict**: Application rules > Stack rules > Shared rules.
 - **No conflicts among shared rules**: a contradiction between two stack-agnostic rule files under `docs/rules/` is a defect in the rules. Report it to the user and continue only on the user's decision — never by silently picking one side.
-- **Rule scope**: every change complies with every universal rule file present under `docs/rules/`, with every conditional or stack rule file present under `docs/rules/` whose `Applies when` condition (if any) holds for the application being changed (ignoring files whose condition is false for that application, such as in multi-application repositories), and with the specification under `docs/specs/` of every touched application.
+- **Rule scope**: every change complies with every universal rule file present under `docs/rules/`, with every conditional or stack rule file present under `docs/rules/` whose `Applies when` condition (if any) holds for the application being changed after the change — evaluated as a fact settled by the application's code, never whether the current task touches that subject (ignoring files whose condition is false for that application, such as in multi-application repositories) — and with the specification under `docs/specs/` of every touched application.
 - **Required reading**: read every applicable file under `docs/rules/` before implementing any change.
 - **Completion requirement**: no implementation task (any change that adds, modifies, or deletes source code, tests, build configuration, specifications, or documentation) is reported complete until the AUDIT gate at the end of this file passes.
 
@@ -151,9 +151,10 @@ Applies to every write to durable state (e.g., databases, files, outgoing messag
 
 Applies to how source files, namespaces or modules, folders, and compilation units are structured.
 
-- **One top-level type per file**: place each top-level type (or equivalent module unit) in its own source file whose name matches that type's name (except where language mechanics split a generated or partial type across paired files), so every symbol is located directly from its filename.
-- **Namespaces match folder layout**: align each file's namespace or module path with its directory path relative to the project root so logical names and filesystem paths never diverge.
+- **Predictable file-to-symbol mapping**: name source files after the cohesive type, module, or feature unit they define (following the stack's convention — e.g., one top-level type per file in C#/Java, or cohesive feature modules in languages where related small types share a file) so every symbol is located directly from filenames without searching.
+- **Logical modules match folder layout**: align each file's namespace, package, or module path with its directory path relative to the project root so logical names and filesystem paths never diverge.
 - **Organize folders by business feature**: when a project creates subdirectories (instead of keeping a single flat root folder), group code that changes together for one business area or feature into that feature's folder rather than splitting files across top-level technical-layer folders (e.g., `ViewModels/`, `Services/`, `Repositories/`), and avoid duplicating layer-named subfolders inside feature folders unless a compiler or deployment boundary requires them; place cross-cutting mechanisms in their own shared home (`One Home per Piece of Knowledge`). *Overlap with Separation of Concerns and Dependency Direction*: `Separation of Concerns` and `Dependency Direction` govern responsibility boundaries and dependency direction between types, whereas feature organization governs which folders hold those types.
+
 ---
 
 ## Code Comments
@@ -162,7 +163,6 @@ Applies to how source files, namespaces or modules, folders, and compilation uni
 
 A comment exists only where code cannot carry the context — a clearer name, extracted function, type, test, or fail-fast check always comes first. A valid comment states **why the current shape, condition, guard, or order is required now**.
 
-- **Language**: write comments in English unless the repository's application rules explicitly specify otherwise.
 - **One constraint per comment**: state one constraint (one fact the code must satisfy) and its current reason at the exact code it shapes, saying nothing about unrelated later processing; split separate constraints or exceptions into separate comments at their respective sites.
 - **Offload deep context**: move mechanism walkthroughs, multi-constraint specs, or architectural rationale to an ADR or `docs/references/`, leaving a one-line conclusion and relative path in the comment.
 - **Current constraints only**: record change history, review feedback, or removed behavior in version control history or PR descriptions, never in source comments.
@@ -215,6 +215,13 @@ for row in rows { ... }
 Establishing which release produced a behavior or failure comes first in diagnostics and support.
 
 - **Users can learn the version**: every standalone executable application (e.g., GUI, CLI, network service, or background worker; reusable libraries without their own executable entry point are exempt) gives its users a way to learn the release they are running (e.g., an About screen, a `--version` option, a startup log line). How the version is written and where it appears are left to the application.
+- **Single version definition**: define the application's release version in one place in the project so every built artifact, package, and displayed version derives from that single source without drifting out of sync; fail fast rather than substituting a hardcoded fallback constant if version metadata is absent.
+
+---
+
+## Application Path Anchoring
+
+- **Anchor application-owned paths explicitly**: resolve every application-owned file or directory (e.g., configuration, local data, logs, bundled assets) relative to an explicit base the application resolves itself (e.g., the application's executable directory, a platform-designated application-data directory, or a configured path; the specific location is decided by the specification), never relative to the process's current working directory, which varies by shortcut, scheduler, service manager, or parent process. (By contrast, user-supplied relative path arguments such as CLI inputs intentionally resolve against the caller's working directory.)
 
 ---
 
@@ -232,6 +239,7 @@ Applies to all data entering across an external trust boundary at run time — i
 
 - **Pass values as data**: never concatenate external, configured, or stored values into executable or interpreted text (e.g., SQL, shell commands, HTML, templates, query expressions); always use parameterized bindings, argument lists, or context-aware encoding.
 - **Whitelist fixed structural choices**: where a language position has no data-binding mechanism (e.g., SQL table or column names, sort keys), select only from a fixed set of code-defined alternatives and reject any other input.
+- **Forbid type-polymorphic deserialization of untrusted data**: never pass untrusted or external payloads into deserializers that embed type metadata to instantiate arbitrary types during parsing; deserialize strictly into explicit, statically known data shapes (`External Input`).
 
 ---
 
@@ -263,7 +271,7 @@ Run this procedure after completing every implementation task (`Completion requi
 1. **Reload the rules**: re-read the root `AGENTS.md`, any nested `AGENTS.md` covering touched paths, every applicable file under `docs/rules/`, the specification (plus any behavior ledgers per `specs.md`) of every touched application, and any existing deferred-violation notes under `docs/notes/` covering touched scopes. Files already read in full during the same session and unchanged since need not be re-read.
 2. **Identify target files**: determine targets from uncommitted version-control changes (modified, added, untracked), or from an explicitly requested file or folder. Inspect the entire content of every target file — finding the violations already present in a touched file as well as those the change introduces — and sample or skip no target file.
 3. **Verify target files against rules and specifications**:
-   - **Shared rules in every target file**: zero violations introduced by the change across every universal file and every conditional rule file whose `Applies when` condition holds for the touched application; violations already present before the change are handled in step 5.
+   - **Shared rules in every target file**: zero violations introduced by the change across every universal file and every conditional rule file whose `Applies when` condition holds for the touched application after the change (evaluated as a fact about the application, never whether the task touches that subject); violations already present before the change are handled in step 5.
    - **No duplicated knowledge repository-wide**: inspect every added function, type, or constant against the entire repository (`One Home per Piece of Knowledge`).
    - **Stack rules in every target file**: zero violations of every rule marked `AUDIT` in any applicable stack rule file's enforcement matrix (when present), and of any `Enforced` rule whose mechanical gate is missing from the repository, introduced by the change.
    - **Application rules in every target file**: zero violations of repository-authored rules under `docs/rules/` introduced by the change.

@@ -35,7 +35,7 @@ Assign each test to the first layer in the table below whose condition matches w
 ## Table-Driven Tests
 
 - **Parameterize input-to-output checks**: express specifications mapping inputs to outputs as parameterized data tables rather than duplicating near-identical test methods.
-- **Canonical row order**: order test rows consistently from null/none → empty → minimal valid → representative main cases → boundary and invalid cases.
+- **Systematic row order**: order test rows consistently from degenerate and minimal inputs through representative main cases to boundary and invalid cases (e.g., null/none → empty → minimal valid → representative main cases → boundary and invalid cases) so missing edge cases stand out at a glance.
 - **Self-describing cases**: write inputs and case labels clearly so the test table itself documents the specification.
 
 ## Tests Accompany the Change

@@ -25,7 +25,7 @@ The table below reserves option names: when the corresponding feature exists, us
 
 | Long form | Short | Behavior | Requirement |
 |---|---|---|---|
-| `--version` | `-V` | Print application name and version and exit | Mandatory |
+| `--version` | `-V` | Print the application version and exit | Mandatory |
 | `--help` | `-h` | Print help and exit | Mandatory when help is provided (providing help itself is recommended) |
 | `--verbose` | `-v` | Enable detailed output | Only with verbose-output feature |
 | `--quiet` | `-q` | Suppress non-warning output | Only with output-suppression feature |
@@ -54,7 +54,7 @@ When implementing any feature below, use its conventional option name rather tha
 
 - **Use subcommands only for distinct operations**: split into subcommands when the application performs multiple independent operations; keep single-operation CLIs flat without subcommands.
 - **Shallow verb or target-noun hierarchy**: name subcommands in lowercase as verbs (e.g., `build`, `show`, `set`) or target nouns (e.g., `config`), nested at most two levels deep (e.g., `app config set`).
-- **Uniform naming across subcommands**: use `list`, `show`, `set` (or `add`), and `remove` consistently for CRUD operations, and use identical option names for identical meanings across every subcommand (never `--output` on one subcommand and `--out` on another).
+- **Uniform naming across subcommands**: use consistent verbs for CRUD operations across the CLI (e.g., `list`, `show`, `set`/`add`, `remove`), and use identical option names for identical meanings across every subcommand (never `--output` on one subcommand and `--out` on another).
 
 ## Help Output
 

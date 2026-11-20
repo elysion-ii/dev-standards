@@ -3,11 +3,11 @@
 **Applies when** the application handles secrets or personal data, or restricts data or actions per authenticated user or role. Does not apply to tools that handle neither secrets/credentials/personal data nor user/role-scoped access control.
 
 Defines stack-agnostic ideals for preventing secret leakage, managing credentials and
-passwords, encrypting sensitive data, generating cryptographic randomness, deserializing
-safely, and checking authorization. Auditing dependencies for known vulnerabilities lives in
-`standard.md` (Build Hygiene and Static Analysis). Prevention of code/command/SQL
-injection lives in `standard.md` (Values Never Become Code); path-containment and archive
-safety live in `file-exchange.md` when present.
+passwords, encrypting sensitive data, generating cryptographic randomness, and checking
+authorization. Auditing dependencies for known vulnerabilities lives in `standard.md`
+(Build Hygiene and Static Analysis). Prevention of code/command/SQL injection and unsafe
+type-polymorphic deserialization lives in `standard.md` (Values Never Become Code);
+path-containment and archive safety live in `file-exchange.md` when present.
 
 ## Keep Secrets and Personal Data Out of Exposure Channels
 
@@ -27,10 +27,6 @@ safety live in `file-exchange.md` when present.
 
 - **Hash passwords with adaptive password hashing**: when storing or verifying user passwords, store them solely as salted hashes computed with an intentionally slow, memory-hard or adaptive password-hashing function (e.g., Argon2id, bcrypt, PBKDF2) — never plaintext, fast raw digests, or reversible encryption.
 - **Use cryptographic randomness for security values**: generate session tokens, reset codes, nonces, salts, and unpredictable identifiers exclusively with the platform's cryptographically secure random number generator — never general-purpose pseudo-random generators whose sequences can be predicted.
-
-## Safe Deserialization
-
-- **Forbid type-polymorphic deserialization of untrusted data**: never pass untrusted or external payloads into deserializers that embed type metadata to instantiate arbitrary types during parsing; deserialize strictly into explicit, statically known data shapes (`standard.md` External Input).
 
 ## Authorization on Every Access
 
