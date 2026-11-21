@@ -38,8 +38,8 @@ a rule makes one answer the rules' own. Never resolve an item the user has not a
 
 1. **Load the rules.** Read the root `AGENTS.md` and every file under `docs/rules/`.
    Confirmation: `docs/rules/specs.md` exists. If it does not, STOP: the repository's
-   rules predate `specs.md`, and the user brings `docs/rules/` onto a dev-standards tag
-   that has it first (for a .NET repository, `retrofit-dotnet-app` does this).
+   rules predate `specs.md`, and the user runs `sync-rules` to bring `docs/rules/` onto a
+   dev-standards tag that has it first.
 2. **Choose the application.** Take the applications from the `AGENTS.md` Applications
    table. With more than one, ask which to specify. Confirmation: the application's
    identifier `<App>`, its projects or content, and its specification path are known.
@@ -95,7 +95,7 @@ defer it.
 ## Phase 5: Write
 
 1. **Requirements.** State every specified answer as a requirement of the specification,
-   with an ID, as `documentation.md` (Requirement text, Requirement IDs) directs. Remove
+   with an ID, as `documentation.md` (Writing, Requirement IDs) directs. Remove
    or move every existing statement the user's Round 2 decisions changed.
 2. **Ledgers.** Write each open unconfirmed answer and each deferred violation as a ledger
    entry, at the paths and with the content `specs.md` (Ledgers) gives, with the front

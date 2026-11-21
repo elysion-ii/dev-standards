@@ -2,6 +2,7 @@
 
 ## Build
 
+{{IF_CLIENT_PACKAGING}}
 Interactive menu:
 
 ```
@@ -10,10 +11,12 @@ build\Menu.bat
 
 Or directly:
 
+{{END_IF}}
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\Build.ps1
 ```
 
+{{IF_CLIENT_PACKAGING}}
 Output: `build/{{APP_NAME}}/{{APP_NAME}}.exe`
 
 ## Installer
@@ -25,6 +28,10 @@ powershell -ExecutionPolicy Bypass -File build\Installer.ps1
 ```
 
 Output: `build/Installer/{{APP_NAME}}-Setup-<version>.exe` (version comes from `<Version>` in `Directory.Build.props`)
+{{END_IF}}
+{{IF_NO_CLIENT_PACKAGING}}
+Output: `build/{{APP_NAME}}/` (publish output for the runtime named by `-Runtime`, default `win-x64`)
+{{END_IF}}
 
 ## Project Layout
 

@@ -14,7 +14,7 @@ internal static partial class Program
     private static int Main()
     {
         // The name and version in the window caption, in the repository's one notation (docs/rules/standard.md, Version Display)
-        var version = Assembly.GetExecutingAssembly()
+        string version = Assembly.GetExecutingAssembly()
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
             .InformationalVersion
             ?? throw new InvalidOperationException("Version attribute missing - the displayed version comes from <Version> in Directory.Build.props");

@@ -1,8 +1,10 @@
 # <PROJECT NAME> — Agent Instructions
 
 <!-- Generic boilerplate for any repository (stack-agnostic). Replace every
-     <PLACEHOLDER>, fill in the tables, and delete these comments. For .NET
-     applications, use dist/templates/dotnet/ instead. -->
+     <PLACEHOLDER>, fill in the tables, create `docs/rules/<APP>.md`,
+     `docs/specs/<APP>.md`, and `docs/references/code-map.md` (this starter file does
+     not generate them), and delete these comments. For .NET applications, use
+     dist/templates/dotnet/ instead. -->
 
 <ONE-PARAGRAPH PROJECT OVERVIEW: what this repository is and what it produces.>
 
@@ -29,14 +31,14 @@ Rule bodies live under `docs/rules/`. Edit this file, never `CLAUDE.md`.
 Rules in `docs/rules/` are organized into three tiers:
 - **Application rules**: `docs/rules/<APP>.md` (repository- and application-specific rules)
 - **Stack rules**: Technology-stack rules (`docs/rules/<STACK>.md`; <CHOOSE: managed by dev-standards | repository-authored>)
-- **Core rules**: Shared engineering standards (`standard.md`, `documentation.md`, `git.md`, `specs.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`; managed by dev-standards)
+- **Shared rules**: Universal engineering standards (`standard.md`, `documentation.md`, `specs.md`, `testing.md`) plus any applicable conditional shared rule files distributed under `docs/rules/` (managed by dev-standards)
 
-**Precedence on conflict**: Application rules > Stack rules > Core rules.
+**Precedence on conflict**: Application rules > Stack rules > Shared rules.
 
-- **Rule Scope**: which rule files and specification every change complies with, and when `cli.md` and `db.md` apply, is stated in `docs/rules/standard.md` (How to use these rules).
-- **Loading Rules**: Read this file and every file under `docs/rules/` before writing code (including when transitioning from a plan to implementation).
+- **Rule Scope**: which rule files and specification every change complies with is stated in `docs/rules/standard.md` (How to Use These Rules).
+- **Loading Rules**: Read this file, every applicable rule file under `docs/rules/`, the touched application's specification (`docs/specs/<APP>.md`), and `docs/references/code-map.md` before writing code (including when transitioning from a plan to implementation).
 - **Completion Gate (AUDIT)**: Before reporting an implementation task as complete, pass the AUDIT gate in `docs/rules/standard.md`.
-- **File Ownership**: rules managed by dev-standards (core rules, and distributed stack rules) are copies of its pinned tag; repository-authored rules (application rules, and local stack rules) are maintained in this repository.
+- **File Ownership**: rules managed by dev-standards (shared rules and distributed stack rules) are copies of its pinned tag; repository-authored rules (application rules, and local stack rules) are maintained in this repository.
 
 ## Commands
 
@@ -48,13 +50,9 @@ Rules in `docs/rules/` are organized into three tiers:
 | Test | `<TEST COMMAND>` |
 | End-to-end test | `<END-TO-END TEST COMMAND>` (none until the first end-to-end test; `docs/rules/testing.md`, Test Layers) |
 
-## Shared Knowledge
+## Code Map
 
-Where each piece of shared knowledge lives (`docs/rules/standard.md` One Home per Piece of Knowledge). <ONE ROW PER HOME; KEEP THE "none yet" ROW UNTIL THE FIRST ONE IS WRITTEN.>
-
-| Knowledge | Home |
-|---|---|
-| none yet | — |
+Feature folders and shared mechanism homes are cataloged in `docs/references/code-map.md` (see `docs/rules/documentation.md`, Code Map, and `docs/rules/standard.md`, One Home per Piece of Knowledge).
 
 ## Directory Layout
 
@@ -68,5 +66,6 @@ Before creating, changing, moving, renaming, archiving, or deleting any document
 when unsure where one belongs — read `docs/rules/documentation.md` (also distributed
 in this repository) first; it defines placement, naming, and front matter.
 
-- `docs/rules/` — rule bodies: `standard.md`, `documentation.md`, `git.md`, `specs.md`, `testing.md`, `cli.md`, `db.md`, stack rules (managed by dev-standards or repository-authored), and the application rules files
+- `docs/rules/` — rule bodies: universal shared rules (`standard.md`, `documentation.md`, `specs.md`, `testing.md`), applicable conditional shared rules and stack rules, and the application rules files
 - `docs/specs/` — application specifications
+- `docs/references/code-map.md` — feature folders and shared mechanism homes

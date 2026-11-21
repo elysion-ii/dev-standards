@@ -1,10 +1,9 @@
 # dev-standards — Agent Instructions
 
 Shared engineering standards and project templates, distributed into consuming
-repositories by scaffolding/retrofit tooling pinned to a tag of this repository, plus
-the published skills that implement that tooling for .NET and that write an existing
-application's specification from its implementation. What
-the repository provides and its consumption contract are specified in
+repositories by rule-synchronization, scaffolding, and retrofit tooling pinned to a tag
+of this repository, plus the published skills that implement those procedures. What the
+repository provides and its consumption contract are specified in
 `docs/specs/dev-standards.md`.
 
 `CLAUDE.md` at the repository root is a one-line import of this file. This file is the
@@ -15,16 +14,17 @@ repository's router — facts and reading instructions; it holds no rule text.
 | Path | Content |
 |------|---------|
 | `dist/` | **Everything distributed** — nothing outside it is copied into consuming repositories |
-| `dist/rules/` | The product: rule bodies (`standard.md`, `documentation.md`, `git.md`, `specs.md`, `testing.md`, `cli.md`, `db.md`, `dotnet.md`, ...) distributed **verbatim** into consuming repositories at `docs/rules/` |
-| `dist/templates/` | Scaffold templates with literal `{{TOKEN}}` placeholders |
-| `dist/templates/dotnet/mapping.md` | The .NET scaffold mapping: template → generated path, retrofit classes, mechanism markers — the single source both scaffolding skills (`init-dotnet-app`, `retrofit-dotnet-app`) read |
+| `dist/rules/` | The product: 4 universal shared rules (`standard.md`, `documentation.md`, `specs.md`, `testing.md`), 10 conditional shared rules (`cli.md`, `client.md`, `cloud.md`, `configuration.md`, `db.md`, `file-exchange.md`, `remote-calls.md`, `security.md`, `values.md`, `web-api.md`), and stack rules (`dotnet.md`, `dotnet-client.md`), distributed selectively and **verbatim** into consuming repositories at `docs/rules/` |
+| `dist/templates/` | Scaffold templates with literal `{{TOKEN}}` placeholders and shared harness/router templates |
+| `dist/templates/shared/rules-mapping.md` | The shared rules mapping: catalogs every distributed rule file, its applicability (`universal` / `conditional` / `stack`), and its `Mapping format` number — the single source read by `sync-rules` and scaffolding skills |
+| `dist/templates/dotnet/mapping.md` | The .NET scaffold mapping: template → generated path, app-type rule defaults, retrofit classes, mechanism markers — the single source read by `init-dotnet-app` and `retrofit-dotnet-app` |
 | `dist/tools/` | Opt-in tools, one directory each with its `README.md`, copied verbatim into a consuming repository only when it adopts the tool |
-| `skills/` | Published skills (`init-dotnet-app`, `retrofit-dotnet-app`, `specify-app`), installed by users in their own harness, never copied into consuming repositories |
+| `skills/` | Published skills (`sync-rules`, `init-dotnet-app`, `retrofit-dotnet-app`, `audit-repo`, `specify-app`), installed by users in their own harness, never copied into consuming repositories |
 | `docs/` | Documents about this repository itself (rules for editing it, ADRs, guides) |
 
 ## Applications
 
-This repository ships documents and templates, not a runnable application — the
+This repository ships documents, templates, and skills, not a runnable application — the
 repository content itself takes the application slot:
 
 | Application | Content | Rules | Specification |
@@ -35,10 +35,10 @@ repository content itself takes the application slot:
 
 Rules for this repository follow the three-tier model:
 - **Application rules**: `docs/rules/dev-standards.md` (repository-specific rules and overrides)
-- **Core rules**: `dist/rules/` (this repository's own product doubles as its core standards: `standard.md`, `documentation.md`, `git.md`, `specs.md`, `testing.md`, and the conditional core files `cli.md` and `db.md`)
+- **Shared rules**: `dist/rules/` (this repository's own universal shared rules double as its standards: `standard.md`, `documentation.md`, `specs.md`, `testing.md`)
 - **Specifications**: `docs/specs/dev-standards.md` (contract) and `docs/specs/template-requirements.md` (template requirements)
 
-**Precedence on conflict**: Application rules (`docs/rules/dev-standards.md`) > Core rules.
+**Precedence on conflict**: Application rules (`docs/rules/dev-standards.md`) > Shared rules.
 
 - **Spec-First**: stated for this repository in `docs/rules/dev-standards.md` (Changing this repository).
 - **Completion Gate (AUDIT)**: pass the AUDIT gate at the end of `dist/rules/standard.md`. This repository has no build or test gates, so AUDIT step 4 has no command to run.

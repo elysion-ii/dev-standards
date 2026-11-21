@@ -16,7 +16,7 @@ All async methods that perform potentially long I/O (DB, file, network, external
 
 The token parameter is cheap to carry (a defaulted parameter, one argument per await), while retrofitting it later costs a cross-layer signature change per helper. Plumbing it up front means connecting a real cancellation source becomes an entry-point-only change: a GUI adds a cancel button backed by a `CancellationTokenSource`; a console app hooks `Console.CancelKeyPress` (or uses the Generic Host stopping token) so Ctrl+C becomes graceful cooperative cancellation instead of an abrupt process kill. Either way, the token just flows into calls that are already tokened.
 
-Operations that must run to completion are deliberately excluded and must NOT take a token: logging, transaction rollback, best-effort cleanup, and post-commit finalization. Cancelling these would lose diagnostic records, mask original exceptions, or leave files inconsistent with committed data. The exact list lives in `docs/rules/dotnet.md`, CANCEL.
+Operations that must run to completion are deliberately excluded and must NOT take a token: logging, transaction rollback, best-effort cleanup, and post-commit finalization. Cancelling these would lose diagnostic records, mask original exceptions, or leave files inconsistent with committed data. See `docs/rules/standard.md` (Synchronous vs Asynchronous) for the exclusion list and `docs/rules/dotnet.md` (CANCEL) for fixed-signature exceptions.
 
 ## Alternatives Considered
 
@@ -25,7 +25,7 @@ Operations that must run to completion are deliberately excluded and must NOT ta
 
 ## Consequences
 
-- Every async I/O method signature carries the `CancellationToken ct = default` boilerplate — one extra parameter, one extra argument per await, accepted as the standing cost.
+- Every async I/O method signature carries a defaulted `CancellationToken` parameter (`= default`) — one extra parameter, one extra argument per await, accepted as the standing cost.
 - In exchange, connecting a real cancellation source (a cancel button, Ctrl+C) is an entry-point-only change; the multi-layer signature retrofit never happens.
 
 ## Applicability

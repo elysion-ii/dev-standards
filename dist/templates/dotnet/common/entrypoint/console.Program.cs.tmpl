@@ -9,8 +9,8 @@ internal static class Program
 
     private static int Main(string[] args)
     {
-        // --version/-V is mandatory; --help/-h is seeded alongside it (docs/rules/cli.md, RESERVED).
-        // "--" ends option parsing: everything after it is arguments (docs/rules/cli.md, OPTIONS)
+        // --version/-V is mandatory; --help/-h is seeded alongside it (docs/rules/cli.md, Reserved and Conventional Options).
+        // "--" ends option parsing: everything after it is arguments (docs/rules/cli.md, Option Form)
         if (args.Length > 0 && args[0].StartsWith('-') && args[0] != "--")
         {
             switch (args[0])

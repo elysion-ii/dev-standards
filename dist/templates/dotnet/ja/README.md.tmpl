@@ -2,6 +2,7 @@
 
 ## ビルド
 
+{{IF_CLIENT_PACKAGING}}
 対話式メニュー:
 
 ```
@@ -10,10 +11,12 @@ build\Menu.bat
 
 または直接:
 
+{{END_IF}}
 ```powershell
 powershell -ExecutionPolicy Bypass -File build\Build.ps1
 ```
 
+{{IF_CLIENT_PACKAGING}}
 出力: `build/{{APP_NAME}}/{{APP_NAME}}.exe`
 
 ## インストーラ作成
@@ -25,6 +28,10 @@ powershell -ExecutionPolicy Bypass -File build\Installer.ps1
 ```
 
 出力: `build/Installer/{{APP_NAME}}-Setup-<バージョン>.exe`(バージョンは `Directory.Build.props` の `<Version>`)
+{{END_IF}}
+{{IF_NO_CLIENT_PACKAGING}}
+出力: `build/{{APP_NAME}}/`(`-Runtime` で指定したランタイム向けの publish 出力。既定は `win-x64`)
+{{END_IF}}
 
 ## プロジェクト構成
 

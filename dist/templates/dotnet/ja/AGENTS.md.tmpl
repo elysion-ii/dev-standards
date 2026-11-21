@@ -13,7 +13,12 @@
 | 言語 | C# |
 | ランタイム | {{TFM}} |
 | UI | {{APP_UI_DESCRIPTION}} |
-| 配布形式 | 自己完結型 publish + Inno Setup インストーラ。配布されるファイル構成はネイティブ依存によって決まる(`docs/rules/dotnet.md` の NATIVEDEP) |
+{{IF_CLIENT_PACKAGING}}
+| 配布形式 | 自己完結型サイドバイサイド publish + Inno Setup インストーラ(`docs/rules/dotnet-client.md` の NATIVEDEP) |
+{{END_IF}}
+{{IF_NO_CLIENT_PACKAGING}}
+| 配布形式 | 自己完結型サイドバイサイド publish(インストーラなし) |
+{{END_IF}}
 
 ## アプリケーション
 
@@ -25,13 +30,13 @@
 
 `docs/rules/` の規則は3層で構成される。
 - **アプリルール**: `docs/rules/{{APP_NAME}}.md`(本リポジトリ固有の規則および上書き)
-- **スタックルール**: `docs/rules/dotnet.md`(.NET スタック規則、dev-standards 管理)
-- **coreルール**: 共有エンジニアリング標準(`standard.md`・`documentation.md`・`git.md`・`specs.md`・`testing.md`、および条件付きコアファイルの `cli.md`・`db.md`、dev-standards 管理)
+- **スタックルール**: `docs/rules/dotnet.md`、および `docs/rules/` にある .NET の分割ルールファイルすべて(例: `dotnet-client.md`)(dev-standards 管理)
+- **共有ルール**: 普遍的な共有標準(`docs/rules/standard.md`、`docs/rules/documentation.md`、`docs/rules/specs.md`、`docs/rules/testing.md`)、および `docs/rules/` にある条件付き共有ルールファイルすべて(dev-standards 管理)
 
-**競合時の優先順位**: アプリルール > スタックルール > coreルール
+**競合時の優先順位**: アプリルール > スタックルール > 共有ルール
 
-- **規則の適用範囲**: 変更が従う規則ファイルと仕様、および `cli.md`・`db.md` が適用される条件は、`docs/rules/standard.md` の How to use these rules 節に記載されている。{{APP_NAME}} の仕様は `docs/specs/{{APP_NAME}}.md` である
-- **規則の読み込み**: コードを書き始める前(計画から実装へ移行する時点を含む)に、本ファイルと `docs/rules/` 配下のすべてのファイルを読むこと
+- **規則の適用範囲**: 変更が従う規則ファイルと仕様、および未配置の条件付き共有ルール分野を報告する条件は、`docs/rules/standard.md` の How to Use These Rules 節に記載されている。{{APP_NAME}} の仕様は `docs/specs/{{APP_NAME}}.md` である
+- **規則の読み込み**: コードを書き始める前(計画から実装へ移行する時点を含む)に、本ファイル、`docs/rules/` 配下の該当するすべてのファイル、`docs/specs/{{APP_NAME}}.md`、および `docs/references/code-map.md` を読むこと
 - **完了ゲート(AUDIT)**: 実装タスクの完了を報告する前に、`docs/rules/standard.md` 末尾のAUDITゲートを通過すること
 - **ファイルの編集権限**: dev-standards が管理する `docs/rules/` 配下の規則ファイルは、固定したタグからの複製である。リポジトリ・アプリ固有の規則は `docs/rules/{{APP_NAME}}.md` で管理している
 
@@ -44,16 +49,17 @@
 | ビルド | `dotnet build {{APP_NAME}}/{{APP_NAME}}.csproj -c Release` |
 | テスト | `dotnet test {{APP_NAME}}.Tests/{{APP_NAME}}.Tests.csproj` |
 | E2E テスト | まだ無い(`docs/rules/testing.md` の Test Layers) |
-| フルビルド(フォーマットゲート→テスト→publish) | `build/Menu.bat`(対話式)または `powershell -ExecutionPolicy Bypass -File build/Build.ps1` |
+{{IF_CLIENT_PACKAGING}}
+| フルビルド(ゲート→publish) | `build/Menu.bat`(対話式)または `powershell -ExecutionPolicy Bypass -File build/Build.ps1` |
 | インストーラ | `powershell -ExecutionPolicy Bypass -File build/Installer.ps1` |
+{{END_IF}}
+{{IF_NO_CLIENT_PACKAGING}}
+| フルビルド(ゲート→publish) | `powershell -ExecutionPolicy Bypass -File build/Build.ps1` |
+{{END_IF}}
 
-## 共有知識 (Shared Knowledge)
+## コードマップ (Code Map)
 
-{{APP_NAME}} の共有知識ごとの置き場所(`docs/rules/standard.md` の One Home per Piece of Knowledge)。
-
-| 知識 | 置き場所 |
-|---|---|
-| まだ無い | — |
+{{APP_NAME}} の機能フォルダと共有機構の置き場所一覧は `docs/references/code-map.md` に記録する(`docs/rules/documentation.md` の Code Map および `docs/rules/standard.md` の One Home per Piece of Knowledge)。
 
 ## ディレクトリ構成
 
@@ -67,11 +73,20 @@ xUnit テストプロジェクト。
 
 ### `build/`
 
+{{IF_CLIENT_PACKAGING}}
 ビルドスクリプトとインストーラ設定。
 
-- `Build.ps1` は設定ファイル検査・フォーマット検証(`dotnet format --verify-no-changes`)・テストを実行し、3つすべてを通過した場合のみ {{APP_NAME}} を `build/{{APP_NAME}}/` に publish する
-- `Installer.ps1` は Inno Setup (ISCC.exe) を `Setup_{{APP_NAME}}.iss` に対して実行する。`build/{{APP_NAME}}/{{APP_NAME}}.exe` の存在が前提。実行前に `Directory.Build.props` の `<Version>` を読み取って `/DMyAppVersion` で注入し、`CHANGELOG.md` が存在する場合は現行バージョンの見出しがあることを検証する(なければ失敗)。バージョンとCHANGELOGの規則は `docs/rules/dotnet.md` の VERSION
-- 出力ディレクトリ: `build/{{APP_NAME}}/`(publish 出力)と `build/Installer/`(インストーラパッケージ)。いずれも git 管理外(規則: `docs/rules/dotnet.md` の OUTPUT)
+- `Build.ps1` は設定ファイル検査・フォーマット検証(`dotnet format --verify-no-changes`)・要求網羅検査・テストを実行し、すべてを通過した場合のみ {{APP_NAME}} を `build/{{APP_NAME}}/` に publish する
+- `Menu.bat` は `Build.ps1` と `Installer.ps1` を選んで実行する対話式メニュー
+- `Installer.ps1` は Inno Setup (ISCC.exe) を `Setup_{{APP_NAME}}.iss` に対して実行する。`build/{{APP_NAME}}/{{APP_NAME}}.exe` の存在が前提。実行前に `Directory.Build.props` の `<Version>`(`docs/rules/dotnet.md` の VERSION)を読み取って `/DMyAppVersion` で注入し、`CHANGELOG.md` が存在する場合はリリースパッケージ作成ゲートとして現行バージョンの見出しがあることを検証する(なければ失敗)
+- 出力ディレクトリ: `build/{{APP_NAME}}/`(publish 出力)と `build/Installer/`(インストーラパッケージ)。いずれも git 管理外(`docs/rules/dotnet.md` の OUTPUT)
+{{END_IF}}
+{{IF_NO_CLIENT_PACKAGING}}
+ビルドスクリプト。
+
+- `Build.ps1` は設定ファイル検査・フォーマット検証(`dotnet format --verify-no-changes`)・要求網羅検査・テストを実行し、すべてを通過した場合のみ {{APP_NAME}} を `-Runtime` で指定したランタイム(既定は `win-x64`)向けに `build/{{APP_NAME}}/` へ publish する
+- 出力ディレクトリ: `build/{{APP_NAME}}/`(publish 出力)。git 管理外(`docs/rules/dotnet.md` の OUTPUT)
+{{END_IF}}
 
 ### `docs/`
 
@@ -79,8 +94,8 @@ xUnit テストプロジェクト。
 `guides/`, `references/`, `investigations/`, `notes/`, `plans/`, `inbox/`, `archive/`)に配置する。
 ドキュメントの作成・変更・移動・改名・アーカイブまたは削除の前(配置に迷ったときも)には、必ず `docs/rules/documentation.md`(本リポジトリに配布済み)を読むこと。配置・命名・front matter はそこで定義されている。
 
-- `docs/rules/` — 規則本文: `standard.md`・`documentation.md`・`git.md`・`specs.md`・`testing.md`・`cli.md`・`db.md` + `dotnet.md`(dev-standards 管理)と `{{APP_NAME}}.md`(アプリ固有規則)
+- `docs/rules/` — 規則本文: 普遍的な共有ルール(`docs/rules/standard.md`、`docs/rules/documentation.md`、`docs/rules/specs.md`、`docs/rules/testing.md`)、`docs/rules/dotnet.md`、本リポジトリに配布された条件付き共有ルールと .NET の分割ルールのファイル(いずれも dev-standards 管理)、および `docs/rules/{{APP_NAME}}.md`(アプリ固有規則)
 - `docs/specs/{{APP_NAME}}.md` — {{APP_NAME}} の仕様書: 何をするか
+- `docs/references/code-map.md` — 機能フォルダと共有機構の置き場所
 - `docs/adr/` — ADR (Architecture Decision Record)。退役した ADR は `docs/adr/archive/` へ移動する
-- `docs/plans/` と `docs/archive/plans/` — 計画書の作業領域。git 管理外(`docs/rules/documentation.md` の `docs/plans/` を参照)
-
+- `docs/plans/` と `docs/archive/plans/` — 計画書の作業領域。git 管理外(`docs/rules/documentation.md` の Category Notes — `docs/plans/`)

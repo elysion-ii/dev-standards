@@ -1,5 +1,6 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0006-rebuild-rules-and-selective-distribution
 ---
 
 # Grow the Rule Set by Applicability and Samples

@@ -1,76 +1,58 @@
 ---
 name: retrofit-dotnet-app
-description: Converge an existing .NET repository onto the current dev-standards tag. Clones the tag, derives the target state from the scaffold mapping in that tag (dist/templates/dotnet/mapping.md, the same mapping init-dotnet-app generates from), diffs it against the working tree, and closes the gap interactively — missing scaffolding is added, stale dev-standards-managed rules are updated, template-carried mechanisms (format gate, static analysis, version single-sourcing, hooks) are ported into existing files, and anything that cannot be attributed to either the template or the project is resolved by asking, in batched question rounds like init-dotnet-app. Risky gates are staged (measure → report → enable); existing files are never overwritten without approval. Finally the existing code, tests, and documents are audited against the tag's rules, and the violations the user approves are fixed; when the specification does not meet the tag's specs.md, the report names the specify-app skill as the next step. Run from the project's repo root; network required. Use when the user says "retrofit this project", "apply the new gates to this project", or "bring this old project up to the current template".
+description: Converge an existing .NET repository's scaffolding, build/installer mechanisms, AGENTS.md router (with concrete distributed rule paths), code map, and staged build gates onto the current dev-standards tag. Clones the tag, derives the target state from `dist/templates/dotnet/mapping.md` (applying Client packaging mechanisms only to packaged client apps), diffs mechanisms against the working tree, ports missing gates cleanly, and migrates shared knowledge to `docs/references/code-map.md`. Delegates `docs/rules/` synchronization to `sync-rules` and whole-repo code auditing to `audit-repo`, and names `specify-app` when the specification does not meet `specs.md`. Run from the project's repo root; network required. Use when the user says "retrofit this project", "apply the new gates to this project", or "bring this old project up to the current template".
 allowed-tools: AskUserQuestion, Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # retrofit-dotnet-app
 
-One goal: after the run, the repository contains everything `init-dotnet-app` at the tag
-below would have generated for this project — plus the project's own code and documents,
-and **nothing unexplained in between**. The whole procedure is a diff between that target
-state and the working tree:
+One goal: converge an existing .NET repository's scaffolding, mechanisms, documentation layout, router, and build gates onto the newest `dev-standards` tag (`dist/templates/dotnet/mapping.md`).
 
-- the target has it, the project lacks it → **add**
-- the project has it in an older distributed form → **update**
-- the project has it with the template's mechanism missing → **port the mechanism**
-- the project has something the target does not generate → it is either the project's own
-  work (**keep**) or leftover scaffolding from an older template era (**retire**) — and
-  when the attribution is unclear, **ask**. Never guess, and never rely on a memorized
-  list of historical artifacts: the user supplies that knowledge through the question
-  rounds.
+This skill owns **.NET templates, build/installer scripts (when client packaging applies), mechanism ports, router/`code-map.md` migration, documentation layout, and staged build gates**. It does **not** manage distributed files under `docs/rules/` (`sync-rules`) or run whole-repository rule auditing (`audit-repo`). Recommended upgrade sequence for an existing `.NET` repository:
 
-Converged scaffolding is half of the goal. The rules the run brings in bind the project's
-existing code as well, so the run ends with an audit of the whole repository against
-them (Phase 7): every violation is either fixed with the user's approval or reported as
-deferred, and none goes unmentioned.
+1. `/sync-rules` (synchronize `docs/rules/`, add newly applicable conditional rules, retire obsolete managed rules)
+2. `/retrofit-dotnet-app` (this skill — converge `.NET` mechanisms, router, `code-map.md`, docs tree, and staged gates)
+3. `/audit-repo` (run the whole-repository `AUDIT` gate against the converged rules and gates)
+4. `/specify-app` (when `docs/specs/<APP>.md` does not yet meet `docs/rules/specs.md`)
 
 ```
-STANDARDS_REPO = https://github.com/elysion-ii/dev-standards.git
-STANDARDS_TAG  = the newest semver tag on the remote, resolved in Phase 2
-MAPPING        = <STD>/dist/templates/dotnet/mapping.md
-MAPPING_FORMAT = 1   (the mapping format this copy of the skill is written for)
+STANDARDS_REPO       = https://github.com/elysion-ii/dev-standards.git
+STANDARDS_TAG        = the newest semver tag on the remote, resolved in Phase 2
+MAPPING              = <STD>/dist/templates/dotnet/mapping.md
+MAPPING_FORMAT       = 2   (the .NET mapping format this copy of the skill is written for)
+RULES_MAPPING        = <STD>/dist/templates/shared/rules-mapping.md
+RULES_MAPPING_FORMAT = 1   (the shared rules mapping format used for the prerequisite check)
 ```
 
-This skill carries no list of target paths and no mechanism markers. Both are read from
-`MAPPING` in the clone — the same file `init-dotnet-app` generates from — so the target
-state always matches the templates of the tag being applied.
+This skill carries no list of target paths and no mechanism markers. Both are read from `MAPPING` in the clone, so the target state always matches the templates of the tag being applied.
 
-The skill is idempotent: every action checks whether it is already applied and skips if
-so, so it can be re-run after a partial application.
+The skill is idempotent: every action checks whether it is already applied and skips if so, so it can be re-run after a partial application.
 
-**Never touch `core.hooksPath`** — globally or per-repository. The user's own hook setup
-may live there; a repository-local `core.hooksPath` (husky, lefthook, etc.) silently
-disables it. Enforcement belongs in server-side settings, analyzers, and build gates.
+**Never touch `core.hooksPath`** — globally or per-repository. The user's own hook setup may live there; a repository-local `core.hooksPath` (husky, lefthook, etc.) silently disables it.
 
-**No commits.** Steps may stage changes as a side effect (`git mv`, `git rm`); the run
-ends with the index normalized and a proposed commit split — the user decides.
+**No commits.** Steps may stage changes as a side effect (`git mv`, `git rm`); the run ends with the index normalized and a proposed commit split — the user decides.
 
 ### Question round conventions
 
-Like init-dotnet-app: batch questions with `AskUserQuestion`, up to 4 per call, repeating
-calls until every open item is resolved. Mark a recommended option when one exists. Ask
-only what is genuinely undecidable from the repository and the clone — a round with
-nothing to ask is skipped. Never silently resolve an item that was marked for asking.
+Batch questions with `AskUserQuestion`, up to 4 per call, repeating calls until every open item is resolved. Mark a recommended option when one exists. Ask only what is genuinely undecidable from the repository and the clone — a round with nothing to ask is skipped. Never silently resolve an item that was marked for asking.
 
 ---
 
 ## Phase 1: Context
 
-1. **Identify the app.** Find `*.slnx` (or `*.sln`) in the repo root; derive `<APP>` from
-   its name. If none exists, stop and report. Confirmation: `<APP>` names an existing
-   csproj directory.
-2. **Detect the rules language** (`{lang}` ∈ `en` / `ja`) from the root `AGENTS.md` if
-   present, otherwise from existing rule files. Confirmation: a language was chosen; if
-   genuinely undetectable, add it to Question Round 1.
-3. **Check the working tree.** Run `git status`. If dirty, add "proceed anyway?" to
-   Question Round 1 — retrofit changes should not mix with unrelated edits. An untracked
-   `./.dev-standards` is not project dirt: it is a clone left by an aborted earlier run,
-   and Phase 2 removes it.
-4. **Question Round 1** (only if any of the above raised an item): app identifier,
-   language, dirty tree.
+1. **Identify the app and packaging scope.**
+   - Find `*.slnx` (or `*.sln`) in the repo root; derive `<APP>` from its name. If none exists, stop and report. Confirmation: `<APP>` names an existing csproj directory.
+   - Determine **`clientPackaging`** (`true` / `false`):
+     - `true` if `docs/rules/client.md` or `docs/rules/dotnet-client.md` is present, or `build/Setup_*.iss` / `build/Installer.ps1` exists, or the `.csproj` builds a WPF, WinUI 3, or Win32 GUI application.
+     - `false` if the project builds an ASP.NET/Web API server application (`Microsoft.NET.Sdk.Web`) or clearly non-packaged CLI/worker without `client.md`/`Setup_*.iss`.
+     - If ambiguous (e.g., Windows-targeting Console tool with no installer files yet), add `clientPackaging` confirmation to Question Round 1.
+2. **Detect the rules language** (`{lang}` ∈ `en` / `ja`) from the root `AGENTS.md` if present, otherwise from existing rule files. Confirmation: a language was chosen; if genuinely undetectable, add it to Question Round 1.
+3. **Check the working tree.** Run `git status`. If dirty, add "proceed anyway?" to Question Round 1 — retrofit changes should not mix with unrelated edits. An untracked `./.dev-standards` is not project dirt: it is a clone left by an aborted earlier run, and Phase 2 removes it.
+4. **Question Round 1** (only if any of the above raised an item): app identifier, `clientPackaging`, language, dirty tree.
 
-## Phase 2: Target state
+---
+
+## Phase 2: Target state and rule-sync check
 
 1. **Resolve `<STANDARDS_TAG>`** — the newest `v*` tag on the remote, in semver order:
 
@@ -78,264 +60,108 @@ nothing to ask is skipped. Never silently resolve an item that was marked for as
    git ls-remote --tags --refs --sort=-v:refname <STANDARDS_REPO> 'v*' | head -1 | sed 's#.*refs/tags/##'
    ```
 
-   Confirmation: the command prints one tag name. If it prints nothing, STOP and report —
-   a tag taken from memory converges the project onto rules that are silently out of
-   date, which reads as success and is not.
+   Confirmation: prints one tag name. If it prints nothing, STOP and report — never converge from memory.
 
-2. **Clone that tag** into **`./.dev-standards`** — inside the invocation directory, never
-   anywhere else. The invocation directory is where the harness was started and where this
-   skill runs (= the project's repo root), so the path stays relative to it and every
-   worker and every harness puts the clone in the same place. Full clone — tag history is
-   used in Phase 3 to recognize older distributed files:
+2. **Clone that tag** into **`./.dev-standards`** inside the invocation directory (= repo root):
 
    ```bash
-   test -e .dev-standards && rm -rf .dev-standards        # leftover from an aborted run
-   git clone --branch <STANDARDS_TAG> <STANDARDS_REPO> .dev-standards
+   test -e .dev-standards && rm -rf .dev-standards
+   git clone --depth 1 --branch <STANDARDS_TAG> <STANDARDS_REPO> .dev-standards
    ```
 
-   Do **not** clone into a temp directory, the home directory, a sibling directory, or any
-   absolute path — and do not reuse a clone that already sits outside the invocation
-   directory, however current it looks. Confirmation:
-   `git -C .dev-standards rev-parse --show-toplevel` resolves inside the invocation
-   directory.
+   Confirmation: `git -C .dev-standards rev-parse --show-toplevel` resolves inside the invocation directory. `<STD>` refers to `./.dev-standards`. If cloning fails, STOP and report.
 
-   `<STD>` below is this clone (`./.dev-standards`). If the clone fails, STOP and report —
-   never retrofit from memory. The clone is untracked and nothing ignores it, so Phase 8
-   deletes it; if the run stops early, delete it at the abort point. The final report names
-   the resolved tag, so the run states which version it converged onto.
+3. **Check mapping formats.** Read `MAPPING` and `RULES_MAPPING` in full. Confirmation: `MAPPING` states `Mapping format: <MAPPING_FORMAT>` and `RULES_MAPPING` states `Mapping format: <RULES_MAPPING_FORMAT>`. If either is missing or states another number, STOP (deleting `.dev-standards`) and report that this skill requires `.NET` mapping format `<MAPPING_FORMAT>` and rules mapping format `<RULES_MAPPING_FORMAT>`, and must be re-copied from `<STANDARDS_TAG>` (`skills/retrofit-dotnet-app/`). Do not interpret a mapping of another format.
 
-   Read `MAPPING` in full. Confirmation: it exists and states
-   `Mapping format: <MAPPING_FORMAT>`. If it is missing or states another number, STOP
-   (deleting the clone) and report: this copy of the skill was written for mapping format
-   `<MAPPING_FORMAT>`, and the user obtains the skills again from `<STANDARDS_TAG>` (the
-   `skills/` directory of that tag) before re-running. Do not interpret a mapping of
-   another format.
+4. **Check `docs/rules/` synchronization prerequisite.** Compare local `docs/rules/` against `RULES_MAPPING`:
+   - Check whether all **Universal shared rules** and the `.NET` core stack rule from `RULES_MAPPING` exist locally and match `<STD>/<Source>` (and if `clientPackaging = true`, whether `client.md` and `dotnet-client.md` match `<STD>/<Source>`), and whether every other managed rule filename from `RULES_MAPPING` that exists in `docs/rules/` matches `<STD>/<Source>` (note any stale or unrecognized `.md` file in `docs/rules/` outside `docs/rules/<APP>.md`).
+   - If `docs/rules/` is missing required rules, out of date, or holds files outside `RULES_MAPPING` and `<APP>.md`: warn the user and ask via `AskUserQuestion`:
+     - **Stop now and run `/sync-rules` first (Recommended)** — delete `./.dev-standards` (`rm -rf .dev-standards`) and stop cleanly so the user runs `/sync-rules` before returning to `/retrofit-dotnet-app`.
+     - **Proceed with template/gate convergence only** — continue Phase 3–6 against `<STANDARDS_TAG>` and run `/sync-rules` immediately afterwards.
 
-3. **Build the target list.** Instantiate every row of `MAPPING` that names a target
-   (**Always generated**, **Type-specific entry points**, **Optional**, **Distributed
-   rules**) with this project's facts: `<APP>` for `{{APP_NAME}}`, app type and TFM from
-   the existing csproj (selecting `{type}` and the entry-point rows), `{lang}`, and the
-   other placeholders `MAPPING` defines, taken from the project's existing files (add any
-   that is genuinely undetectable to Question Round 2). Confirmation: every file under
-   `<STD>/dist/templates/` and `<STD>/dist/rules/` is either on the target list, listed
-   under **Not generated** in `MAPPING`, or consciously excluded by the scope rule below.
+5. **Build the target list.** Instantiate template rows of `MAPPING`:
+   - **Always generated**
+   - **Client packaging** ONLY when `clientPackaging = true` (omit `Installer.ps1`, `Menu.bat`, `Setup_{{APP_NAME}}.iss` completely when `clientPackaging = false`)
+   - **Type-specific entry points** for the detected app type
+   - **Optional** (README/LICENSE if already present or requested)
+   with this project's facts (`<APP>` for `{{APP_NAME}}`, TFM from existing `.csproj`, `{lang}`, `{ilang}` when `clientPackaging = true`). Confirmation: every file under `<STD>/dist/templates/` (outside `dist/templates/shared/rules-mapping.md`) and `<STD>/dist/tools/` is accounted for by `MAPPING`.
 
-4. **Partition the target list by scope.** Phases 3–6 converge *scaffolding*; the
-   application's substance is never diffed against a template or overwritten from one.
-   Every row of `MAPPING` carries its **Retrofit class**; the class decides the reconcile
-   action:
+6. **Partition the target list by scope.** Every row of `MAPPING` carries its **Retrofit class**:
 
    | Class | Reconcile action |
    |---|---|
-   | managed rule | byte-sync (Phase 3.1) |
-   | mechanism | port (Phase 3.1) |
-   | authored pair | ensure-exists (Phase 5) |
-   | substance | **no template diff, no overwrite** — audited against the rules in Phase 7, changed only where the user approves |
+   | mechanism | port or add (Phase 3.1) |
+   | authored | ensure-exists / migrate in Phase 5 (`app-rules`, `spec`, `code-map.md`) |
+   | substance | **no template diff, no overwrite** (`audit-repo` audits code once convergence completes) |
+
+---
 
 ## Phase 3: Diff and classify
 
-### 3.1 Forward pass — every in-scope target gets exactly one state
+### 3.1 Forward pass — every in-scope template target gets exactly one state
 
-- **missing** — the path does not exist → plan: *add* (verbatim for managed rules;
-  token-substituted per init's derived-values rules for templates).
-- **current** — byte-identical to the tag (managed rules), or the mechanism markers
-  all present (mechanisms) → plan: *skip*.
-- **stale** — a managed rules file that differs from the current tag but byte-matches
-  that file in some older tag (`git -C <STD> tag` then compare against
-  `git -C <STD> show <tag>:dist/rules/<file>`) → plan: *update* (overwrite; the tag is
-  the source of truth).
-- **diverged** — differs and matches no tag (managed rules: locally edited), or a
-  mechanism file whose reconciliation is not obvious → plan: *ask* (show the diff in
-  Question Round 2).
+- **missing** — the `mechanism` path does not exist → plan: *add* (token-substituted).
+- **current** — all mechanism markers in `MAPPING` (excluding `(Client packaging only)` rows when `clientPackaging = false`) are present → plan: *skip*.
+- **diverged** — a `mechanism` file is missing one or more markers, or has non-obvious customization → plan: *port mechanism* (when the **Mechanism markers** row gives an unambiguous port) or *ask* (show diff in Question Round 2).
 
-Mechanism markers are the **Mechanism markers** section of `MAPPING`: for each mechanism
-file, a marker that shows the mechanism is already applied, and the port source to apply
-when it is absent — port the template's block into the existing file, preserving
-project-specific content around it, and follow the special rules a row states. The
-`AGENTS.md` reshape and the `CLAUDE.md` rewrite those rows call for happen in Phase 5,
-after rule text is consolidated; `<TreatWarningsAsErrors>` is enabled only by Phase 6.
+Follow the special rules in **Mechanism markers** (`<TreatWarningsAsErrors>` stays off until Phase 6; `BannedApiAnalyzers` / REQCOV / line-ending changes follow their staged/report notes; `AGENTS.md` reshape, `CLAUDE.md` rewrite, and `code-map.md` migration happen in Phase 5).
 
 ### 3.2 Reverse pass — nothing unexplained remains
 
-Scan the territory the template family owns: root-level agent/config files (`CLAUDE.md`
-with a body, `GEMINI.md`, stray `*.md` routers), `.claude/**`, `.codex/**`, `.agents/**`,
-`build/**`, `docs/rules/**`. Anything found there that the target state does not
-generate, and that is not evidently the project's own work, goes on the Question Round 2
-list with options: **retire** (leftover scaffolding — `git rm`), **keep**
-(project-specific), or **migrate content, then retire** (its rule/doc content is merged
-in Phase 5 before removal). Do not decide from memory which artifacts old templates used
-to distribute — that is exactly what the question is for.
+Scan the scaffolding territory: root-level agent/config files (`CLAUDE.md` with a body, `GEMINI.md`, stray `*.md` routers), `.claude/**`, `.codex/**`, `.agents/**`, `build/**`. Anything found there that the selected `MAPPING` scope does not generate, and that is not evidently the project's own work, goes on the Question Round 2 list with options: **retire** (`git rm`), **keep** (project-specific), or **migrate content, then retire**. Leave `docs/rules/**` to `sync-rules` (note any unexpected files there in the report rather than deleting managed rules here).
 
-(The `docs/` tree outside `docs/rules/` is converged in Phase 5 against
-`documentation.md`, not here.)
+(`docs/` outside `docs/rules/` is converged in Phase 5 against `documentation.md`.)
 
 ### 3.3 Present and ask
 
-Present the full reconciliation plan as a table — path / state / planned action — with
-substance listed once as excluded from the template diff (Phase 7 audits it). Then run
-**Question Round 2** for every *ask* item. Do not start Phase 4 while any item is
-unresolved.
+Present the reconciliation plan table (`Path` / `State` / `Planned Action`), noting `clientPackaging` state (`true`/`false`), `substance` targets excluded from template diffing, and `docs/rules/` ownership by `sync-rules`. Run **Question Round 2** for every *ask* item. Do not start Phase 4 while any item is unresolved.
+
+---
 
 ## Phase 4: Converge scaffolding
 
-Execute the approved plan, in this order: adds → updates → mechanism ports → retirements
-(`git rm` / `git rm -r`) → settings merges. Then, if the repository has a GitHub
-`origin`, enforce squash-only merges (skip if already set):
+Execute the approved plan, in this order: adds → mechanism ports → retirements (`git rm` / `git rm -r`) → settings merges.
 
-```bash
-gh repo edit --enable-squash-merge --enable-merge-commit=false --enable-rebase-merge=false
-```
+**Confirmation (completeness check):** re-run Phase 3.1 forward pass. Every in-scope `mechanism` target must now be *current* (with router/code-map items queued cleanly for Phase 5) or covered by an explicit user decision from Round 2.
 
-If there is no remote or the command fails, list the command in the report instead.
-
-**Confirmation (completeness check):** re-run the Phase 3.1 forward pass. Every in-scope
-target must now be *current*, or covered by an explicit user decision from Round 2. A
-target still *missing*/*stale*/*diverged* without a decision means the convergence is
-incomplete — fix it before moving on.
+---
 
 ## Phase 5: Consolidate content
 
-Judgment work — each step reads its governing rule file first, asks when debatable.
+Judgment work — each step reads its governing rule file first (`docs/rules/` if synced, or `<STD>/dist/rules/` for the rules being targeted), asks when debatable.
 
-1. **Rule text → `docs/rules/<APP>.md`.** Generate from `{lang}/app-rules.md.tmpl`
-   (`{{DATE}}` = `date +%F`) if missing, then merge every rule found in legacy stores
-   (`.claude/CLAUDE.md`, `.claude/rules/*.md`, a pre-existing root `CLAUDE.md`/`AGENTS.md`
-   body), classifying each:
-   - covered by the shared rules (same meaning in `<STD>/dist/rules/*.md`) → drop
-   - conflicts with the shared rules (the repository deliberately differs) → carry over
-     as an explicit override (repository wins — say so)
-   - facts/commands, not rules → belongs in `AGENTS.md`, keep the repository's wording
-   - repository-specific rule matching nothing in dev-standards → carry over intact
+1. **Rule text → `docs/rules/<APP>.md`, router, and Code Map (`docs/references/code-map.md`).**
+   - Generate `docs/rules/<APP>.md` from `{lang}/app-rules.md.tmpl` (`{{DATE}}` = `date +%F`) if missing, then merge every rule found in legacy stores (`.claude/CLAUDE.md`, `.claude/rules/*.md`, pre-existing root `CLAUDE.md`/`AGENTS.md` body), classifying each:
+     - covered by the shared/stack rules → drop
+     - conflicts with shared/stack rules (deliberate override) → carry over cleanly
+     - facts/commands → keep in `AGENTS.md`
+     - repository-specific rule → carry over intact
+   - Ensure `docs/references/code-map.md` exists (generate from `{lang}/code-map.md.tmpl` if missing). If an existing `AGENTS.md` has an inline `## Shared Knowledge` (or entry-point) table, judge every row against `standard.md` (One Home per Piece of Knowledge) and `documentation.md` (Code Map): migrate valid feature-folder and shared-mechanism rows into `docs/references/code-map.md`, omit single-type non-mechanism rows, and report duplicated knowledge rather than listing it.
+   - Compose `AGENTS.md` per `{lang}/AGENTS.md.tmpl` with real project values, filled Applications table, `## Code Map` pointing to `docs/references/code-map.md` (no inline table, no rule text), and the template text processed as **Processing** in `MAPPING` defines (conditional blocks by `clientPackaging`, then tokens) — no conditional-block marker or token remains; write `CLAUDE.md` as `@AGENTS.md`; remove emptied legacy stores per Round 2 decisions.
+   - Confirmation: no rule text, no inline code map table, no enumeration of selectively distributed rule files, and no conditional-block marker or token remain in `AGENTS.md`.
 
-   Then finish the Phase 3 router work: compose `AGENTS.md` per `{lang}/AGENTS.md.tmpl`
-   with real project values and a filled Applications table; write `CLAUDE.md` as exactly
-   `@AGENTS.md`; remove the emptied legacy stores per their Round 2 decisions.
-   Confirmation: no rule text exists outside `docs/rules/`.
+2. **Specification.** Ensure `docs/specs/<APP>.md` exists (generate `{lang}/spec.md.tmpl`, filling Purpose/Scope from README/`AGENTS.md`; pair existing spec under another name in Applications table or rename with `git mv` after asking).
+   Judge whether `docs/specs/<APP>.md` meets `specs.md` for every decision of `<APP>` — every applicable question answered by a requirement or recorded in the ledgers (`specs.md`, Questions and Ledgers). If any decision lacks complete answers (including a skeleton), record the negative judgment with a concrete decision/question example and name `/specify-app` in the report.
 
-2. **Specification.** Ensure `docs/specs/<APP>.md` exists: generate the skeleton from
-   `{lang}/spec.md.tmpl`, filling Purpose/Scope from README/`AGENTS.md`; the rest is
-   backfilled incrementally by future changes, never as a retrofit precondition. If a
-   specification already exists under another name, pair it in the Applications table
-   instead (rename to the `<APP>` identifier with `git mv`, after asking).
-   Then judge whether the specification meets `docs/rules/specs.md` for every decision
-   of `<APP>` — every question that applies to every decision answered by a requirement
-   or recorded in the application's ledgers (`specs.md`, Questions and Ledgers). One
-   decision with an applicable question neither answered nor recorded settles that it
-   does not; a skeleton does not. Retrofit does not write the specification from the
-   code itself: when it does not meet `specs.md`, the report names `specify-app` as the
-   next step. Confirmation: the judgment is recorded, with the decision and question
-   that settled a negative one.
+3. **Docs tree → `documentation.md`.** Converge `adr/` → `docs/adr/` (`git mv`), ADR filenames to `NNNN-description.md`, loose `docs/*.md` into role subfolders, plan folders to `docs/plans/` + `docs/archive/plans/` with matching `.gitignore` entries, front matter (`status` + `created`, and ADRs `status` only without `created`), and update path references across `AGENTS.md`, `docs/`, `README.md`, and code comments. Confirmation: every `docs/` document sits in a role folder with valid front matter.
 
-3. **Docs tree → `documentation.md`.** Read the distributed `documentation.md`, then
-   converge: `adr/` → `docs/adr/` (`git mv`; both existing → ask how to merge), ADR
-   filenames to `NNNN-description.md` (creation order via
-   `git log --follow --diff-filter=A`), loose `docs/*.md` into role subfolders per the
-   decision table (ask on debatable classifications and well-known names), plan folders
-   to `docs/plans/` + `docs/archive/plans/` with the matching `.gitignore` entries
-   (untrack in-progress plans with `git rm --cached`; previously committed archived plans
-   stay tracked unless the user says otherwise), front matter added where missing
-   (`status` + `created`; ADRs carry `status` only — remove `created` from ADRs; never
-   overwrite existing values; use `date +%F` as `created`, not reconstructed history).
-   Rewrite path references (`AGENTS.md`, `docs/`, README, source comments) for everything
-   moved. Confirmation: every `docs/` document sits in a role folder and carries front
-   matter.
+4. **Version single-sourcing.** Skip (with report note) when `clientPackaging = false` and the project has neither `build/Installer.ps1` nor `build/Setup_*.iss`. Collect every `<Version>` (`Directory.Build.props`, `.csproj`) and `#define MyAppVersion` (`.iss`). If values disagree, STOP and ask which is correct. Ensure `<Version>` stays solely in `Directory.Build.props`, port Installer/ISS injection guards, check `CHANGELOG.md` gate readiness, and run `build/Installer.ps1` if `build/<APP>/<APP>.exe` exists.
 
-4. **Version single-sourcing.** Skip (with a report note) if the project has neither
-   `build/Installer.ps1` nor `build/Setup_*.iss`. Collect every version definition —
-   `<Version>` in csprojs and `Directory.Build.props`, `#define MyAppVersion` in the
-   `.iss`. If the values disagree, STOP and ask which is correct — the drift this
-   mechanism prevents may already have happened. Then: `<Version>` lives only in
-   `Directory.Build.props`; the Installer/iss mechanism ports from Phase 3.1 make the
-   build fail without injection; if `CHANGELOG.md` exists but lacks a heading for the
-   current version, report it. Confirmation: if `build/<APP>/<APP>.exe` exists, run
-   `build/Installer.ps1` — it prints the props version and completes or stops only at the
-   CHANGELOG gate; otherwise state that end-to-end verification still needs a build.
+---
 
 ## Phase 6: Staged gates
 
-1. **Format.** `dotnet format <APP>.slnx`, then confirm
-   `dotnet format <APP>.slnx --verify-no-changes` exits 0.
-2. **Measure, then enable.** `dotnet build <APP>.slnx -c Release`; tally warnings by
-   diagnostic ID (including `VSTHRD*`).
-   - Zero warnings → add `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` (with the
-     template's comment) to `Directory.Build.props`, rebuild, confirm success.
-   - Warnings remain → do NOT enable the gate. Report ID / count / representative
-     location / suggested handling (fix vs suppress per the ANALYZERS tiers in
-     `docs/rules/dotnet.md`) and leave the gate for a re-run after the user decides.
-3. **Tests.** `dotnet test` — existing tests still pass.
+1. **Format.** `dotnet format <APP>.slnx`, then confirm `dotnet format <APP>.slnx --verify-no-changes` exits 0.
+2. **Measure, then enable.** `dotnet build <APP>.slnx -c Release`; tally warnings by diagnostic ID (including `VSTHRD*` and `IDE0130`).
+   - Zero warnings → add `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` (with template comment) to `Directory.Build.props`, rebuild, confirm exit 0.
+   - Warnings remain → do NOT enable the gate. Report ID / count / representative location / suggested handling (fix vs narrowest-scope suppression per `dotnet.md` `ANALYZERS`).
+3. **Tests.** `dotnet test` — confirm existing tests pass (exit 0).
 
-## Phase 7: Audit existing code
+---
 
-Phases 3–6 converge scaffolding. This phase brings the repository's own code, tests, and
-documents into conformance with the rules of `<STANDARDS_TAG>`, applied from
-`docs/rules/` as Phases 4–5 left it. This skill restates none of those rules: the audit
-is the AUDIT procedure at the end of `docs/rules/standard.md`, run over the whole
-repository instead of over the files a change touched.
+## Phase 7: Report and cleanup
 
-1. **Load the rules.** Run AUDIT step 1: re-read the root `AGENTS.md` (and any nested
-   one), every file under `docs/rules/`, and `docs/specs/<APP>.md`. Confirmation: every
-   file was read in full, and each conditional core file whose condition is false for
-   `<APP>` is named as skipped together with the fact about `<APP>` that makes it false.
-
-2. **Audit every tracked file.** The target set is every file `git ls-files` lists plus
-   the files this run added — not only the files this run changed — excluding binary
-   files and the dev-standards-managed rule files (class *managed rule*, never edited in
-   the repository). Check every line of each target per AUDIT step 3; take the target
-   set folder by folder, and do not sample. Record each violation with an ID (`V1`,
-   `V2`, ...): file and line, the rule it breaks (rule file and section or matrix ID),
-   what breaks it, the proposed fix, and the fix's reach — *local* (the fix stays inside
-   the file), *cross-cutting* (callers or other files change with it), or *needs a
-   specification change* (spec-first, `standard.md` Specifications). Confirmation: every
-   target file appears in the audit record, with its violation IDs or "no violations".
-
-3. **Question Round 3** (skipped when step 2 recorded no violation). Present the
-   violations as a table grouped by rule, then ask **fix now** or **defer** for each
-   violation, or for each group of violations that share a rule and a fix. Recommend
-   *fix now* for local fixes. For a violation that needs a specification change, the
-   option states that fixing it starts with that change. Do not start step 4 while any
-   violation is undecided.
-
-4. **Fix the approved violations.** Each fix is an implementation change subject to the
-   same rules as any other: a needed specification change comes first, and the tests the
-   rules require to accompany a change come with it. Confirmation: the Phase 6 checks
-   pass again — the format check exits 0, the build adds no warning to what Phase 6
-   measured, and the tests exit 0 — and step 2 re-run over the files the fixes touched
-   records no violation except the deferred ones.
-
-## Phase 8: Report
-
-First run `git reset` (index only — the working tree is untouched): some steps stage as
-a side effect while Write/Edit steps do not, and the commit split below — not incidental
-staging — should be what puts things into the index.
-
-Report:
-
-- The reconciliation table with final outcomes, including every Round 2 decision
-  (added / updated / ported / retired / kept / deferred)
-- The completeness-check result: no in-scope target left unexplained
-- Consolidation outcomes: rules dropped as covered, overrides, repository-specific
-  carries, anything awaiting a decision
-- Verification results with exit codes (format verify, build, tests, installer if run)
-- Gate status: enabled, or the warning table awaiting decisions
-- Every report a row of `MAPPING` asks for (a special rule that says to report), each
-  with the action it leaves to the user and when that action is due — some, such as a
-  step every existing clone takes, are due only after this run's changes are committed
-- Audit outcomes: the number of files audited, the conditional core files skipped and
-  why, and the violation table with each violation's final outcome (fixed / deferred).
-  Deferred violations are listed in full — they are the rules the repository does not
-  yet meet
-- Specification: whether `docs/specs/<APP>.md` meets `docs/rules/specs.md` for every
-  decision (Phase 5 step 2). When it does not, the next step: run the `specify-app`
-  skill, published beside this one, from the repository root after this run's changes
-  are committed
-- Proposed commit split (do not commit until the user confirms):
-  1. Mechanism introduction (config, props, build scripts, installer, merge settings)
-  2. Rule consolidation (`AGENTS.md`, `CLAUDE.md`, `docs/rules/` + `docs/specs/`,
-     legacy-store removals and retirements)
-  3. Mechanical bulk changes only (the `dotnet format` diff)
-  4. Documentation placement (moves, renames, reference rewrites, front matter)
-  5. Conformance fixes from Phase 7, one commit per rule or per group of violations
-     the user approved together
+First run `git reset` (index only — working tree untouched) so incidental staging from `git mv` / `git rm` is cleared before user commit review.
 
 Delete the clone:
 
@@ -343,6 +169,21 @@ Delete the clone:
 rm -rf .dev-standards
 ```
 
-Confirmation: `test -e .dev-standards` is false. Mandatory, not tidiness — the clone is
-untracked and nothing ignores it, so the proposed commit split above would otherwise sweep
-the whole template repository into the project.
+Confirmation: `test -e .dev-standards` is false. Mandatory so untracked clone files are never committed into the project.
+
+Report:
+
+- Resolved tag (`<STANDARDS_TAG>`), detected `clientPackaging` mode (`true`/`false`), and `docs/rules/` synchronization status
+- Reconciliation table with final outcomes (added / ported / retired / kept / deferred) and Phase 4 completeness check
+- Consolidation and Code Map migration outcomes (legacy rules dropped/kept, migrated `code-map.md` rows, reported knowledge duplicates)
+- Phase 6 verification results with exit codes and `<TreatWarningsAsErrors>` status
+- Any special reports requested by `MAPPING` (e.g., working-tree line-ending re-checkout instructions if `.gitattributes`/`.editorconfig` changed, `BannedApiAnalyzers` RS0030 findings, staged REQCOV gaps)
+- Next steps (in order):
+  1. Run `/sync-rules` first if `docs/rules/` was not yet synchronized before this run
+  2. Run **`/audit-repo`** next (now that `docs/rules/`, `docs/rules/<APP>.md`, `code-map.md`, `docs/`, and build gates are converged) to audit existing code, tests, and documents against `<STANDARDS_TAG>` rules
+  3. Run **`/specify-app`** after committing if Phase 5 step 2 judged `docs/specs/<APP>.md` incomplete under `docs/rules/specs.md`
+- Proposed commit split (do NOT commit until user confirms):
+  1. Mechanism introduction (`.editorconfig`, `Directory.Build.props`, `BannedSymbols.txt`, build scripts, hooks, and installer scripts if `clientPackaging = true`)
+  2. Router, Code Map, and rule consolidation (`AGENTS.md`, `CLAUDE.md`, `docs/references/code-map.md`, `docs/rules/<APP>.md`, `docs/specs/<APP>.md`, legacy removals)
+  3. Mechanical bulk formatting changes (`dotnet format` diff)
+  4. Documentation placement (moves, renames, front matter, path reference updates)
