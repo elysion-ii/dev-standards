@@ -4,8 +4,8 @@
 
 Defines stack-agnostic ideals for minimizing and cleaning packaged footprints, handling
 running instances during update or removal, bounding local logs, and keeping scrollable UI
-lists responsive. Application path anchoring lives in `standard.md` (Application Path
-Anchoring).
+lists responsive. Rules for anchoring and keeping application-owned paths deterministic
+live in `standard.md` (Application-Owned Paths).
 
 ## Packaging and Distributable Footprint
 

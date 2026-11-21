@@ -23,21 +23,21 @@ property notes live in the comments of the configuration and build files themsel
 | FORMAT | Formatting follows `.editorconfig` (`standard.md` Build Hygiene and Static Analysis) | `.editorconfig`; `dotnet format --verify-no-changes` | AUDIT — `dotnet format --verify-no-changes` enforces style against `.editorconfig`; maintaining a single root `.editorconfig` without per-file deviations and running the formatter before completion stay AUDIT |
 | ANALYZERS | Recommended static analysis, warnings as errors, narrow suppressions, banned-API list, and dependency vulnerability auditing (`standard.md` Build Hygiene and Static Analysis) | `Directory.Build.props` (`AnalysisLevel=latest-recommended`, `EnforceCodeStyleInBuild`, `TreatWarningsAsErrors`, `NuGetAudit`, `Microsoft.CodeAnalysis.BannedApiAnalyzers` + `BannedSymbols.txt`) | AUDIT — gates enforce enabled diagnostics, `NuGetAudit` advisory checks, and `BannedSymbols.txt` (`RS0030`); keeping gates enabled, suppression scopes/reasons, and keeping `RS0030` unsuppressed stay AUDIT |
 | UNUSED | Remove unreachable members, parameters, and locals (`standard.md` Leave No Vestiges) | `.editorconfig` (`IDE0051`, `IDE0052`, `IDE0060` as warning + `TreatWarningsAsErrors`); compiler `CS0168`/`CS0219` | AUDIT — compiler/analyzers catch dead locals/private members/unused parameters; dead branches and stale names stay AUDIT |
-| NAMESPACE | File-scoped namespaces and namespace matches folder (`standard.md` Code Organization) | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`, `IDE0130` as warning + `TreatWarningsAsErrors`) | Enforced |
+| NAMESPACE | File-scoped namespaces and namespace matches folder (`standard.md` Code Organization) | `.editorconfig` (`csharp_style_namespace_declarations=file_scoped:warning`, `IDE0130` as warning); `Directory.Build.props` (`EnforceCodeStyleInBuild`, `TreatWarningsAsErrors`) | AUDIT — analyzers enforce file-scoped syntax (`IDE0161`) and declared-namespace folder alignment (`IDE0130`) when build code-style enforcement is enabled; files omitting a `namespace` declaration, multi-file `partial` types, and `<RootNamespace>` alignment stay AUDIT |
 | ORG | One top-level type per `.cs` file matching filename (`standard.md` Code Organization) | — | AUDIT |
-| ASYNC | Use async BCL I/O APIs; no blocking on async code; no `async` without `await` (`standard.md` Synchronous vs Asynchronous) | `Directory.Build.props` (`Microsoft.VisualStudio.Threading.Analyzers`); compiler `CS1998` | AUDIT — VSTHRD and `CS1998` enforce blocking and `await`-less `async`; choosing async BCL I/O APIs and avoiding `Task.FromResult` with `async` stay AUDIT |
+| ASYNC | Use async BCL I/O APIs; no blocking on async code; no `async` without `await` (`standard.md` Synchronous vs Asynchronous) | `Directory.Build.props` (`Microsoft.VisualStudio.Threading.Analyzers`); compiler `CS1998` | AUDIT — VSTHRD and `CS1998` enforce blocking and `await`-less `async`; choosing async BCL I/O APIs, avoiding `Task.FromResult` with `async`, and validating any `VSTHRD100`/`VSTHRD002` suppression stay AUDIT |
 | DEFERRED | Enumerate LINQ queries once; no query side effects; catch at enumeration | `.editorconfig` (`CA1851` as warning + `TreatWarningsAsErrors`) | AUDIT — `CA1851` enforces multiple enumeration; query side effects and `try` placement stay AUDIT |
 | VISIBILITY | Minimal visibility and explicit modifiers (`standard.md` Minimal Visibility) | `.editorconfig` (`CA1515`, `IDE0040` as warning + `TreatWarningsAsErrors`); `<InternalsVisibleTo>` in application `.csproj` | AUDIT — `CA1515`/`IDE0040` flag `public` types in exe projects and omitted modifiers; `public` members on `internal` types, `BindNonPublicProperties`, `InternalsVisibleTo` scope, and test method modifiers stay AUDIT |
-| VAR | `var` only when type is obvious from right-hand side | `.editorconfig` suggestions | AUDIT |
+| VAR | Allow `var` only on explicit-type `new` expressions and explicit casts; explicit types are always permitted | `.editorconfig` suggestions (`csharp_style_var_elsewhere`, `csharp_style_var_for_built_in_types`) | AUDIT — suggestions do not fail the build; verifying no opaque `var` remains stays AUDIT |
 | STRING | Explicit `StringComparison` on string methods | — | AUDIT |
-| CANCEL | Propagate `CancellationToken ct = default` through async I/O (`standard.md` Synchronous vs Asynchronous) | — | AUDIT |
+| CANCEL | Propagate an optional `CancellationToken` parameter (`= default`) through async I/O (`standard.md` Synchronous vs Asynchronous) | — | AUDIT |
 | CLOCK | Pass the current time as an argument; `TimeProvider` only where an argument cannot carry it (`standard.md` Functional Core, Imperative Shell) | — | AUDIT |
-| FILEPATH | Anchor application paths to `AppContext.BaseDirectory`, `Environment.GetFolderPath(...)`, or `Path.GetTempPath()` under `FILEEX` (`standard.md` Application Path Anchoring) | `Directory.Build.props` + `BannedSymbols.txt` banning `Directory.GetCurrentDirectory` and `Environment.CurrentDirectory` (`RS0030`) | AUDIT — `BannedSymbols.txt` enforces those two APIs; bare relative paths stay AUDIT |
+| FILEPATH | Anchor application paths to `AppContext.BaseDirectory`, `Environment.GetFolderPath(...)`, a configured absolute path, or `Path.GetTempPath()` for transient temporary files; avoid hash- or version-keyed settings providers (`standard.md` Application-Owned Paths) | `Directory.Build.props` + `BannedSymbols.txt` banning `Directory.GetCurrentDirectory` and `Environment.CurrentDirectory` (`RS0030`) | AUDIT — `BannedSymbols.txt` enforces those two APIs; bare relative paths and provider-generated persistent paths stay AUDIT |
 | DESERIALIZE | Concrete-type deserialization via `System.Text.Json`; forbid `BinaryFormatter` and polymorphic type handling (`standard.md` Values Never Become Code) | — | AUDIT |
 | CONSTANTS | Application constants as `const` / `static readonly` in owning class (`standard.md` Named Constants) | — | AUDIT |
 | COMMENTS | Inline `//` comments; XML docs only on published libraries (`standard.md` Code Comments) | — | AUDIT |
 | TESTNAME | xUnit test naming `Method_Scenario_ExpectedResult` | — | AUDIT |
-| REQCOV | Tests name specification requirement IDs; no dangling trait IDs (`testing.md` Requirement Coverage) | — | AUDIT |
+| REQCOV | Attach `[Trait("Requirement", "<ID>")]` or `// <ID>` comment to verifying tests (`testing.md` Requirement Coverage) | — | AUDIT |
 | VERSION | Single `<Version>` in `Directory.Build.props` and metadata-based version display (`standard.md` Version Display) | `Directory.Build.props` | AUDIT |
 | OUTPUT | Distributables produced only via build script; build outputs untracked (`standard.md` Build Hygiene and Static Analysis) | `.gitignore` | AUDIT — `.gitignore` does not stop forced adds or manual `dotnet publish` |
 | CONFIGFILE | Track placeholder template only; never track active config file (`configuration.md`, when present and applicable) | `.gitignore` | AUDIT — `.gitignore` does not stop forced adds of the active file |
@@ -77,11 +77,10 @@ property notes live in the comments of the configuration and build files themsel
 
 - **Delete compiler- and analyzer-reported dead symbols**: remove locals (`CS0168`/`CS0219`), private members (`IDE0051`/`IDE0052`), and unused parameters (`IDE0060`); update callers rather than keeping unused parameters.
 - **External-signature exemption**: where an interface, delegate, or framework callback fixes a parameter list, suppress `IDE0060` at the narrowest scope naming the fixing contract.
-- **AUDIT remaining dead code**: check manually for dead branches and stale names that analyzers cannot detect (`standard.md` Leave No Vestiges).
 
 ## NAMESPACE: Namespaces and Folder Alignment
 
-- **File-scoped namespaces only**: write `namespace X;` (`csharp_style_namespace_declarations=file_scoped:warning`).
+- **File-scoped namespaces only**: write `namespace X;` (`csharp_style_namespace_declarations=file_scoped:warning`), following the modern C# convention to eliminate one redundant indentation level across every source file and keep code and diffs readable.
 - **Match folder hierarchy**: align every namespace with its folder path from the project root (`IDE0130` as warning) to satisfy `standard.md` (Code Organization).
 
 ## ORG: Source File Organization
@@ -93,13 +92,15 @@ property notes live in the comments of the configuration and build files themsel
 Refines `standard.md` (Synchronous vs Asynchronous) for .NET:
 
 - **Use async BCL I/O APIs**: invoke asynchronous file, network, and database APIs (e.g., `File.ReadAllTextAsync`) instead of synchronous equivalents.
-- **Never block on tasks**: never call `.Result`, `.Wait()`, or `.GetAwaiter().GetResult()` (enforced by VSTHRD analyzers).
+- **Never block on tasks**: never call `.Result`, `.Wait()`, or `.GetAwaiter().GetResult()` (enforced by `VSTHRD002`) — never suppress `VSTHRD002` on UI dispatcher threads or general code; only when a framework contract mandates a synchronous non-`void` signature with no async alternative and no synchronization-context deadlock can occur may `VSTHRD002` be suppressed at the narrowest `ANALYZERS` scope naming the contract.
 - **Avoid `async` with `Task.FromResult`**: do not await pre-completed tasks just to silence `CS1998`; return `Task.FromResult` or `Task.CompletedTask` synchronously without `async`.
-- **Framework synchronous entry exemptions**: suppress VSTHRD at the narrowest ANALYZERS scope with reason only when a framework mandates a synchronous signature.
+- **Framework `void` event handlers**: where a framework event delegate mandates a `void` signature (e.g., UI click handlers), `async void` is permitted with a narrowest-scope `VSTHRD100` suppression (`ANALYZERS`) naming the event, provided the handler catches and handles exceptions internally (`standard.md` Failure Handling and Reporting) so unhandled exceptions cannot crash the process.
 
 ## DEFERRED: Deferred Execution (LINQ)
 
-- **No side effects inside queries**: keep `Select`, `Where`, and deferred LINQ operators free of mutations, I/O, or logging; perform side effects in `foreach` over a materialized collection.
+Deferred LINQ queries execute upon enumeration rather than at query construction, so side effects run unpredictably or repeatedly and execution-time exceptions bypass `try` blocks around query construction:
+
+- **No side effects inside queries**: keep `Select`, `Where`, and deferred LINQ operators free of mutations, I/O, or logging; perform side effects inside `foreach` / `await foreach` (over a materialized collection, or over a streamed `DbDataReader` / `IAsyncEnumerable<T>` when streaming large results per `DB` and `db.md` when present and applies).
 - **Materialize before re-enumerating**: call `.ToList()` or `.ToArray()` once when converting a deferred `IEnumerable<T>` into data (`CA1851`).
 - **Catch exceptions at enumeration**: place `try`/`catch` around the enumeration or `.ToList()`/`.ToArray()` call, not solely around query construction.
 
@@ -108,7 +109,7 @@ Refines `standard.md` (Synchronous vs Asynchronous) for .NET:
 Implements `standard.md` (Minimal Visibility) in C#:
 
 - **Keep application types `internal`**: declare types in `Exe`/`WinExe` projects `internal` (enforced by `CA1515`; client XAML entry-point exceptions live in `dotnet-client.md` when `dotnet-client.md` is present and applies).
-- **Always state explicit modifiers**: write explicit accessibility modifiers on every declaration except interface members (`IDE0040`).
+- **Always state explicit modifiers**: write explicit accessibility modifiers on every declaration except interface members (`IDE0040`), ensuring visibility is always a deliberate, reviewable choice rather than an implicit C# default.
 - **Keep members on `internal` types `internal` or narrower**: use `public` inside an `internal` type only when a framework, serializer, UI binder, code generator, or C# language rule requires it (e.g., the callers below), and never enable options such as `BinderOptions.BindNonPublicProperties` to bypass default visibility:
 
 | Caller | Requires `public` |
@@ -118,23 +119,23 @@ Implements `standard.md` (Minimal Visibility) in C#:
 | `ConfigurationBinder` | Bound configuration properties (`public` getter/setter or `init`) |
 | `Microsoft.Extensions.DependencyInjection` | Constructor used to resolve registered services |
 
-- **Grant test access via `InternalsVisibleTo`**: add `<InternalsVisibleTo Include="<App>.Tests" />` in the application `.csproj` instead of making application types `public`.
+- **Grant test access via `InternalsVisibleTo`**: add `<InternalsVisibleTo Include="<TestAssembly>" />` (e.g., `<App>.Tests`) in the application `.csproj` for the application's test assemblies instead of making application types `public`.
 - **xUnit visibility**: declare test classes `public` (required by `xUnit1000`) and test methods `internal` so `[Theory]` methods can accept `internal` application types without `CS0051` or `IDE0051`.
 
 ## VAR: Type Inference
 
-- **Use `var` when obvious**: use `var` for `new` expressions, explicit casts, and unambiguous right-hand types; write the explicit type whenever the return type is not clear from the expression so readers outside an IDE (e.g., during code review) do not misread types such as `Task<T>` or deferred sequences.
+- **Allow `var` only when the exact type is named on the right-hand side**: use `var` only for explicit-type `new` expressions (e.g., `new T(...)`, `new T[...]`) and explicit casts (`(T)expr`), and write an explicit type for every other initializer (e.g., method calls, property reads, literals) so readers outside an IDE (e.g., during code review) do not misread types such as `Task<T>`, deferred sequences, or numeric widths; explicit type declarations (including target-typed `new()`) are always permitted.
 
 ## STRING: String Comparison
 
-- **Always pass `StringComparison`**: supply `StringComparison` explicitly to `StartsWith`, `EndsWith`, `IndexOf`, `Contains`, and `Equals` — `StringComparison.Ordinal` for technical identifiers and paths, `StringComparison.OrdinalIgnoreCase` for case-insensitive technical matching.
+- **Always pass `StringComparison`**: supply `StringComparison` explicitly to `StartsWith`, `EndsWith`, `IndexOf`, `Contains`, and `Equals` because BCL string methods have inconsistent defaults (`StartsWith`, `EndsWith`, and `IndexOf` default to `CurrentCulture` while `Contains` and `Equals` default to `Ordinal`), causing silent locale-dependent bugs across machines — use `StringComparison.Ordinal` or `StringComparison.OrdinalIgnoreCase` for technical identifiers and paths, and pass the specification-defined culture-aware `StringComparison` explicitly when linguistic user-facing matching is required (`values.md`, when present).
 
 ## CANCEL: Cancellation Token Propagation
 
 Implements `standard.md` (Synchronous vs Asynchronous) cancellation propagation:
 
-- **Accept and forward `CancellationToken ct = default`**: include `CancellationToken ct = default` on every async I/O method (including internal helpers and static utilities) even when current callers pass no token, and pass `ct` (never `CancellationToken.None`) to every cancellable await inside it — retrofitting tokens later requires cross-layer signature changes across helpers and all their callers.
-- **Omit only on non-cancellable completion steps**: omit tokens solely on the non-cancellable completion steps defined in `standard.md` (Synchronous vs Asynchronous).
+- **Accept and forward a defaulted `CancellationToken` parameter**: include an optional `CancellationToken` parameter with `= default` (e.g., `CancellationToken cancellationToken = default` or `CancellationToken ct = default`) on every async I/O method whose signature the application controls (including internal helpers and static utilities) even when current callers pass no token, and forward that token (never `CancellationToken.None`) to every cancellable await inside it — retrofitting tokens later requires cross-layer signature changes across helpers and all their callers.
+- **Permitted omissions**: omit the parameter solely on (1) the non-cancellable completion steps defined in `standard.md` (Synchronous vs Asynchronous) or (2) methods whose signature is fixed by an external interface, delegate, or framework callback (e.g., `async void` event handlers under `ASYNC`), forwarding any cancellation token supplied by the enclosing lifetime or framework context when available.
 
 ## CLOCK: Current Time
 
@@ -144,9 +145,10 @@ Implements `standard.md` (Functional Core, Imperative Shell — Pass ambient val
 
 ## FILEPATH: File Paths
 
-Implements `standard.md` (Application Path Anchoring) in .NET:
+Implements `standard.md` (Application-Owned Paths) in .NET:
 
-- **Anchor application paths in code**: construct application-owned paths from `AppContext.BaseDirectory` or `Environment.GetFolderPath(...)` — or `Path.GetTempPath()` specifically for temporary staging files governed by `FILEEX` (when `file-exchange.md` is present and applies) — never from `Directory.GetCurrentDirectory()`, `Environment.CurrentDirectory` (blocked by `BannedSymbols.txt`), or bare relative strings. (User-supplied relative CLI arguments resolve intentionally against caller working directory.)
+- **Anchor application paths in code**: construct application-owned paths solely from `AppContext.BaseDirectory`, `Environment.GetFolderPath(...)`, or a configured absolute path (handling relative configured paths per `standard.md` Application-Owned Paths; `configuration.md`, when present, or test configuration under `testing.md`) — and use `Path.GetTempPath()` solely for transient per-operation temporary files (e.g., `FILEEX` network staging when `file-exchange.md` applies, atomic-write temporary files, or isolated test scratch directories) — never from `Directory.GetCurrentDirectory()`, `Environment.CurrentDirectory` (blocked by `BannedSymbols.txt`), or bare relative strings. (User-supplied relative CLI arguments resolve intentionally against the caller's working directory.)
+- **Avoid hash- or version-keyed settings providers**: do not store persistent settings or data through `ApplicationSettingsBase` / `Properties.Settings` (`LocalFileSettingsProvider`), which writes `user.config` into URL- or version-hashed directories; serialize persistent files explicitly (e.g., via `System.Text.Json`) at the specification-defined path anchored per `Anchor application paths in code` above.
 
 ## DESERIALIZE: Safe Deserialization
 
@@ -164,11 +166,11 @@ Implements `standard.md` (Named Constants) in C#:
 
 Implements `standard.md` (Code Comments) in C#:
 
-- **Inline comments vs XML docs**: use `//` inline comments; reserve XML documentation comments (`/// <summary>`) strictly for libraries published to callers outside the repository.
+- **Inline comments vs XML docs**: use `//` inline comments and reserve XML documentation comments (`/// <summary>`) strictly for libraries published to callers outside the repository, because XML doc comments exist to generate external API documentation and writing them on internal application members encourages boilerplate restatement comments that violate `standard.md` (Code Comments) and drift stale.
 
 ## TESTNAME: xUnit Test Naming
 
-- **Name pattern**: name test methods `<Method>_<Scenario>_ExpectedResult` (e.g., `Merge_EmptyInput_ReturnsEmpty`), suppressing `CA1707` in the test project's `.csproj` `<NoWarn>` with a reason comment (`ANALYZERS`).
+- **Name pattern**: name test methods `<Method>_<Scenario>_ExpectedResult` (e.g., `Merge_EmptyInput_ReturnsEmpty`) — following the official .NET unit-testing convention so test failure logs show the target, condition, and expected outcome at a glance — and suppress `CA1707` in the test project's `.csproj` `<NoWarn>` with that reason comment (`ANALYZERS`).
 
 ## REQCOV: Requirement Coverage
 
@@ -180,8 +182,8 @@ Implements `testing.md` (Requirement Coverage) in .NET:
 
 Implements `standard.md` (Version Display) in .NET:
 
-- **Define `<Version>` solely in `Directory.Build.props`**: keep `<Version>` out of individual `.csproj` files so every project and packaged artifact shares one version source; format `<Version>` as an MSBuild-compatible numeric version string (e.g., `Major.Minor.Patch`).
-- **Read displayed version from assembly metadata**: read `AssemblyInformationalVersionAttribute` rather than hardcoding a version string, failing fast if the version metadata is absent.
+- **Define `<Version>` solely in `Directory.Build.props`**: keep `<Version>` out of individual `.csproj` files and format it as an MSBuild-compatible numeric version string (e.g., `Major.Minor.Patch`).
+- **Read displayed version from assembly metadata**: read `AssemblyInformationalVersionAttribute` (derived from `<Version>`) to obtain the build's version at run time.
 
 ## OUTPUT: Build Outputs
 
@@ -191,7 +193,7 @@ Implements `standard.md` (Version Display) in .NET:
 
 Applies when `configuration.md` is present and applies (`configuration.md` Configuration Files in the Repository):
 
-- **Track `<name>.template.<ext>` (e.g., `appsettings.template.json`)**: keep the active configuration file the application reads (e.g., `appsettings.json`) untracked in `.gitignore` so tracking only the placeholder template structurally prevents accidental commits or packaging of local developer endpoints and environment-specific settings.
+- **Track `<name>.template.<ext>` (e.g., `appsettings.template.json`)**: keep the runtime file (e.g., `appsettings.json`) untracked in `.gitignore` instead of tracking `appsettings.json` directly, because .NET developers routinely edit `appsettings.json` locally and separating the tracked template filename stops local edits from entering commits.
 
 ## SERIAL: Sequential Command Execution
 
@@ -213,7 +215,7 @@ Applies when `file-exchange.md` is present and applies:
 
 - **Canonical path containment check**: normalize the base directory via `Path.GetFullPath(...)` (ensuring a single trailing `Path.DirectorySeparatorChar`) and the candidate path via `Path.GetFullPath(...)`, comparing with `StartsWith(..., StringComparison.OrdinalIgnoreCase)` on Windows (or `Ordinal` on case-sensitive filesystems).
 - **Explicit strict encodings**: instantiate explicit `Encoding` objects configured to throw on invalid bytes (e.g., `new UTF8Encoding(encoderShouldEmitUTF8Identifier: ..., throwOnInvalidBytes: true)`) on `StreamReader` / `StreamWriter` / `File` calls rather than omitting encoding.
-- **Stage network file transfers in `Path.GetTempPath()`**: create temporary files under an application-owned subdirectory or naming prefix inside `Path.GetTempPath()` (e.g., `{AppName}/...` or `{AppName}_...`), delete matching files in `finally` (best-effort), and prune only this application's crash-orphaned files past its retention window at startup and processing-loop boundaries (`file-exchange.md` Network-Path Staging and Temporary Files).
+- **Stage network file transfers under `Path.GetTempPath()`**: create each operation's temporary staging files under an application-owned subdirectory or naming prefix inside `Path.GetTempPath()` (e.g., `{AppName}/...` or `{AppName}_...`), and delete the temporary files created by that operation in a `finally` block (cleanup error handling and crash-orphan recovery follow `file-exchange.md` Network-Path Staging and Temporary Files).
 
 ## VALUES: Precision, Invariant Formatting, and Temporal Means
 
@@ -240,7 +242,7 @@ Applies when `security.md` is present and applies:
 
 Applies when `cloud.md` is present and applies (implements `cloud.md` Short-Lived and Managed Cloud Identities and Short-Lived Signed Transfer URLs):
 
-- **Use `DefaultAzureCredential` or provider workload-identity chains**: initialize cloud SDK clients with `DefaultAzureCredential` (or AWS `FallbackCredentialsFactory` / GCP `GoogleCredential.GetApplicationDefaultAsync`), avoiding static account keys, connection-string secrets, or `StorageSharedKeyCredential` in application code or plaintext configuration; where an external integration constraint requires a static key (`cloud.md` Short-Lived and Managed Cloud Identities), load it from a platform secret store rather than source or plaintext configuration.
+- **Use `DefaultAzureCredential` or provider workload-identity chains**: initialize cloud SDK clients with `DefaultAzureCredential` (or AWS `FallbackCredentialsFactory` / GCP `GoogleCredential.GetApplicationDefaultAsync`), avoiding static account keys, connection-string secrets, or `StorageSharedKeyCredential` in application code or plaintext configuration (except where `cloud.md` permits a secret-store-backed static key for an external integration constraint).
 - **Scope SAS and pre-signed URL builders cleanly**: construct direct-transfer URLs with `BlobSasBuilder` (signed with `UserDelegationKey` rather than shared key, narrow `BlobSasPermissions`, short `ExpiresOn`) or AWS `GetPreSignedUrlRequest` (narrow `HttpVerb` and `Expires`), avoiding `BlobContainerSasBuilder` container-wide tokens.
 
 ## WEBAPI: Web API Means

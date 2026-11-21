@@ -27,14 +27,14 @@ that entire rule as **AUDIT** until added.
 
 Refines `dotnet.md` (VISIBILITY) for WPF and WinUI 3 XAML types where generated partials must match code-behind modifiers (`CS0262`):
 
-- **WPF**: set `x:ClassModifier="internal"` on `App.xaml` and every XAML root declaring `x:Class` (e.g., windows, `UserControl`, `Page`, and code-behind `ResourceDictionary`) to match `internal sealed partial class` (for concrete non-base code-behinds); keep a `public` parameterless constructor on any XAML root instantiated directly by XAML `Activator.CreateInstance` (e.g., `StartupUri`).
-- **WinUI 3**: keep concrete non-`App` XAML code-behinds (e.g., windows, `UserControl`, `Page`, and code-behind `ResourceDictionary`) `internal sealed partial class`, and keep `App` `public` with `[SuppressMessage]` for `CA1515` because XAML compilation generates `public partial class App` in `XamlTypeInfo.g.cs` without supporting `x:ClassModifier`; never set `NoTypeInfoCodeGen` to bypass this, as XAML type resolution depends on generated type info.
+- **WPF**: set `x:ClassModifier="internal"` on `App.xaml` and every XAML root declaring `x:Class` (e.g., windows, `UserControl`, `Page`, and code-behind `ResourceDictionary`) to match `internal partial class` in the code-behind; keep a `public` parameterless constructor on any XAML root instantiated directly by XAML `Activator.CreateInstance` (e.g., `StartupUri`).
+- **WinUI 3**: keep non-`App` XAML code-behinds (e.g., windows, `UserControl`, `Page`, and code-behind `ResourceDictionary`) `internal partial class`, and keep `App` `public` with `[SuppressMessage]` for `CA1515` because XAML compilation generates `public partial class App` in `XamlTypeInfo.g.cs` without supporting `x:ClassModifier`; never set `NoTypeInfoCodeGen` to bypass this, as XAML type resolution depends on generated type info.
 
 ## VIRTUALIZATION: List Virtualization
 
 Implements `client.md` (Responsive UI for Large Lists) in WPF and WinUI 3:
 
-- **Preserve panel virtualization**: keep virtualization active on `DataGrid`, `ListView`, `ListBox`, and `ItemsRepeater`; never disable `VirtualizingPanel.IsVirtualizing` or place virtualized controls inside layout containers that measure children with infinite height (e.g., `ScrollViewer` or vertical `StackPanel`).
+- **Preserve panel virtualization**: keep UI virtualization active on scrollable collections — for controls with a built-in `ScrollViewer` (`DataGrid`, `ListView`, `ListBox`), never disable virtualization (e.g., setting `VirtualizingPanel.IsVirtualizing="False"` in WPF or replacing WinUI 3's default virtualizing `ItemsPanel` with a non-virtualizing `StackPanel`) and never wrap them inside an outer `ScrollViewer` or an unbounded-axis layout container (e.g., a vertical `StackPanel` for a vertically scrolling list); for WinUI 3 `ItemsRepeater` (which has no built-in `ScrollViewer`), host it inside a viewport-bounded `ScrollViewer` or `ScrollView` with a virtualizing layout rather than inside an unbounded-axis container (e.g., a vertical `StackPanel`).
 
 ## NATIVEDEP: Native Dependencies and Publish Layout
 

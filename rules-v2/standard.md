@@ -14,7 +14,7 @@ Rules in `docs/rules/` form three tiers:
 
 - **Precedence on conflict**: Application rules > Stack rules > Shared rules.
 - **No conflicts among shared rules**: a contradiction between two stack-agnostic rule files under `docs/rules/` is a defect in the rules. Report it to the user and continue only on the user's decision — never by silently picking one side.
-- **Rule scope**: every change complies with every universal rule file present under `docs/rules/`, with every conditional or stack rule file present under `docs/rules/` whose `Applies when` condition (if any) holds for the application being changed after the change — evaluated as a fact settled by the application's code, never whether the current task touches that subject (ignoring files whose condition is false for that application, such as in multi-application repositories) — and with the specification under `docs/specs/` of every touched application.
+- **Rule scope**: every change complies with all four universal rule files under `docs/rules/` (`standard.md`, `documentation.md`, `specs.md`, `testing.md`), with every conditional or stack rule file present under `docs/rules/` whose `Applies when` condition (if any) holds for the application being changed after the change — evaluated as a fact settled by the application's code, never whether the current task touches that subject (ignoring files whose condition is false for that application, such as in multi-application repositories) — and with the specification under `docs/specs/` of every touched application.
 - **Required reading**: read every applicable file under `docs/rules/` before implementing any change.
 - **Completion requirement**: no implementation task (any change that adds, modifies, or deletes source code, tests, build configuration, specifications, or documentation) is reported complete until the AUDIT gate at the end of this file passes.
 
@@ -159,48 +159,11 @@ Applies to how source files, namespaces or modules, folders, and compilation uni
 
 ## Code Comments
 
-### Principle
+A comment exists only where clearer names, types, extracted functions, tests, or fail-fast checks cannot express the context — it tells a blank-slate reader **why the current code shape, order, or guard is required now**.
 
-A comment exists only where code cannot carry the context — a clearer name, extracted function, type, test, or fail-fast check always comes first. A valid comment states **why the current shape, condition, guard, or order is required now**.
-
-- **One constraint per comment**: state one constraint (one fact the code must satisfy) and its current reason at the exact code it shapes, saying nothing about unrelated later processing; split separate constraints or exceptions into separate comments at their respective sites.
-- **Offload deep context**: move mechanism walkthroughs, multi-constraint specs, or architectural rationale to an ADR or `docs/references/`, leaving a one-line conclusion and relative path in the comment.
-- **Current constraints only**: record change history, review feedback, or removed behavior in version control history or PR descriptions, never in source comments.
-
-### Good Comments
-
-- Business rules not obvious from reading the code
-- External constraints (e.g., API quirks, protocol limits, legacy partner requirements)
-- Runtime invariants, ordering constraints, and guards valid only in specific states
-- Performance-driven code shapes citing concrete measurements that justify rejecting the simpler alternative (making the comment verifiable and removable when conditions change)
-
-```text
-// config is null only on first launch before the settings file is generated
-if config != null { ... }
-
-// Contractual matching key is order_id only; extra predicates drop update history (rationale: docs/adr/0002-order-matching-key.md)
-query = "SELECT ... FROM Orders WHERE order_id = @id"
-
-// Single pass keeps 200k-row aggregation under the 1s budget (measured 400ms vs 1.2s across three passes)
-for row in rows { ... }
-```
-
-### Do Not Write
-
-- Notes on what changed, was removed, or came from review feedback
-- Commented-out code, conditions, fields, or parameters
-- Restatements of what the next line visibly does
-- Prohibitions without current reasons
-- Unmeasured performance claims ("for performance", "faster")
-
-### Where to Put What
-
-| Information | Location |
-|---|---|
-| Why the current shape, order, or guard is required now; external constraints, business rules, invariants | Code comment, only when code cannot express it |
-| What changed and why | Commit message, PR description, CHANGELOG |
-| Why an approach is prohibited; architectural decisions | ADR (`docs/adr/`), with a brief current reason at the site if needed |
-| Context beyond one constraint and its reason | ADR or `docs/references/`, with a one-line conclusion and relative path at the site |
+- **Explain current non-obvious constraints**: comment only on what code cannot show on its own (e.g., business rules, external API or protocol quirks, state-specific runtime invariants/ordering guards, or performance-driven shapes citing concrete measurements so the optimization stays verifiable and removable when conditions change).
+- **One constraint at the site; offload deep context**: state one constraint and its current reason directly at the code it shapes; move architectural rationale, prohibited alternatives, or multi-constraint specifications to an ADR (`docs/adr/`) or `docs/references/`, leaving a one-line conclusion and relative path in the comment.
+- **No restatements, history, or unmotivated claims**: never write comments that restate what code visibly does, commented-out code, change or review history (record what changed and why in commits, PR descriptions, or changelogs), prohibitions without a current reason, or unmeasured performance claims (e.g., "for performance", "faster").
 
 ---
 
@@ -214,14 +177,15 @@ for row in rows { ... }
 
 Establishing which release produced a behavior or failure comes first in diagnostics and support.
 
-- **Users can learn the version**: every standalone executable application (e.g., GUI, CLI, network service, or background worker; reusable libraries without their own executable entry point are exempt) gives its users a way to learn the release they are running (e.g., an About screen, a `--version` option, a startup log line). How the version is written and where it appears are left to the application.
+- **Users can learn the version**: every standalone executable application (e.g., GUI, CLI, network service, or background worker; reusable libraries without their own executable entry point are exempt) gives its users a way to learn the release they are running (e.g., an About screen, a `--version` option, a startup log line). How the version is written and where it appears are left to the application, subject to any applicable conditional rule file (e.g., `cli.md` Version Output when present and applicable).
 - **Single version definition**: define the application's release version in one place in the project so every built artifact, package, and displayed version derives from that single source without drifting out of sync; fail fast rather than substituting a hardcoded fallback constant if version metadata is absent.
 
 ---
 
-## Application Path Anchoring
+## Application-Owned Paths
 
-- **Anchor application-owned paths explicitly**: resolve every application-owned file or directory (e.g., configuration, local data, logs, bundled assets) relative to an explicit base the application resolves itself (e.g., the application's executable directory, a platform-designated application-data directory, or a configured path; the specific location is decided by the specification), never relative to the process's current working directory, which varies by shortcut, scheduler, service manager, or parent process. (By contrast, user-supplied relative path arguments such as CLI inputs intentionally resolve against the caller's working directory.)
+- **Anchor application-owned paths explicitly**: for every application-owned path — any path the application selects or constructs for its own files (e.g., configuration, local data, logs, bundled assets), as opposed to target paths supplied by a caller via CLI arguments, UI file pickers, or request payloads — resolve it relative to an explicit base the application controls (only one of: the application's executable directory, a platform-designated application-data directory, an absolute path from configuration, or — solely for transient per-operation temporary files — a platform-designated temporary directory; the specific location is decided by the specification), never relative to the process's current working directory, which varies by shortcut, scheduler, service manager, or parent process. (Where configuration supplies a relative path, either anchor it to an explicit base above — using the temporary directory solely for transient files — or handle it as an invalid configuration value per `configuration.md` Configuration Values when present, or reject it under `External Input` when `configuration.md` is absent; user-supplied relative CLI arguments intentionally resolve against the caller's working directory.)
+- **Keep persistent paths deterministic and stable**: place persistent application-owned files (e.g., configuration, user preferences, local data, logs) at explicit, deterministic paths controlled directly by the application (matching the specification) — never nested under runtime- or framework-generated non-deterministic or version-keyed directories (e.g., executable-location hashes, randomized provider folders, or per-version subdirectories), which silently disconnect updates or relocations from existing state, leave orphaned folders behind, and prevent operators from locating or backing up data. (Where the specification places portable persistent files beside the executable directory, those files intentionally travel with the application folder rather than depending on an external location hash. Transient per-operation temporary files — e.g., staging files under `file-exchange.md` when present, atomic-write temporary files, or isolated test scratch directories under `testing.md` — and unique item identifiers defined by the specification, such as content-addressed cache keys or uploaded object filenames, are outside this prohibition.)
 
 ---
 
