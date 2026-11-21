@@ -1,6 +1,6 @@
 ---
 name: init-dotnet-app
-description: Scaffold a new .NET application repository in the current directory. Use immediately after `git clone` of an empty repo. Clones the elysion-ii/dev-standards template repository (network required), asks for app type (Console/WPF/WinUI 3/Win32), .NET version, target OS and client packaging choice, optional README/LICENSE, AGENTS.md language, installer UI language (when client packaging applies), and applicable conditional rules, then writes every selected path from `dist/templates/dotnet/mapping.md` (with concrete distributed rule paths resolved in `AGENTS.md`) and copies selected rules from `dist/templates/shared/rules-mapping.md`. Aborts on any file conflict.
+description: Scaffold a new .NET application repository in the current directory. Use immediately after `git clone` of an empty repo. Clones the elysion-ii/dev-standards template repository (network required), asks for app type (Console/WPF/WinUI 3/Win32), .NET version, target OS and client packaging choice, optional README/LICENSE, AGENTS.md language, installer UI language (when client packaging applies), and applicable conditional rules, then writes every selected path from `dist/templates/dotnet/mapping.md` and copies selected rules from `dist/templates/shared/rules-mapping.md`. Aborts on any file conflict.
 allowed-tools: AskUserQuestion, Read, Write, Bash, Glob
 ---
 
